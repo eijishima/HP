@@ -6,68 +6,67 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 
-   <div id="title-wrapper">
-  <h1 onclick="location.href='index.html';">嶋英治</h1>
-  <h2>profile</h2>
-
   <style>
-  .center-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* ど真ん中にする魔法 */
-  font-size: 20px;
-  text-align: center;
-}
-</style>
-</div>
+    .center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
 
-<body>  <!-- 背景画像 -->
-    <div class="sidebar">
-       <p><a href="live.html">Live archive</a></p>
-        <p><a href="rec.html">Recording</a></p>
-       <p><a href="diary.html">Diary</a></p> 
-       <p><a href="profile.html">Profile</a></p> 
-       
-</div>
-<p class="center-text">1998.09.20 tokyo</p>
+<body>
 
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>profile</h2>
+  </div>
 
+  <div class="sidebar">
+    <p><a href="live.html">Live archive</a></p>
+    <p><a href="rec.html">Recording</a></p>
+    <p><a href="diary.html">Diary</a></p>
+    <p><a href="profile.html">Profile</a></p>
+  </div>
 
-<div id="honbun">
-<p><a href="https://x.com/Eijishimagon" target="_blank">X</a></p>
-      <p><a href="https://www.instagram.com/eiji_hato/" target="_blank">instagram</a></p>
-      <p><a href="mailto:waiga.hatoyade@gmail.com">waiga.hatoyade@gmail.com</a></p>
-</div>
-        <!-- 散らす文字用スクリプト -->
+  <!-- 手書き風にしたい文字 -->
+  <p id="centerText" class="center-text">1998.09.20 tokyo</p>
+
+  <div id="honbun">
+    <p><a href="https://x.com/Eijishimagon" target="_blank">X</a></p>
+    <p><a href="https://www.instagram.com/eiji_hato/" target="_blank">instagram</a></p>
+    <p><a href="mailto:waiga.hatoyade@gmail.com">waiga.hatoyade@gmail.com</a></p>
+  </div>
+
+  <!-- 散らす文字用スクリプト -->
   <script src="random.js"></script>
 
-<script>
-  const p = document.getElementById('centerText');
-  const text = p.textContent;
-  p.innerHTML = ''; // 元のテキストをクリア
+  <script>
+    const p = document.getElementById('centerText');
+    const text = p.textContent;
+    p.innerHTML = '';
 
-  for (let char of text) {
-    const span = document.createElement('span');
-    span.textContent = char;
-    span.style.display = 'inline-block';
+    for (let char of text) {
+      const span = document.createElement('span');
+      span.textContent = char;
+      span.style.display = 'inline-block';
 
-    // 手書き風ガタガタ
-    const rotate = (Math.random() * 10) - 5;          // -5°〜+5°
-    const y = (Math.random() * 6) - 3;                // -3px〜+3px
-    const scale = 1 + (Math.random() * 0.12 - 0.06);  // ±6%
+      const rotate = (Math.random() * 10) - 5;
+      const y = (Math.random() * 6) - 3;
+      const scale = 1 + (Math.random() * 0.12 - 0.06);
 
-    span.style.transform = `
-      rotate(${rotate}deg)
-      translateY(${y}px)
-      scale(${scale})
-    `;
+      span.style.transform = `
+        rotate(${rotate}deg)
+        translateY(${y}px)
+        scale(${scale})
+      `;
 
-    p.appendChild(span);
-  }
-</script>
+      p.appendChild(span);
+    }
+  </script>
 
-
-
-  </body>
+</body>
 </html>
