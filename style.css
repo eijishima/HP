@@ -1,0 +1,77 @@
+  body {
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #fff; /* 白背景 */
+      color: #000;           /* 黒文字 */
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+     /* 背景画像（文字の背面） */
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0; /* 文字より下 */
+    }
+
+     /* ランダム文字タイトル */
+    h1 , h2  {
+      position: relative;
+      display: inline-block;
+      top: 80px;
+      left: 60px;
+      font-size: 15px;
+      line-height: 1.2;
+      margin-bottom: 40px;
+      cursor: pointer;
+      z-index: 2; /* 背景画像より上に表示 */
+      color: #000; /* 黒文字 */
+    }
+
+    h1 span, h2 span {
+      position: absolute;
+      display: inline-block;
+    }
+
+    #title-wrapper {
+  margin-left: 80px; /* ←ここを好きに調整 */
+}
+
+#honbun {
+        position: relative;
+  margin-top: 220px;
+  z-index: 2; /* 背景画像より上に表示 */
+}
+
+   ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #000;
+    }
+
+.sidebar {
+  position: fixed;        /* スクロールしても固定 */
+  right: 20px;            /* 右端からの距離 */
+  bottom: 20px;           /* 下からの距離 → 右下固定 */
+
+  text-align: right;      /* 文字を右端に寄せる */
+
+  background: rgba(255, 255, 255, 0.7); /* 任意：うっすら白 */
+  padding: 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+}
