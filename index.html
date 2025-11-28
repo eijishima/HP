@@ -2,58 +2,111 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>嶋英治 - Drummer</title>
+  <title>嶋英治</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* 中央テキスト */
+   .centered-text {
+  position: relative;
+  margin: 450px 0px 10px 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* 高さ下寄せ */
+  align-items: flex-start;   /* 左揃え */
+  height: 100%;
+  z-index: 2; /* 背景画像より上に表示 */
+  padding: 20px;
+  color: #000; /* 黒文字 */
+}
+
+h1{margin-left: 50px}
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #000;
+    }
+
+    nav a {
+      margin-right: 15px;
+    }
+
+    li, p, a {
+  display: block;   /* 行でまとまる */
+  transition: transform 0.15s ease;
+  }
+
+li:hover,
+p:hover,
+a:hover {
+  transform: scale(1.02);
+}
+a {
+  display: inline-block;
+  padding-left: 8px;  /* ← 好きな値に調整 */
+  transition: transform 0.15s ease;
+}
+
+    .centered-text p,
+    .centered-text nav {
+      margin: 5px 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #000; /* 黒リンク */
+    }
+
+    nav a {
+      margin-right: 15px;
+    }
+  </style>
 </head>
 <body>
-  <h1>嶋英治</h1>
-  <p>ドラマーです。</p>
+  <div class="container">
 
-  <h2>live</h2>
-  <ul id="live-list">
-    <!-- ライブ情報はJavaScriptでここに自動生成されます -->
-  </ul>
+    <!-- 背景画像（文字の背面） -->
+    <img class="background" src="haikei.png" alt="背景画像">
 
-<p>Email: <a href="mailto:waiga.hatoyade@gmail.com">waiga.hatoyade@gmail.com</a></p>
+    <h1 id="title" onclick="location.href='index.html';">嶋英治</h1>
+    
+    <!-- 中央テキスト -->
+    <div class="centered-text">
 
-<script>
-const lives = [
-{ date: "2025-12-22", artist: "笹川真生", place: "渋谷Spotify O-nest", title: "O-nest presents österreich×笹川真⽣", url: "https://www.maosasagawa.jp/blogs/live/1222_o-nest-presents" } , 
-{ date: "2025-12-19", artist: "笹川真生", place: "梅田Shangri-la", title: "「脈拍」Vol.5", url: "https://www.maosasagawa.jp/blogs/live/2511-12myakuhaku-vol-5" } , 
-{ date: "2025-12-15", artist: "FUJI", place: "西永福JAM", title: "Our 20s FUJI New EP Release Party", url: "https://x.com/xclimaxangelx/status/1973705791753613822" } , 
-{ date: "2025-12-13", artist: "水野あつ", place: "Studio REIMEI", title: "STUDIO LIVE『地球を愛せるように』", url: "https://x.com/atsu361/status/1976994523407696304" } , 
-{ date: "2025-11-26", artist: "chilldspot", place: "渋谷Spotify O-EAST", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } , 
-{ date: "2025-11-25", artist: "chilldspot", place: "渋谷Spotify O-EAST", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } , 
-{ date: "2025-11-16", artist: "chilldspot", place: "福岡DRUM LOGOS", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } , 
-{ date: "2025-11-13", artist: "笹川真生", place: "渋谷CLUB QUATTRO", title: "「脈拍」Vol.5", url: "https://www.maosasagawa.jp/blogs/live/2511-12myakuhaku-vol-5" } , 
-{ date: "2025-11-09", artist: "chilldspot", place: "大阪BIGCAT", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } , 
-{ date: "2025-11-01", artist: "chilldspot", place: "名古屋THE BOTTOM LINE", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } , 
-{ date: "2025-10-27", artist: "REJAY", place: "渋谷duo MUSIC EXCHANGE", title: "81 BEGINNINGS GIG", url: "https://www.j-wave.co.jp/topics/2510_beginnings.htm" } ,
-{ date: "2025-10-25", artist: "chilldspot", place: "仙台Rensa", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } ,
-{ date: "2025-10-17", artist: "chilldspot", place: "札幌PENNY LANE 24", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } ,
-{ date: "2025-10-12", artist: "笹川真生", place: "心斎橋BRONZE", title: "FM802 MINAMI WHEEL 2025", url: "https://minamiwheel.jp/" } ,
-{ date: "2025-10-11", artist: "chilldspot", place: "心斎橋JANUS", title: "FM802 MINAMI WHEEL 2025", url: "https://minamiwheel.jp/" } ,
-{ date: "2025-10-05", artist: "chilldspot", place: "長野CLUB JUNK BOX", title: "5th one man live tour mid way", url: "https://fan.pia.jp/chilldspot/ticket/detail/63/?page=1&ptag=" } ,
-{ date: "2025-09-06", artist: "REJAY", place: "等々力緑地", title: "RHYTHM AND RIDE", url: "https://rhythm-and-ride.com/2025/" } ,
-{ date: "2025-08-16", artist: "chilldspot", place: "幕張メッセ", title: "SUMMER SONIC 2025", url: "https://www.summersonic.com/" } ,
-{ date: "2025-08-10", artist: "chilldspot", place: "上海 回响之地 Music Park", title: "2025年上海草莓共振场", url: "https://m.damai.cn/shows/dramas.html?ipId=39037758473" } ,
-{ date: "2025-08-09", artist: "笹川真生", place: "東京キネマ倶楽部", title: "単独公演 「ひかりのそこ 第５層」", url: "https://www.maosasagawa.jp/blogs/live/250809kinema" } ,
-{ date: "2025-07-19", artist: "chilldspot", place: "いわみざわ公園", title: "JOIN ALIVE 2025", url: "https://joinalive.jp/2025/" }
-];
+      <nav>
+       <p><a href="live.html">Live archive</a></p>
+        <p><a href="rec.html">Recording</a></p>
+       <p><a href="diary.html">Diary</a></p> 
+       <p><a href="profile.html">Profile</a></p> 
+      </nav>
 
-const list = document.getElementById("live-list");
+      <p><a href="mailto:waiga.hatoyade@gmail.com">waiga.hatoyade@gmail.com</a></p>
+    </div>
 
-lives.forEach(live => {
-  const li = document.createElement("li");
+  </div>
 
-  // リンク要素を作る
-  const a = document.createElement("a");
-  a.textContent = `${live.date} - ${live.artist} - ${live.place} - ${live.title}`;
-  a.href = live.url;
-  a.target = "_blank"; // 新しいタブで開く
+  <script>
+    const title = document.getElementById('title');
+    const text = title.textContent;
+    title.innerHTML = '';
 
-  li.appendChild(a);
-  list.appendChild(li);
-});
-</script>
+    const maxOffset = 35; // ±35pxのランダムずれ
+
+    for (let char of text) {
+      const span = document.createElement('span');
+      span.textContent = char;
+      const x = Math.floor(Math.random() * (maxOffset*2+1)) - maxOffset;
+      const y = Math.floor(Math.random() * (maxOffset*2+1)) - maxOffset;
+      span.style.left = `${x}px`;
+      span.style.top = `${y}px`;
+      title.appendChild(span);
+    }
+  </script>
 </body>
 </html>
