@@ -51,7 +51,28 @@
   <p id="centerText" class="center-text">やりらふぃー</p>
 
   <!-- シンプルに中央写真 -->
-  <img src="face1.png" alt="Profile Photo" class="profile-photo">
+<img id="profilePhoto" src="photo1.jpg" class="profile-photo" alt="Profile Photo">
+
+  <script>
+  // 切り替えたい写真をリストに入れる
+  const photos = [
+    "face1.png",
+    "face2.png",
+     "face3.png",
+    "face4.png",
+  ];
+
+  let currentIndex = 0; // 今どの写真か
+
+  const img = document.getElementById("profilePhoto");
+
+  img.addEventListener("click", () => {
+    // 次の写真へ
+    currentIndex = (currentIndex + 1) % photos.length;
+    img.src = photos[currentIndex];
+  });
+</script>
+
 
   <div id="honbun">
     <p><a href="https://x.com/Eijishimagon" target="_blank">X</a></p>
