@@ -1,96 +1,92 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>Recording</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* 散乱ジャケット */
-    #works-area {
-      position: relative;
-      width: 100%;
-      height: 150vh;
-      overflow: visible;
-    }
+<div id="album-container"></div>
 
-    .jacket {
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      cursor: pointer;
-      transition: transform 0.25s, z-index 0.2s;
-      border-radius: 8px;
-    }
+<style>
+  #album-container {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+  }
 
-    .jacket:hover {
-      transform: scale(1.25) rotate(0deg) !important;
-      z-index: 999;
-    }
-  </style>
-</head>
+  .album-item {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
 
-<body>
+  .album-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.3s ease;
+  }
 
-  <div id="title-wrapper">
-    <h1 onclick="location.href='index.html';">嶋英治</h1>
-    <h2>recording</h2>
-  </div>
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 5px;
+  }
 
-  <div class="sidebar">
-    <p><a href="live.html">Live archive</a></p>
-    <p><a href="rec.html">Recording</a></p>
-    <p><a href="diary.html">Diary</a></p>
-    <p><a href="profile.html">Profile</a></p>
-  </div>
+  .album-item:hover img {
+    filter: brightness(50%);
+  }
 
+  .album-item:hover .overlay {
+    opacity: 1;
+  }
 
-  <!-- ▼ここに散乱ジャケットを表示 ▼ -->
-  <div id="works-area"></div>
-  <!-- ▲ここに散乱ジャケットを表示 ▲ -->
+  .overlay p {
+    margin: 2px 0;
+    font-size: 14px;
+  }
+</style>
 
+<script>
+  const albums = [
+    { src: "images/rec/jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
+    { src: "images/rec/jacket2.png", artist: "chilldspot", title: "echowaves" },
+    { src: "images/album3.jpg", artist: "Artist 3", title: "Album 3" },
+    { src: "images/album4.jpg", artist: "Artist 4", title: "Album 4" },
+    // どんどん追加できます
+  ];
 
-  <!-- ランダム配置スクリプト -->
-  <script>
-    // ここにジャケット画像のファイル名を入れる
-    // /images/rec/ に置く想定（フォルダ名は好きに変えてOK）
-    const jacketImages = [
-      "jacket1.png",
-      "jacket2.png",
-      "jacket3.jpg",
-      "jacket4.jpg",
-      "jacket5.jpg",
-      "jacket6.jpg",
-      "jacket7.jpg",
-      "jacket8.jpg",
-      "jacket9.jpg",
-      "jacket10.jpg",
-    ];
+  const container = document.getElementById("album-container");
 
-    const area = document.getElementById("works-area");
-    const areaWidth = window.innerWidth;
-    const areaHeight = window.innerHeight * 1.5;
+  albums.forEach(album => {
+    const item = document.createElement("div");
+    item.className = "album-item";
 
-    jacketImages.forEach((imgName) => {
-      const el = document.createElement("img");
-      el.src = "images/rec/" + imgName;   // ← 画像フォルダの場所
-      el.className = "jacket";
+    const img = document.createElement("img");
+    img.src = album.src;
 
-      const x = Math.random() * (areaWidth - 150);
-      const y = Math.random() * (areaHeight - 150);
-      const rot = (Math.random() * 80) - 40;
-      const scale = 0.9 + Math.random() * 0.2;
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    overlay.innerHTML = `<p>${album.artist}</p><p>${album.title}</p>`;
 
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-      el.style.transform = `rotate(${rot}deg) scale(${scale})`;
-      el.style.zIndex = Math.floor(Math.random() * 30);
+    item.appendChild(img);
+    item.appendChild(overlay);
 
-      area.appendChild(el);
-    });
-  </script>
+    // ランダム配置
+    const maxX = container.clientWidth - 150;
+    const maxY = container.clientHeight - 150;
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+    item.style.left = x + "px";
+    item.style.top = y + "px";
 
-  <script src="random.js"></script>
-</body>
-</html>
+    container.appendChild(item);
+  });
+</script>
