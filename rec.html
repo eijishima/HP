@@ -4,72 +4,88 @@
   <meta charset="UTF-8">
   <title>Recording</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <style>
+    body {
+      margin: 0;
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      background-color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* タイトル */
+    #title-wrapper {
+      text-align: center;
+      padding: 20px 0;
+      position: relative;
+      z-index: 10;
+    }
+    #title-wrapper h1 {
+      cursor: pointer;
+      margin: 0;
+    }
+    #title-wrapper h2 {
+      margin: 5px 0 0 0;
+      font-weight: normal;
+      font-size: 18px;
+    }
+
     /* サイドバー */
     .sidebar {
       position: fixed;
       top: 100px;
       left: 20px;
-      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      z-index: 10;
     }
     .sidebar p {
-      margin: 8px 0;
+      margin: 10px 0;
     }
     .sidebar a {
       text-decoration: none;
       color: #000;
     }
 
-    /* タイトル */
-    #title-wrapper {
-      text-align: center;
-      margin-top: 20px;
-    }
-    #title-wrapper h1 {
-      cursor: pointer;
-    }
-
     /* 散乱ジャケットエリア */
     #works-area {
       position: relative;
       width: 100%;
-      height: 150vh;
-      overflow: visible;
+      min-height: 150vh;
     }
 
-    .jacket {
+    .jacket-container {
       position: absolute;
       width: 150px;
       height: 150px;
-      object-fit: cover;
       cursor: pointer;
-      transition: transform 0.25s, z-index 0.2s;
-      border-radius: 8px;
     }
 
-    .jacket:hover {
-      transform: scale(1.25) rotate(0deg) !important;
+    .jacket-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: transform 0.25s, filter 0.25s;
+    }
+
+    .jacket-container:hover img {
+      filter: brightness(50%);
+      transform: scale(1.25) rotate(0deg);
       z-index: 999;
     }
 
-    /* オーバーレイ */
     .overlay {
       position: absolute;
-      width: 150px;
-      height: 150px;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
       text-align: center;
       color: #fff;
-      background-color: rgba(0,0,0,0.6);
       opacity: 0;
       transition: opacity 0.3s;
-      border-radius: 8px;
       pointer-events: none;
     }
 
@@ -86,11 +102,13 @@
 
 <body>
 
+  <!-- タイトル -->
   <div id="title-wrapper">
     <h1 onclick="location.href='index.html';">嶋英治</h1>
     <h2>recording</h2>
   </div>
 
+  <!-- サイドバー -->
   <div class="sidebar">
     <p><a href="live.html">Live archive</a></p>
     <p><a href="rec.html">Recording</a></p>
@@ -98,7 +116,7 @@
     <p><a href="profile.html">Profile</a></p>
   </div>
 
-  <!-- 散乱ジャケットを表示 -->
+  <!-- 散乱ジャケットエリア -->
   <div id="works-area"></div>
 
   <script>
@@ -126,23 +144,21 @@
     jackets.forEach(j => {
       const container = document.createElement("div");
       container.className = "jacket-container";
-      container.style.position = "absolute";
 
       const img = document.createElement("img");
       img.src = "images/rec/" + j.file;
-      img.className = "jacket";
 
       const overlay = document.createElement("div");
       overlay.className = "overlay";
       overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
 
-      // 重なりを避ける
+      // 重なり回避
       let x, y, tries = 0;
       do {
         x = Math.random() * (window.innerWidth - ITEM_SIZE);
         y = Math.random() * (window.innerHeight*1.5 - ITEM_SIZE);
         tries++;
-        if(tries > 100) break;
+        if (tries > 100) break;
       } while (isOverlapping(x, y));
 
       placed.push({x, y});
@@ -160,8 +176,6 @@
       area.appendChild(container);
     });
   </script>
-
-  <script src="random.js"></script>
 
 </body>
 </html>
