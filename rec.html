@@ -14,19 +14,45 @@
       overflow: visible;
     }
 
-    .jacket {
+    .jacket-wrapper {
       position: absolute;
       width: 150px;
       height: 150px;
-      object-fit: cover;
       cursor: pointer;
       transition: transform 0.25s, z-index 0.2s;
-      border-radius: 8px;
     }
 
-    .jacket:hover {
-      transform: scale(1.25) rotate(0deg) !important;
-      z-index: 999;
+    .jacket-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: 0.3s ease;
+    }
+
+    .jacket-wrapper:hover img {
+      filter: brightness(50%);
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #fff;
+      font-size: 14px;
+      opacity: 0;
+      padding: 5px;
+      transition: opacity 0.3s ease;
+    }
+
+    .jacket-wrapper:hover .overlay {
+      opacity: 1;
     }
   </style>
 </head>
@@ -45,49 +71,53 @@
     <p><a href="profile.html">Profile</a></p>
   </div>
 
-
   <!-- ▼ここに散乱ジャケットを表示 ▼ -->
   <div id="works-area"></div>
   <!-- ▲ここに散乱ジャケットを表示 ▲ -->
 
-
-  <!-- ランダム配置スクリプト -->
   <script>
-    // ここにジャケット画像のファイル名を入れる
-    // /images/rec/ に置く想定（フォルダ名は好きに変えてOK）
-    const jacketImages = [
-      "jacket1.png",
-      "jacket2.png",
-      "jacket3.jpg",
-      "jacket4.jpg",
-      "jacket5.jpg",
-      "jacket6.jpg",
-      "jacket7.jpg",
-      "jacket8.jpg",
-      "jacket9.jpg",
-      "jacket10.jpg",
+    const jackets = [
+      { src: "jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
+      { src: "jacket2.png", artist: "chilldspot", title: "echowaves" },
+      { src: "jacket3.jpg", artist: "Artist 3", title: "Album 3" },
+      { src: "jacket4.jpg", artist: "Artist 4", title: "Album 4" },
+      { src: "jacket5.jpg", artist: "Artist 5", title: "Album 5" },
+      { src: "jacket6.jpg", artist: "Artist 6", title: "Album 6" },
+      { src: "jacket7.jpg", artist: "Artist 7", title: "Album 7" },
+      { src: "jacket8.jpg", artist: "Artist 8", title: "Album 8" },
+      { src: "jacket9.jpg", artist: "Artist 9", title: "Album 9" },
+      { src: "jacket10.jpg", artist: "Artist 10", title: "Album 10" },
     ];
 
     const area = document.getElementById("works-area");
     const areaWidth = window.innerWidth;
     const areaHeight = window.innerHeight * 1.5;
 
-    jacketImages.forEach((imgName) => {
-      const el = document.createElement("img");
-      el.src = "images/rec/" + imgName;   // ← 画像フォルダの場所
-      el.className = "jacket";
+    jackets.forEach(j => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "jacket-wrapper";
+
+      const img = document.createElement("img");
+      img.src = "images/rec/" + j.src;
+
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(overlay);
 
       const x = Math.random() * (areaWidth - 150);
       const y = Math.random() * (areaHeight - 150);
       const rot = (Math.random() * 80) - 40;
       const scale = 0.9 + Math.random() * 0.2;
 
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-      el.style.transform = `rotate(${rot}deg) scale(${scale})`;
-      el.style.zIndex = Math.floor(Math.random() * 30);
+      wrapper.style.left = `${x}px`;
+      wrapper.style.top = `${y}px`;
+      wrapper.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      wrapper.style.zIndex = Math.floor(Math.random() * 30);
 
-      area.appendChild(el);
+      area.appendChild(wrapper);
     });
   </script>
 
