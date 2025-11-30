@@ -4,111 +4,40 @@
   <meta charset="UTF-8">
   <title>Recording</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <style>
-    body {
-      margin: 0;
-      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
-      background-color: #fff;
-      overflow-x: hidden;
-    }
-
-    /* タイトル */
-    #title-wrapper {
-      text-align: center;
-      padding: 20px 0;
-      position: relative;
-      z-index: 10;
-    }
-    #title-wrapper h1 {
-      cursor: pointer;
-      margin: 0;
-    }
-    #title-wrapper h2 {
-      margin: 5px 0 0 0;
-      font-weight: normal;
-      font-size: 18px;
-    }
-
-    /* サイドバー */
-    .sidebar {
-      position: fixed;
-      top: 100px;
-      left: 20px;
-      z-index: 10;
-    }
-    .sidebar p {
-      margin: 10px 0;
-    }
-    .sidebar a {
-      text-decoration: none;
-      color: #000;
-    }
-
-    /* 散乱ジャケットエリア */
+    /* 散乱ジャケット */
     #works-area {
       position: relative;
       width: 100%;
-      min-height: 150vh;
+      height: 150vh;
+      overflow: visible;
     }
 
-    .jacket-container {
+    .jacket {
       position: absolute;
       width: 150px;
       height: 150px;
-      cursor: pointer;
-    }
-
-    .jacket-container img {
-      width: 100%;
-      height: 100%;
       object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.25s, z-index 0.2s;
       border-radius: 8px;
-      transition: transform 0.25s, filter 0.25s;
     }
 
-    .jacket-container:hover img {
-      filter: brightness(50%);
-      transform: scale(1.25) rotate(0deg);
+    .jacket:hover {
+      transform: scale(1.25) rotate(0deg) !important;
       z-index: 999;
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      text-align: center;
-      color: #fff;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-
-    .jacket-container:hover .overlay {
-      opacity: 1;
-    }
-
-    .overlay p {
-      margin: 2px 0;
-      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- タイトル -->
   <div id="title-wrapper">
     <h1 onclick="location.href='index.html';">嶋英治</h1>
     <h2>recording</h2>
   </div>
 
-  <!-- サイドバー -->
   <div class="sidebar">
     <p><a href="live.html">Live archive</a></p>
     <p><a href="rec.html">Recording</a></p>
@@ -116,66 +45,52 @@
     <p><a href="profile.html">Profile</a></p>
   </div>
 
-  <!-- 散乱ジャケットエリア -->
-  <div id="works-area"></div>
 
+  <!-- ▼ここに散乱ジャケットを表示 ▼ -->
+  <div id="works-area"></div>
+  <!-- ▲ここに散乱ジャケットを表示 ▲ -->
+
+
+  <!-- ランダム配置スクリプト -->
   <script>
-    const jackets = [
-      { file: "jacket1.jpg", artist: "笹川真生", title: "サニーサイドへようこそ" },
-      { file: "jacket2.jpg", artist: "chilldspot", title: "echowaves" },
-      { file: "jacket3.jpg", artist: "Artist 3", title: "Album 3" },
-      { file: "jacket4.jpg", artist: "Artist 4", title: "Album 4" },
-      { file: "jacket5.jpg", artist: "Artist 5", title: "Album 5" },
-      { file: "jacket6.jpg", artist: "Artist 6", title: "Album 6" },
-      { file: "jacket7.jpg", artist: "Artist 7", title: "Album 7" },
-      { file: "jacket8.jpg", artist: "Artist 8", title: "Album 8" },
-      { file: "jacket9.jpg", artist: "Artist 9", title: "Album 9" },
-      { file: "jacket10.jpg", artist: "Artist 10", title: "Album 10" },
+    // ここにジャケット画像のファイル名を入れる
+    // /images/rec/ に置く想定（フォルダ名は好きに変えてOK）
+    const jacketImages = [
+      "jacket1.png",
+      "jacket2.png",
+      "jacket3.jpg",
+      "jacket4.jpg",
+      "jacket5.jpg",
+      "jacket6.jpg",
+      "jacket7.jpg",
+      "jacket8.jpg",
+      "jacket9.jpg",
+      "jacket10.jpg",
     ];
 
     const area = document.getElementById("works-area");
-    const ITEM_SIZE = 150;
-    const placed = [];
+    const areaWidth = window.innerWidth;
+    const areaHeight = window.innerHeight * 1.5;
 
-    function isOverlapping(x, y) {
-      return placed.some(pos => !(x + ITEM_SIZE < pos.x || x > pos.x + ITEM_SIZE || y + ITEM_SIZE < pos.y || y > pos.y + ITEM_SIZE));
-    }
+    jacketImages.forEach((imgName) => {
+      const el = document.createElement("img");
+      el.src = "images/rec/" + imgName;   // ← 画像フォルダの場所
+      el.className = "jacket";
 
-    jackets.forEach(j => {
-      const container = document.createElement("div");
-      container.className = "jacket-container";
-
-      const img = document.createElement("img");
-      img.src = "images/rec/" + j.file;
-
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-      overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
-
-      // 重なり回避
-      let x, y, tries = 0;
-      do {
-        x = Math.random() * (window.innerWidth - ITEM_SIZE);
-        y = Math.random() * (window.innerHeight*1.5 - ITEM_SIZE);
-        tries++;
-        if (tries > 100) break;
-      } while (isOverlapping(x, y));
-
-      placed.push({x, y});
-      container.style.left = x + "px";
-      container.style.top = y + "px";
-
-      // ランダム回転とスケール
+      const x = Math.random() * (areaWidth - 150);
+      const y = Math.random() * (areaHeight - 150);
       const rot = (Math.random() * 80) - 40;
-      const scale = 0.9 + Math.random()*0.2;
-      img.style.transform = `rotate(${rot}deg) scale(${scale})`;
-      img.style.zIndex = Math.floor(Math.random()*30);
+      const scale = 0.9 + Math.random() * 0.2;
 
-      container.appendChild(img);
-      container.appendChild(overlay);
-      area.appendChild(container);
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      el.style.zIndex = Math.floor(Math.random() * 30);
+
+      area.appendChild(el);
     });
   </script>
 
+  <script src="random.js"></script>
 </body>
 </html>
