@@ -1,111 +1,167 @@
-<div id="album-container"></div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Recording</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* サイドバー */
+    .sidebar {
+      position: fixed;
+      top: 100px;
+      left: 20px;
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+    }
+    .sidebar p {
+      margin: 8px 0;
+    }
+    .sidebar a {
+      text-decoration: none;
+      color: #000;
+    }
 
-<style>
-  #album-container {
-    position: relative;
-    width: 100%;
-    height: 80vh;
-  }
+    /* タイトル */
+    #title-wrapper {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #title-wrapper h1 {
+      cursor: pointer;
+    }
 
-  .album-item {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-  }
+    /* 散乱ジャケットエリア */
+    #works-area {
+      position: relative;
+      width: 100%;
+      height: 150vh;
+      overflow: visible;
+    }
 
-  .album-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: 0.3s ease;
-  }
+    .jacket {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.25s, z-index 0.2s;
+      border-radius: 8px;
+    }
 
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.6);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    padding: 5px;
-  }
+    .jacket:hover {
+      transform: scale(1.25) rotate(0deg) !important;
+      z-index: 999;
+    }
 
-  .album-item:hover img {
-    filter: brightness(50%);
-  }
+    /* オーバーレイ */
+    .overlay {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      color: #fff;
+      background-color: rgba(0,0,0,0.6);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border-radius: 8px;
+      pointer-events: none;
+    }
 
-  .album-item:hover .overlay {
-    opacity: 1;
-  }
+    .jacket-container:hover .overlay {
+      opacity: 1;
+    }
 
-  .overlay p {
-    margin: 2px 0;
-    font-size: 14px;
-  }
-</style>
+    .overlay p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
 
-<script>
-const albums = [
-  { src: "images/rec/jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
-  { src: "images/rec/jacket2.png", artist: "chilldspot", title: "echowaves" },
-  { src: "images/album3.jpg", artist: "Artist 3", title: "Album 3" },
-  { src: "images/album4.jpg", artist: "Artist 4", title: "Album 4" },
-];
+<body>
 
-const container = document.getElementById("album-container");
-const placedItems = []; // 既存アイテムの座標保存用
-const ITEM_SIZE = 150;
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>recording</h2>
+  </div>
 
-function isOverlapping(x, y) {
-  return placedItems.some(pos => {
-    return !(x + ITEM_SIZE < pos.x || x > pos.x + ITEM_SIZE || y + ITEM_SIZE < pos.y || y > pos.y + ITEM_SIZE);
-  });
-}
+  <div class="sidebar">
+    <p><a href="live.html">Live archive</a></p>
+    <p><a href="rec.html">Recording</a></p>
+    <p><a href="diary.html">Diary</a></p>
+    <p><a href="profile.html">Profile</a></p>
+  </div>
 
-albums.forEach(album => {
-  const item = document.createElement("div");
-  item.className = "album-item";
+  <!-- 散乱ジャケットを表示 -->
+  <div id="works-area"></div>
 
-  const img = document.createElement("img");
-  img.src = album.src;
+  <script>
+    const jackets = [
+      { file: "jacket1.jpg", artist: "笹川真生", title: "サニーサイドへようこそ" },
+      { file: "jacket2.jpg", artist: "chilldspot", title: "echowaves" },
+      { file: "jacket3.jpg", artist: "Artist 3", title: "Album 3" },
+      { file: "jacket4.jpg", artist: "Artist 4", title: "Album 4" },
+      { file: "jacket5.jpg", artist: "Artist 5", title: "Album 5" },
+      { file: "jacket6.jpg", artist: "Artist 6", title: "Album 6" },
+      { file: "jacket7.jpg", artist: "Artist 7", title: "Album 7" },
+      { file: "jacket8.jpg", artist: "Artist 8", title: "Album 8" },
+      { file: "jacket9.jpg", artist: "Artist 9", title: "Album 9" },
+      { file: "jacket10.jpg", artist: "Artist 10", title: "Album 10" },
+    ];
 
-  const overlay = document.createElement("div");
-  overlay.className = "overlay";
-  overlay.innerHTML = `<p>${album.artist}</p><p>${album.title}</p>`;
+    const area = document.getElementById("works-area");
+    const ITEM_SIZE = 150;
+    const placed = [];
 
-  item.appendChild(img);
-  item.appendChild(overlay);
+    function isOverlapping(x, y) {
+      return placed.some(pos => !(x + ITEM_SIZE < pos.x || x > pos.x + ITEM_SIZE || y + ITEM_SIZE < pos.y || y > pos.y + ITEM_SIZE));
+    }
 
-  // 重なりを避けるランダム配置
-  const maxX = container.clientWidth - ITEM_SIZE;
-  const maxY = container.clientHeight - ITEM_SIZE;
-  let x, y, tries = 0;
+    jackets.forEach(j => {
+      const container = document.createElement("div");
+      container.className = "jacket-container";
+      container.style.position = "absolute";
 
-  do {
-    x = Math.random() * maxX;
-    y = Math.random() * maxY;
-    tries++;
-    if(tries > 100) break; // 試行回数上限
-  } while (isOverlapping(x, y));
+      const img = document.createElement("img");
+      img.src = "images/rec/" + j.file;
+      img.className = "jacket";
 
-  item.style.left = x + "px";
-  item.style.top = y + "px";
-  placedItems.push({ x, y });
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
 
-  // ランダム回転 -15°〜15°
-  const angle = (Math.random() * 30) - 15;
-  item.style.transform = `rotate(${angle}deg)`;
+      // 重なりを避ける
+      let x, y, tries = 0;
+      do {
+        x = Math.random() * (window.innerWidth - ITEM_SIZE);
+        y = Math.random() * (window.innerHeight*1.5 - ITEM_SIZE);
+        tries++;
+        if(tries > 100) break;
+      } while (isOverlapping(x, y));
 
-  container.appendChild(item);
-});
-</script>
+      placed.push({x, y});
+      container.style.left = x + "px";
+      container.style.top = y + "px";
+
+      // ランダム回転とスケール
+      const rot = (Math.random() * 80) - 40;
+      const scale = 0.9 + Math.random()*0.2;
+      img.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      img.style.zIndex = Math.floor(Math.random()*30);
+
+      container.appendChild(img);
+      container.appendChild(overlay);
+      area.appendChild(container);
+    });
+  </script>
+
+  <script src="random.js"></script>
+
+</body>
+</html>
