@@ -55,38 +55,57 @@
 </style>
 
 <script>
-  const albums = [
-    { src: "images/rec/jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
-    { src: "images/rec/jacket2.png", artist: "chilldspot", title: "echowaves" },
-    { src: "images/album3.jpg", artist: "Artist 3", title: "Album 3" },
-    { src: "images/album4.jpg", artist: "Artist 4", title: "Album 4" },
-    // どんどん追加できます
-  ];
+const albums = [
+  { src: "images/rec/jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
+  { src: "images/rec/jacket2.png", artist: "chilldspot", title: "echowaves" },
+  { src: "images/album3.jpg", artist: "Artist 3", title: "Album 3" },
+  { src: "images/album4.jpg", artist: "Artist 4", title: "Album 4" },
+];
 
-  const container = document.getElementById("album-container");
+const container = document.getElementById("album-container");
+const placedItems = []; // 既存アイテムの座標保存用
+const ITEM_SIZE = 150;
 
-  albums.forEach(album => {
-    const item = document.createElement("div");
-    item.className = "album-item";
-
-    const img = document.createElement("img");
-    img.src = album.src;
-
-    const overlay = document.createElement("div");
-    overlay.className = "overlay";
-    overlay.innerHTML = `<p>${album.artist}</p><p>${album.title}</p>`;
-
-    item.appendChild(img);
-    item.appendChild(overlay);
-
-    // ランダム配置
-    const maxX = container.clientWidth - 150;
-    const maxY = container.clientHeight - 150;
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
-    item.style.left = x + "px";
-    item.style.top = y + "px";
-
-    container.appendChild(item);
+function isOverlapping(x, y) {
+  return placedItems.some(pos => {
+    return !(x + ITEM_SIZE < pos.x || x > pos.x + ITEM_SIZE || y + ITEM_SIZE < pos.y || y > pos.y + ITEM_SIZE);
   });
+}
+
+albums.forEach(album => {
+  const item = document.createElement("div");
+  item.className = "album-item";
+
+  const img = document.createElement("img");
+  img.src = album.src;
+
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+  overlay.innerHTML = `<p>${album.artist}</p><p>${album.title}</p>`;
+
+  item.appendChild(img);
+  item.appendChild(overlay);
+
+  // 重なりを避けるランダム配置
+  const maxX = container.clientWidth - ITEM_SIZE;
+  const maxY = container.clientHeight - ITEM_SIZE;
+  let x, y, tries = 0;
+
+  do {
+    x = Math.random() * maxX;
+    y = Math.random() * maxY;
+    tries++;
+    if(tries > 100) break; // 試行回数上限
+  } while (isOverlapping(x, y));
+
+  item.style.left = x + "px";
+  item.style.top = y + "px";
+  placedItems.push({ x, y });
+
+  // ランダム回転 -15°〜15°
+  const angle = (Math.random() * 30) - 15;
+  item.style.transform = `rotate(${angle}deg)`;
+
+  container.appendChild(item);
+});
 </script>
