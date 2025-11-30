@@ -5,56 +5,66 @@
   <title>Recording</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* 散乱ジャケット */
-    #works-area {
-      position: relative;
-      width: 100%;
-      height: 150vh;
-      overflow: visible;
-    }
+ <style>
+  /* 散乱ジャケット */
+  #works-area {
+    position: relative;
+    width: 100%;
+    height: 150vh;
+    overflow: visible;
+  }
 
-    .jacket-wrapper {
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      cursor: pointer;
-      transition: transform 0.25s, z-index 0.2s;
-    }
+  .jacket-wrapper {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+  }
 
-    .jacket-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-      transition: 0.3s ease;
-    }
+  .jacket-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.25s, z-index 0.2s;
+  }
 
-    .jacket-wrapper:hover img {
-      filter: brightness(50%);
-    }
+  .jacket-wrapper:hover img {
+    transform: scale(1.25) rotate(0deg) !important;
+    z-index: 999;
+  }
 
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: #fff;
-      font-size: 14px;
-      opacity: 0;
-      padding: 5px;
-      transition: opacity 0.3s ease;
-    }
+  /* ホバーで文字表示用 */
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 5px;
+    border-radius: 8px;
+  }
 
-    .jacket-wrapper:hover .overlay {
-      opacity: 1;
-    }
-  </style>
+  .jacket-wrapper:hover .overlay {
+    opacity: 1;
+  }
+
+  .overlay p {
+    margin: 2px 0;
+    font-size: 12px; /* 小さめに */
+    line-height: 1.2;
+  }
+</style>
+
 </head>
 
 <body>
@@ -76,51 +86,51 @@
   <!-- ▲ここに散乱ジャケットを表示 ▲ -->
 
   <script>
-    const jackets = [
-      { src: "jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ" },
-      { src: "jacket2.png", artist: "chilldspot", title: "echowaves" },
-      { src: "jacket3.jpg", artist: "Artist 3", title: "Album 3" },
-      { src: "jacket4.jpg", artist: "Artist 4", title: "Album 4" },
-      { src: "jacket5.jpg", artist: "Artist 5", title: "Album 5" },
-      { src: "jacket6.jpg", artist: "Artist 6", title: "Album 6" },
-      { src: "jacket7.jpg", artist: "Artist 7", title: "Album 7" },
-      { src: "jacket8.jpg", artist: "Artist 8", title: "Album 8" },
-      { src: "jacket9.jpg", artist: "Artist 9", title: "Album 9" },
-      { src: "jacket10.jpg", artist: "Artist 10", title: "Album 10" },
-    ];
+  const jackets = [
+    { src: "jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ", link: "https://www.maosasagawa.jp/products/ssgw000-0003" },
+    { src: "jacket2.png", artist: "chilldspot", title: "echowaves", link: "https://chilldspot.jp/discography/detail/6048/" },
+    { src: "jacket3.jpg", artist: "Artist 3", title: "Album 3", link: "https://example.com/3" },
+    { src: "jacket4.jpg", artist: "Artist 4", title: "Album 4", link: "https://example.com/4" },
+    // 他も同様に追加
+  ];
 
-    const area = document.getElementById("works-area");
-    const areaWidth = window.innerWidth;
-    const areaHeight = window.innerHeight * 1.5;
+  const area = document.getElementById("works-area");
+  const areaWidth = window.innerWidth;
+  const areaHeight = window.innerHeight * 1.5;
 
-    jackets.forEach(j => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "jacket-wrapper";
+  jackets.forEach(j => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "jacket-wrapper";
 
-      const img = document.createElement("img");
-      img.src = "images/rec/" + j.src;
+    const link = document.createElement("a");
+    link.href = j.link;
+    link.target = "_blank"; // 新しいタブで開く
 
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-      overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
+    const img = document.createElement("img");
+    img.src = "images/rec/" + j.src;
 
-      wrapper.appendChild(img);
-      wrapper.appendChild(overlay);
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
 
-      const x = Math.random() * (areaWidth - 150);
-      const y = Math.random() * (areaHeight - 150);
-      const rot = (Math.random() * 80) - 40;
-      const scale = 0.9 + Math.random() * 0.2;
+    link.appendChild(img);
+    link.appendChild(overlay);
+    wrapper.appendChild(link);
 
-      wrapper.style.left = `${x}px`;
-      wrapper.style.top = `${y}px`;
-      wrapper.style.transform = `rotate(${rot}deg) scale(${scale})`;
-      wrapper.style.zIndex = Math.floor(Math.random() * 30);
+    const x = Math.random() * (areaWidth - 150);
+    const y = Math.random() * (areaHeight - 150);
+    const rot = (Math.random() * 80) - 40;
+    const scale = 0.9 + Math.random() * 0.2;
 
-      area.appendChild(wrapper);
-    });
-  </script>
+    wrapper.style.left = `${x}px`;
+    wrapper.style.top = `${y}px`;
+    wrapper.style.transform = `rotate(${rot}deg) scale(${scale})`;
+    wrapper.style.zIndex = Math.floor(Math.random() * 30);
 
+    area.appendChild(wrapper);
+  });
+</script>
+  
   <script src="random.js"></script>
 </body>
 </html>
