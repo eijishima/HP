@@ -5,20 +5,92 @@
   <title>Recording</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* 散乱ジャケット */
+    #works-area {
+      position: relative;
+      width: 100%;
+      height: 150vh;
+      overflow: visible;
+    }
 
-   <div id="title-wrapper">
-  <h1 onclick="location.href='index.html';">嶋英治</h1>
-  <h2>recording</h2>
-</div>
-<body>  <!-- 背景画像 -->
-    <div class="sidebar">
-       <p><a href="live.html">Live archive</a></p>
-        <p><a href="rec.html">Recording</a></p>
-       <p><a href="diary.html">Diary</a></p> 
-       <p><a href="profile.html">Profile</a></p> 
-       
-</div>
+    .jacket {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.25s, z-index 0.2s;
+      border-radius: 8px;
+    }
+
+    .jacket:hover {
+      transform: scale(1.25) rotate(0deg) !important;
+      z-index: 999;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>recording</h2>
+  </div>
+
+  <div class="sidebar">
+    <p><a href="live.html">Live archive</a></p>
+    <p><a href="rec.html">Recording</a></p>
+    <p><a href="diary.html">Diary</a></p>
+    <p><a href="profile.html">Profile</a></p>
+  </div>
 
 
-    <!-- 散らす文字用スクリプト -->
+  <!-- ▼ここに散乱ジャケットを表示 ▼ -->
+  <div id="works-area"></div>
+  <!-- ▲ここに散乱ジャケットを表示 ▲ -->
+
+
+  <!-- ランダム配置スクリプト -->
+  <script>
+    // ここにジャケット画像のファイル名を入れる
+    // /images/rec/ に置く想定（フォルダ名は好きに変えてOK）
+    const jacketImages = [
+      "jacket1.png",
+      "jacket2.png",
+      "jacket3.jpg",
+      "jacket4.jpg",
+      "jacket5.jpg",
+      "jacket6.jpg",
+      "jacket7.jpg",
+      "jacket8.jpg",
+      "jacket9.jpg",
+      "jacket10.jpg",
+    ];
+
+    const area = document.getElementById("works-area");
+    const areaWidth = window.innerWidth;
+    const areaHeight = window.innerHeight * 1.5;
+
+    jacketImages.forEach((imgName) => {
+      const el = document.createElement("img");
+      el.src = "images/rec/" + imgName;   // ← 画像フォルダの場所
+      el.className = "jacket";
+
+      const x = Math.random() * (areaWidth - 150);
+      const y = Math.random() * (areaHeight - 150);
+      const rot = (Math.random() * 80) - 40;
+      const scale = 0.9 + Math.random() * 0.2;
+
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      el.style.zIndex = Math.floor(Math.random() * 30);
+
+      area.appendChild(el);
+    });
+  </script>
+
   <script src="random.js"></script>
+</body>
+</html>
