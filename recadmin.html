@@ -97,6 +97,11 @@ function render() {
 }
 
 render();
+
+  const pass = prompt("Password");
+  if (pass !== "yourpassword") {
+    document.body.innerHTML = "";
+  }
 </script>
 
 </body>
