@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Recording</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      background: #fff;
+      color: #000;
+    }
+
+    /* ===== 散乱エリア ===== */
+    #works-area {
+      position: relative;
+      width: 100%;
+      height: 150vh;
+      margin-top: 200px;
+    }
+
+    .jacket-wrapper {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+    }
+
+    .jacket-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.25s, z-index 0.2s;
+    }
+
+    .jacket-wrapper:hover img {
+      transform: scale(1.25) rotate(0deg) !important;
+      z-index: 999;
+    }
+
+    /* ===== Overlay ===== */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      padding: 6px;
+      border-radius: 8px;
+    }
+
+    .jacket-wrapper:hover .overlay {
+      opacity: 1;
+    }
+
+    .overlay p {
+      margin: 2px 0;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===== Title ===== -->
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>recording</h2>
+  </div>
+
+  <!-- ===== Sidebar ===== -->
+  <div class="sidebar">
+    <p><a href="live.html">Live archive</a></p>
+    <p><a href="rec.html">Recording</a></p>
+    <p><a href="diary.html">Diary</a></p>
+    <p><a href="profile.html">Profile</a></p>
+  </div>
+
+  <!-- ===== Works ===== -->
+  <div id="works-area"></div>
+
+  <!-- ===== Script ===== -->
+  <script>
+    const area = document.getElementById("works-area");
+
+    // admin.html から保存されたデータを取得
+    const jackets = JSON.parse(localStorage.getItem("recWorks")) || [];
+
+    const areaWidth = window.innerWidth;
+    const areaHeight = window.innerHeight * 1.5;
+
+    if (jackets.length === 0) {
+      const msg = document.createElement("p");
+      msg.textContent = "まだ作品がありません";
+      msg.style.textAlign = "center";
+      msg.style.marginTop = "200px";
+      area.appendChild(msg);
+    }
+
+    jackets.forEach(j => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "jacket-wrapper";
+
+      const link = document.createElement("a");
+      link.href = j.link;
+      link.target = "_blank";
+
+      const img = document.createElement("img");
+      img.src = "images/rec/" + j.src;
+
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      overlay.innerHTML = `
+        <p>${j.artist || ""}</p>
+        <p>${j.title || ""}</p>
+      `;
+
+      link.appendChild(img);
+      link.appendChild(overlay);
+      wrapper.appendChild(link);
+
+      // ランダム配置
+      const x = Math.random() * (areaWidth - 150);
+      const y = Math.random() * (areaHeight - 150);
+      const rot = (Math.random() * 80) - 40;
+      const scale = 0.9 + Math.random() * 0.2;
+
+      wrapper.style.left = `${x}px`;
+      wrapper.style.top = `${y}px`;
+      wrapper.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      wrapper.style.zIndex = Math.floor(Math.random() * 30);
+
+      area.appendChild(wrapper);
+    });
+  </script>
+
+  <script src="random.js"></script>
+</body>
+</html>
 
