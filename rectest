@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Recording Admin</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    padding: 40px;
+    max-width: 600px;
+  }
+
+  input {
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 6px;
+  }
+
+  button {
+    margin-top: 10px;
+  }
+
+  .item {
+    margin-top: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  small {
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<h2>Recording 作品追加</h2>
+
+<input id="src" placeholder="画像ファイル名（例: jacket1.png）">
+<input id="artist" placeholder="アーティスト名">
+<input id="title" placeholder="タイトル">
+<input id="link" placeholder="リンクURL">
+
+<button onclick="addWork()">追加</button>
+
+<hr>
+
+<h2>登録済み作品</h2>
+<div id="list"></div>
+
+<script>
+let works = JSON.parse(localStorage.getItem("recWorks")) || [];
+
+function save() {
+  localStorage.setItem("recWorks", JSON.stringify(works));
+  render();
+}
+
+function addWork() {
+  works.push({
+    src: src.value,
+    artist: artist.value,
+    title: title.value,
+    link: link.value
+  });
+
+  src.value = "";
+  artist.value = "";
+  title.value = "";
+  link.value = "";
+
+  save();
+}
+
+function removeWork(i) {
+  if (!confirm("削除していい？")) return;
+  works.splice(i, 1);
+  save();
+}
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  works.forEach((w, i) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <strong>${w.title}</strong><br>
+      ${w.artist}<br>
+      <small>${w.src}</small><br>
+      <button onclick="removeWork(${i})">削除</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
