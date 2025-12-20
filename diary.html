@@ -1,16 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Diary</title>
+  <title>live archive</title>
+
+  <!-- フォント -->
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
+  <!-- 共通CSS -->
   <link rel="stylesheet" href="style.css">
 
-   <div id="title-wrapper">
-  <h1 onclick="location.href='index.html';">嶋英治</h1>
-  <h2>diary</h2>
-</div>
-<body>  <!-- 背景画像 -->
+  <style>
+
+    nav a {
+      margin-right: 15px;
+    }
+
+    li, p, a {
+  display: block;   /* 行でまとまる */
+  transition: transform 0.15s ease;
+}
+
+li:hover,
+p:hover,
+a:hover {
+  transform: scale(1.02);
+}
+a {
+  display: inline-block;
+  padding-left: 8px;  /* ← 好きな値に調整 */
+  transition: transform 0.15s ease;
+}
+
+
+</style>
+</head>
+<body>
+
+  <!-- 背景画像 -->
     <div class="sidebar">
        <p><a href="live.html">Live archive</a></p>
         <p><a href="rec.html">Recording</a></p>
@@ -19,6 +47,39 @@
        
 </div>
 
+  <!-- タイトル -->
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>diary</h2>
+  </div>
 
-    <!-- 散らす文字用スクリプト -->
+<div id="honbun">
+  <!-- ライブリスト -->
+  <ul id="diary-list"></ul>
+
+  <!-- ライブ情報生成スクリプト -->
+  <script>
+    const lives = [
+{ date: "ここには　まだ　なにも　ないみたい！", url: "https://www.soundhouse.co.jp/?srsltid=AfmBOopdOEE6ZSknsytiiunhSNerzdMtCwdWZMw-uTmUIhIj7OQdPCbG" } 
+
+
+    ];
+
+    const list = document.getElementById("diary-list");
+
+    diary.forEach(diary => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.textContent = `${diary.date}`;
+      a.href = diary.url;
+      a.target = "_blank";
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  </script>
+</div>
+  <!-- 散らす文字用スクリプト -->
   <script src="random.js"></script>
+
+</body>
+</html>
