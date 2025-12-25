@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>吉岡直哉 | Video Director Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      background: #fafafa;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+    #title-wrapper { text-align: center; margin-top: 100px; margin-bottom: 60px; }
+    h1 { font-size: 36px; margin-bottom: 8px; letter-spacing: 0.05em; }
+    h2 { font-size: 14px; font-weight: 400; letter-spacing: 0.2em; color: #666; text-transform: uppercase; }
+    #works-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto 120px; padding: 0 30px; }
+    .jacket-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .jacket-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); opacity: 0.9; }
+    .jacket-wrapper:hover img { transform: scale(1.08); opacity: 1; }
+    .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; opacity: 0; transition: all 0.4s ease; padding: 20px; }
+    .jacket-wrapper:hover .overlay { opacity: 1; backdrop-filter: blur(4px); }
+    .overlay .work-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+    .overlay .work-artist { font-size: 12px; opacity: 0.8; }
+    /* エラー・空の状態の表示 */
+    .empty { text-align: center; padding: 40px; color: #888; display: none; }
+    footer { text-align: center; padding: 60px 20px; border-top: 1px solid #eee; font-size: 13px; color: #888; }
+    a { color: inherit; text-decoration: none; transition: opacity 0.3s; }
+    a:hover { opacity: 0.6; }
+    @media (max-width: 600px) { h1 { font-size: 28px; } #works-area { grid-template-columns: 1fr; gap: 24px; } #title-wrapper { margin-top: 60px; } }
+  </style>
+</head>
+
+<body>
+
+  <div id="title-wrapper">
+    <h1>吉岡直哉</h1>
+    <h2>Video Director</h2>
+  </div>
+
+  <div id="works-area"></div>
+  
+  <div id="empty" class="empty">作品を読み込み中、またはまだ登録されていません。</div>
+
+  <footer>
+    <p>Naoya Yoshioka</p>
+    <p>Contact: <a href="mailto:yoshiokanaoya380@gmail.com">yoshiokanaoya380@gmail.com</a></p>
+  </footer>
+
+  <script>
+// 【重要】ここに「手順1」でコピーしたIDを貼り付けてください
+const spreadsheetId = "1YX9YQ3RlmxUI_wjrxA9yLB9g4GaBqYFRlqJLrVitPVc";
+
+// 読み込み先URL（より安定した形式に変更）
+const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`;
+
+async function loadWorks() {
+  const area = document.getElementById("works-area");
+  const empty = document.getElementById("empty");
+
+  try {
+    // 1. データを取得
+    const response = await fetch(spreadsheetUrl);
+    if (!response.ok) throw new Error('スプレッドシートが見つからないか、公開されていません');
+    
+    const csvData = await response.text();
+    
+    // 2. CSVデータを解析（gviz経由だとダブルクォーテーションが含まれるため除去）
+    const rows = csvData.split('\n').map(row => {
+      return row.split('","').map(cell => cell.replace(/"/g, ''));
+    });
+    
+    const dataRows = rows.slice(1); // ヘッダーを飛ばす
+
+    if (dataRows.length === 0 || !dataRows[0][0]) {
+      empty.style.display = "block";
+      return;
+    }
+
+    area.innerHTML = ""; 
+    
+    dataRows.forEach(row => {
+      const [title, artist, src, link] = row;
+      if (!title || !src) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "jacket-wrapper";
+      wrapper.innerHTML = `
+        <a href="${link ? link.trim() : '#'}" target="_blank">
+          <img src="${src.trim()}" alt="${title}" loading="lazy">
+          <div class="overlay">
+            <div class="work-title">${title.trim()}</div>
+            <div class="work-artist">${artist ? artist.trim() : ''}</div>
+          </div>
+        </a>
+      `;
+      area.appendChild(wrapper);
+    });
+
+    empty.style.display = "none";
+
+  } catch (error) {
+    console.error("読み込みエラー:", error);
+    empty.style.display = "block";
+    empty.innerText = "データの取得に失敗しました。スプレッドシートの共有設定が「リンクを知っている全員が閲覧可」になっているか確認してください。";
+  }
+}
+
+loadWorks();
+  </script>
+</body>
+</html>
