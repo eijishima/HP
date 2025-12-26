@@ -7,17 +7,72 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
+    /* スムーススクロールを有効化 */
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
       background: #fafafa;
       color: #1a1a1a;
       line-height: 1.6;
+      padding-top: 70px; /* 固定ヘッダーの高さ分、上に余白を作る */
     }
-    #title-wrapper { text-align: center; margin-top: 100px; margin-bottom: 60px; }
+
+    /* ===== 固定ヘッダー ===== */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(250, 250, 250, 0.8);
+      backdrop-filter: blur(10px); /* 背景をぼかす */
+      z-index: 1000;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: flex-end; /* 右寄せ */
+      gap: 30px;
+    }
+
+    nav a {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #666;
+    }
+
+    nav a:hover {
+      color: #000;
+    }
+
+    /* ===== Title ===== */
+    #title-wrapper { 
+      text-align: center; 
+      margin-top: 80px; 
+      margin-bottom: 80px; 
+      scroll-margin-top: 100px; /* スクロールした時にヘッダーと被らないように */
+    }
     h1 { font-size: 36px; margin-bottom: 8px; letter-spacing: 0.05em; }
     h2 { font-size: 14px; font-weight: 400; letter-spacing: 0.2em; color: #666; text-transform: uppercase; }
-    #works-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto 120px; padding: 0 30px; }
+
+    /* ===== Works Grid ===== */
+    #works-area { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+      gap: 40px; 
+      max-width: 1200px; 
+      margin: 0 auto 100px; 
+      padding: 0 30px; 
+    }
     .jacket-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
     .jacket-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); opacity: 0.9; }
     .jacket-wrapper:hover img { transform: scale(1.08); opacity: 1; }
@@ -25,16 +80,60 @@
     .jacket-wrapper:hover .overlay { opacity: 1; backdrop-filter: blur(4px); }
     .overlay .work-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
     .overlay .work-artist { font-size: 12px; opacity: 0.8; }
-    /* エラー・空の状態の表示 */
+
+    /* ===== About Section (Profile) ===== */
+    #about-section {
+      max-width: 800px;
+      margin: 150px auto 100px;
+      padding: 0 30px;
+      scroll-margin-top: 100px;
+    }
+
+    .about-container {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+      background: #fff;
+      padding: 40px;
+      border-radius: 8px;
+    }
+
+    .profile-img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #eee;
+    }
+
+    .profile-text h3 { margin-top: 0; font-size: 20px; }
+    .profile-text p { font-size: 14px; color: #444; margin-bottom: 0; }
+
+    /* その他 */
     .empty { text-align: center; padding: 40px; color: #888; display: none; }
     footer { text-align: center; padding: 60px 20px; border-top: 1px solid #eee; font-size: 13px; color: #888; }
     a { color: inherit; text-decoration: none; transition: opacity 0.3s; }
-    a:hover { opacity: 0.6; }
-    @media (max-width: 600px) { h1 { font-size: 28px; } #works-area { grid-template-columns: 1fr; gap: 24px; } #title-wrapper { margin-top: 60px; } }
+    
+    /* レスポンシブ */
+    @media (max-width: 600px) {
+      nav { justify-content: center; gap: 20px; }
+      .about-container { flex-direction: column; text-align: center; padding: 30px 20px; }
+      h1 { font-size: 28px; }
+      #works-area { grid-template-columns: 1fr; gap: 24px; }
+    }
   </style>
 </head>
 
 <body>
+
+  <header>
+    <nav>
+      <a href="#title-wrapper">Works</a>
+      <a href="#about-section">About</a>
+      <a href="mailto:yoshiokanaoya380@gmail.com">Contact</a>
+    </nav>
+  </header>
 
   <div id="title-wrapper">
     <h1>吉岡直哉</h1>
@@ -42,74 +141,81 @@
   </div>
 
   <div id="works-area"></div>
-  
-  <div id="empty" class="empty">作品を読み込み中、またはまだ登録されていません。</div>
+  <div id="empty" class="empty">作品を読み込み中...</div>
+
+  <section id="about-section">
+    <div class="about-container">
+      <img src="https://via.placeholder.com/150" alt="吉岡直哉" class="profile-img">
+      <div class="profile-text">
+        <h3>吉岡直哉 / Naoya Yoshioka</h3>
+        <p>
+          映像監督。ミュージックビデオを中心に、短編映画や広告映像を手掛ける。<br>
+          その場の空気感や、言葉にならない感情を丁寧に切り取るような映像表現を得意とする。<br>
+          現在は都内を中心に活動中。
+        </p>
+      </div>
+    </div>
+  </section>
 
   <footer>
-    <p>Naoya Yoshioka</p>
-    <p>Contact: <a href="mailto:yoshiokanaoya380@gmail.com">yoshiokanaoya380@gmail.com</a></p>
+    <p>© 2025 Naoya Yoshioka</p>
   </footer>
 
   <script>
-// 【重要】ここに「手順1」でコピーしたIDを貼り付けてください
-const spreadsheetId = "1YX9YQ3RlmxUI_wjrxA9yLB9g4GaBqYFRlqJLrVitPVc";
+    const spreadsheetId = "1YX9YQ3RlmxUI_wjrxA9yLB9g4GaBqYFRlqJLrVitPVc";
+    const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`;
 
-// 読み込み先URL（より安定した形式に変更）
-const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`;
+    async function loadWorks() {
+      const area = document.getElementById("works-area");
+      const empty = document.getElementById("empty");
 
-async function loadWorks() {
-  const area = document.getElementById("works-area");
-  const empty = document.getElementById("empty");
+      try {
+        const response = await fetch(spreadsheetUrl);
+        if (!response.ok) throw new Error('Network error');
+        
+        const csvData = await response.text();
+        const rows = csvData.split('\n').map(row => {
+          return row.split('","').map(cell => cell.replace(/"/g, ''));
+        });
+        
+        const dataRows = rows.slice(1);
 
-  try {
-    // 1. データを取得
-    const response = await fetch(spreadsheetUrl);
-    if (!response.ok) throw new Error('スプレッドシートが見つからないか、公開されていません');
-    
-    const csvData = await response.text();
-    
-    // 2. CSVデータを解析（gviz経由だとダブルクォーテーションが含まれるため除去）
-    const rows = csvData.split('\n').map(row => {
-      return row.split('","').map(cell => cell.replace(/"/g, ''));
-    });
-    
-    const dataRows = rows.slice(1); // ヘッダーを飛ばす
+        if (dataRows.length === 0 || !dataRows[0][0]) {
+          empty.style.display = "block";
+          empty.innerText = "まだ作品が登録されていません。";
+          return;
+        }
 
-    if (dataRows.length === 0 || !dataRows[0][0]) {
-      empty.style.display = "block";
-      return;
+        area.innerHTML = ""; 
+        
+        dataRows.forEach(row => {
+          const [title, artist, src, link] = row;
+          if (!title || !src) return;
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "jacket-wrapper";
+          wrapper.innerHTML = `
+            <a href="${link ? link.trim() : '#'}" target="_blank">
+              <img src="${src.trim()}" alt="${title}" loading="lazy">
+              <div class="overlay">
+                <div class="work-title">${title.trim()}</div>
+                <div class="work-artist">${artist ? artist.trim() : ''}</div>
+              </div>
+            </a>
+          `;
+          area.appendChild(wrapper);
+        });
+
+        empty.style.display = "none";
+
+      } catch (error) {
+        console.error("Error:", error);
+        empty.style.display = "block";
+        empty.innerText = "読み込みエラーが発生しました。";
+      }
     }
 
-    area.innerHTML = ""; 
-    
-    dataRows.forEach(row => {
-      const [title, artist, src, link] = row;
-      if (!title || !src) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "jacket-wrapper";
-      wrapper.innerHTML = `
-        <a href="${link ? link.trim() : '#'}" target="_blank">
-          <img src="${src.trim()}" alt="${title}" loading="lazy">
-          <div class="overlay">
-            <div class="work-title">${title.trim()}</div>
-            <div class="work-artist">${artist ? artist.trim() : ''}</div>
-          </div>
-        </a>
-      `;
-      area.appendChild(wrapper);
-    });
-
-    empty.style.display = "none";
-
-  } catch (error) {
-    console.error("読み込みエラー:", error);
-    empty.style.display = "block";
-    empty.innerText = "データの取得に失敗しました。スプレッドシートの共有設定が「リンクを知っている全員が閲覧可」になっているか確認してください。";
-  }
-}
-
-loadWorks();
+    loadWorks();
   </script>
 </body>
 </html>
