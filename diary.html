@@ -115,17 +115,13 @@
 
   <div id="honbun">
     <ul id="diary-list"></ul>
-
     <div id="article-view"></div>
   </div>
 
   <img id="light-switch" src="switch-off2.png" alt="light switch">
   <div id="fade-overlay"></div>
 
-  <!-- indexへ戻る時のスイッチ音 -->
   <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
-
-  <!-- diary滞在中ずっと流すBGM -->
   <audio id="diary-bgm" src="diaryaudio.mp3" autoplay loop></audio>
 
   <script>
@@ -138,7 +134,6 @@
           <p>少しずつここに溜めていけば、隠し部屋みたいな diary になります。</p>
         `
       }
-
       /*
       ,
       {
@@ -200,10 +195,30 @@
       list.appendChild(li);
     });
 
-    // autoplayがブラウザ都合で止められた時の保険
+    function fadeInAudio(audio, duration = 2000) {
+      audio.volume = 0;
+
+      const step = 0.02;
+      const interval = duration * step;
+
+      const fade = setInterval(() => {
+        if (audio.volume < 1) {
+          audio.volume = Math.min(1, audio.volume + step);
+        } else {
+          clearInterval(fade);
+        }
+      }, interval);
+    }
+
+    bgm.play().then(() => {
+      fadeInAudio(bgm, 2000);
+    }).catch(() => {});
+
     document.addEventListener("click", () => {
       if (bgm.paused) {
-        bgm.play().catch(() => {});
+        bgm.play().then(() => {
+          fadeInAudio(bgm, 2000);
+        }).catch(() => {});
       }
     }, { once: true });
 
@@ -219,7 +234,6 @@
         switchSound.play().catch(() => {});
       }
 
-      // BGM停止
       if (bgm) {
         bgm.pause();
       }
@@ -238,30 +252,7 @@
       switchBtn.src = "switch-off2.png";
       switchBtn.style.opacity = "1";
     });
-
-    const bgm = document.getElementById("diary-bgm");
-
-// 最初は音量0
-bgm.volume = 0;
-
-// フェードイン関数
-function fadeInAudio(audio, duration = 2000) {
-  const step = 0.02;
-  const interval = duration * step;
-
-  const fade = setInterval(() => {
-    if (audio.volume < 1) {
-      audio.volume = Math.min(1, audio.volume + step);
-    } else {
-      clearInterval(fade);
-    }
-  }, interval);
-}
-
-// 再生時にフェードイン
-bgm.play().then(() => {
-  fadeInAudio(bgm, 2000); // 2秒フェード
-}).catch(() => {});
+  </script>
 
   <script src="random.js"></script>
 </body>
