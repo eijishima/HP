@@ -66,6 +66,24 @@ a {
     nav a {
       margin-right: 15px;
     }
+
+    #light-switch {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 48px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+
+#light-switch:hover {
+  transform: scale(1.04);
+}
+
+body {
+  transition: opacity 0.35s ease;
+}
   </style>
 </head>
 <body>
@@ -82,7 +100,6 @@ a {
       <nav>
        <p><a href="live.html">Live archive</a></p>
         <p><a href="rec.html">Recording</a></p>
-       <p><a href="diary.html">Diary</a></p> 
        <p><a href="profile.html">Profile</a></p> 
       </nav>
 
@@ -90,7 +107,9 @@ a {
     </div>
 
   </div>
-
+  
+<img id="light-switch" src="switch-off.png" alt="light switch">
+  
   <script>
     const title = document.getElementById('title');
     const text = title.textContent;
@@ -107,6 +126,25 @@ a {
       span.style.top = `${y}px`;
       title.appendChild(span);
     }
+
+<script>
+  const switchBtn = document.getElementById("light-switch");
+
+  switchBtn.addEventListener("click", () => {
+    // まず画像をONに切り替える
+    switchBtn.src = "switch-on.png";
+
+    // 少し待ってから暗転 → diaryへ移動
+    setTimeout(() => {
+      document.body.style.opacity = "0";
+    }, 80);
+
+    setTimeout(() => {
+      window.location.href = "diary.html";
+    }, 430);
+  });
+</script>
+    
   </script>
 </body>
 </html>
