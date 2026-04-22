@@ -7,21 +7,30 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 中央テキスト */
-   .centered-text {
-  position: relative;
-  margin: 450px 0px 10px 0px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* 高さ下寄せ */
-  align-items: flex-start;   /* 左揃え */
-  height: 100%;
-  z-index: 2; /* 背景画像より上に表示 */
-  padding: 20px;
-  color: #000; /* 黒文字 */
-}
+    .centered-text {
+      position: relative;
+      margin: 450px 0px 10px 0px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start;
+      height: 100%;
+      z-index: 2;
+      padding: 20px;
+      color: #000;
+    }
 
-h1{margin-left: 50px}
+    h1 {
+      margin-left: 50px;
+      position: relative;
+      display: inline-block;
+      line-height: 1.2;
+    }
+
+    h1 span {
+      position: absolute;
+      display: inline-block;
+    }
 
     ul {
       list-style: none;
@@ -31,6 +40,9 @@ h1{margin-left: 50px}
     a {
       text-decoration: none;
       color: #000;
+      display: inline-block;
+      padding-left: 8px;
+      transition: transform 0.15s ease;
     }
 
     nav a {
@@ -38,113 +50,90 @@ h1{margin-left: 50px}
     }
 
     li, p, a {
-  display: block;   /* 行でまとまる */
-  transition: transform 0.15s ease;
-  }
+      display: block;
+      transition: transform 0.15s ease;
+    }
 
-li:hover,
-p:hover,
-a:hover {
-  transform: scale(1.02);
-}
-a {
-  display: inline-block;
-  padding-left: 8px;  /* ← 好きな値に調整 */
-  transition: transform 0.15s ease;
-}
+    li:hover,
+    p:hover,
+    a:hover {
+      transform: scale(1.02);
+    }
 
     .centered-text p,
     .centered-text nav {
       margin: 5px 0;
     }
 
-    a {
-      text-decoration: none;
-      color: #000; /* 黒リンク */
-    }
-
-    nav a {
-      margin-right: 15px;
-    }
-
     #light-switch {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 48px;
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.15s ease, opacity 0.3s ease;
-}
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      width: 90px;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.15s ease, opacity 0.3s ease;
+    }
 
-#light-switch:hover {
-  transform: scale(1.04);
-}
+    #light-switch:hover {
+      transform: scale(1.04);
+    }
 
-body {
-  transition: opacity 0.35s ease;
-}
+    body {
+      transition: opacity 0.35s ease;
+    }
   </style>
 </head>
 <body>
   <div class="container">
 
-    <!-- 背景画像（文字の背面） -->
     <img class="background" src="haikei.png" alt="背景画像">
 
     <h1 id="title" onclick="location.href='index.html';">嶋英治</h1>
-    
-    <!-- 中央テキスト -->
-    <div class="centered-text">
 
+    <div class="centered-text">
       <nav>
-       <p><a href="live.html">Live archive</a></p>
+        <p><a href="live.html">Live archive</a></p>
         <p><a href="rec.html">Recording</a></p>
-       <p><a href="profile.html">Profile</a></p> 
+        <p><a href="profile.html">Profile</a></p>
       </nav>
 
       <p><a href="mailto:waiga.hatoyade@gmail.com">waiga.hatoyade@gmail.com</a></p>
     </div>
-
   </div>
-  
-<img id="light-switch" src="switch-off.png" alt="light switch">
-  
+
+  <img id="light-switch" src="switch-off.png" alt="light switch">
+
   <script>
     const title = document.getElementById('title');
     const text = title.textContent;
     title.innerHTML = '';
 
-    const maxOffset = 35; // ±35pxのランダムずれ
+    const maxOffset = 35;
 
     for (let char of text) {
       const span = document.createElement('span');
       span.textContent = char;
-      const x = Math.floor(Math.random() * (maxOffset*2+1)) - maxOffset;
-      const y = Math.floor(Math.random() * (maxOffset*2+1)) - maxOffset;
+      const x = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
+      const y = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
       span.style.left = `${x}px`;
       span.style.top = `${y}px`;
       title.appendChild(span);
     }
 
-<script>
-  const switchBtn = document.getElementById("light-switch");
+    const switchBtn = document.getElementById("light-switch");
 
-  switchBtn.addEventListener("click", () => {
-    // まず画像をONに切り替える
-    switchBtn.src = "switch-on.png";
+    switchBtn.addEventListener("click", () => {
+      switchBtn.src = "switch-on.png";
 
-    // 少し待ってから暗転 → diaryへ移動
-    setTimeout(() => {
-      document.body.style.opacity = "0";
-    }, 80);
+      setTimeout(() => {
+        document.body.style.opacity = "0";
+      }, 80);
 
-    setTimeout(() => {
-      window.location.href = "diary.html";
-    }, 430);
-  });
-</script>
-    
+      setTimeout(() => {
+        window.location.href = "diary.html";
+      }, 430);
+    });
   </script>
 </body>
 </html>
