@@ -37,6 +37,15 @@
       transform: scale(1.02);
     }
 
+    #honbun {
+      text-align: center;
+    }
+
+    #diary-list {
+      list-style: none;
+      padding: 0;
+    }
+
     #light-switch {
       position: fixed;
       right: 24px;
@@ -64,13 +73,6 @@
 </head>
 <body>
 
-  <div class="sidebar">
-    <p><a href="live.html">Live archive</a></p>
-    <p><a href="rec.html">Recording</a></p>
-    <p><a href="diary.html">Diary</a></p>
-    <p><a href="profile.html">Profile</a></p>
-  </div>
-
   <div id="title-wrapper">
     <h1 onclick="location.href='index.html';">嶋英治</h1>
     <h2>diary</h2>
@@ -80,7 +82,7 @@
     <ul id="diary-list"></ul>
   </div>
 
-  <img id="light-switch" src="switch-on.png" alt="light switch">
+  <img id="light-switch" src="switch-off.png" alt="light switch">
   <div id="fade-overlay"></div>
   <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
 
@@ -106,7 +108,7 @@
     const switchSound = document.getElementById("switch-sound");
 
     switchBtn.addEventListener("click", () => {
-      switchBtn.src = "switch-off.png";
+      switchBtn.src = "switch-on.png";
       switchBtn.style.opacity = "0";
 
       if (switchSound) {
@@ -125,7 +127,7 @@
 
     window.addEventListener("pageshow", () => {
       fadeOverlay.style.opacity = "0";
-      switchBtn.src = "switch-on.png";
+      switchBtn.src = "switch-off.png";
       switchBtn.style.opacity = "1";
     });
   </script>
