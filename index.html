@@ -104,36 +104,50 @@
 
   <img id="light-switch" src="switch-off.png" alt="light switch">
 
-  <script>
-    const title = document.getElementById('title');
-    const text = title.textContent;
-    title.innerHTML = '';
+<script>
+  const title = document.getElementById('title');
+  const text = title.textContent;
+  title.innerHTML = '';
 
-    const maxOffset = 35;
+  const maxOffset = 35;
 
-    for (let char of text) {
-      const span = document.createElement('span');
-      span.textContent = char;
-      const x = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
-      const y = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
-      span.style.left = `${x}px`;
-      span.style.top = `${y}px`;
-      title.appendChild(span);
-    }
+  for (let char of text) {
+    const span = document.createElement('span');
+    span.textContent = char;
+    const x = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
+    const y = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
+    span.style.left = `${x}px`;
+    span.style.top = `${y}px`;
+    title.appendChild(span);
+  }
 
-    const switchBtn = document.getElementById("light-switch");
+  const switchBtn = document.getElementById("light-switch");
+  const fadeOverlay = document.getElementById("fade-overlay");
+  const switchSound = document.getElementById("switch-sound");
 
-    switchBtn.addEventListener("click", () => {
-      switchBtn.src = "switch-on.png";
+  switchBtn.addEventListener("click", () => {
+    switchBtn.src = "switch-on.png";
 
-      setTimeout(() => {
-        document.body.style.opacity = "0";
-      }, 80);
+    // 音を鳴らす
+    switchSound.currentTime = 0;
+    switchSound.play();
 
-      setTimeout(() => {
-        window.location.href = "diary.html";
-      }, 430);
-    });
-  </script>
+    // 少し待って暗転
+    setTimeout(() => {
+      fadeOverlay.style.opacity = "1";
+    }, 80);
+
+    // 遷移
+    setTimeout(() => {
+      window.location.href = "diary.html";
+    }, 430);
+  });
+
+  // 「戻る」で戻ってきた時のリセット
+  window.addEventListener("pageshow", () => {
+    fadeOverlay.style.opacity = "0";
+    switchBtn.src = "switch-off.png";
+  });
+</script>
 </body>
 </html>
