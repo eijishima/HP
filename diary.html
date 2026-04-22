@@ -124,136 +124,124 @@
   <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
   <audio id="diary-bgm" src="diaryaudio.mp3" autoplay loop></audio>
 
-  <script>
-    const diaryEntries = [
-      {
-        title: "ここには　まだ　なにも　ないみたい！",
-        content: `
-          <p>最初の記事をここに書いていけます。</p>
-          <p>この本文はHTMLとして書けるので、改行も段落も自由です。</p>
-          <p>少しずつここに溜めていけば、隠し部屋みたいな diary になります。</p>
-        `
-      }
-      /*
-      ,
-      {
-        title: "2026.04.24",
-        content: `
-          <p>次の記事。</p>
-          <p>こんなふうに追加していくだけ。</p>
-        `
-      }
-      */
-    ];
-
-    const list = document.getElementById("diary-list");
-    const articleView = document.getElementById("article-view");
-    const bgm = document.getElementById("diary-bgm");
-
-    let savedScrollY = 0;
-
-    function showList() {
-      articleView.style.display = "none";
-      list.style.display = "block";
-      window.scrollTo(0, savedScrollY);
+<script>
+  const diaryEntries = [
+    {
+      title: "ここには　まだ　なにも　ないみたい！",
+      content: `
+        <p>最初の記事をここに書いていけます。</p>
+        <p>この本文はHTMLとして書けるので、改行も段落も自由です。</p>
+        <p>少しずつここに溜めていけば、隠し部屋みたいな diary になります。</p>
+      `
     }
+  ];
 
-    function showArticle(entry) {
-      savedScrollY = window.scrollY;
+  const list = document.getElementById("diary-list");
+  const articleView = document.getElementById("article-view");
+  const bgm = document.getElementById("diary-bgm");
 
-      list.style.display = "none";
-      articleView.style.display = "block";
+  let savedScrollY = 0;
 
-      articleView.innerHTML = `
-        <div id="back-link-wrap">
-          <a href="#" id="back-link">← back</a>
-        </div>
-        <h3>${entry.title}</h3>
-        ${entry.content}
-      `;
+  function showList() {
+    articleView.style.display = "none";
+    list.style.display = "block";
+    window.scrollTo(0, savedScrollY);
+  }
 
-      window.scrollTo(0, 0);
+  function showArticle(entry) {
+    savedScrollY = window.scrollY;
 
-      document.getElementById("back-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        showList();
-      });
-    }
+    list.style.display = "none";
+    articleView.style.display = "block";
 
-    diaryEntries.forEach(entry => {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.href = "#";
-      a.textContent = entry.title;
+    articleView.innerHTML = `
+      <div id="back-link-wrap">
+        <a href="#" id="back-link">← back</a>
+      </div>
+      <h3>${entry.title}</h3>
+      ${entry.content}
+    `;
 
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        showArticle(entry);
-      });
+    window.scrollTo(0, 0);
 
-      li.appendChild(a);
-      list.appendChild(li);
+    document.getElementById("back-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      showList();
+    });
+  }
+
+  diaryEntries.forEach(entry => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#";
+    a.textContent = entry.title;
+
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      showArticle(entry);
     });
 
-    function fadeInAudio(audio, duration = 2000) {
-      audio.volume = 0;
+    li.appendChild(a);
+    list.appendChild(li);
+  });
 
-      const step = 0.02;
-      const interval = duration * step;
+  function fadeInAudio(audio, duration = 2000) {
+    audio.volume = 0;
 
-      const fade = setInterval(() => {
-        if (audio.volume < 1) {
-          audio.volume = Math.min(1, audio.volume + step);
-        } else {
-          clearInterval(fade);
-        }
-      }, interval);
+    const step = 0.02;
+    const interval = duration * step;
+
+    const fade = setInterval(() => {
+      if (audio.volume < 1) {
+        audio.volume = Math.min(1, audio.volume + step);
+      } else {
+        clearInterval(fade);
+      }
+    }, interval);
+  }
+
+  bgm.play().then(() => {
+    fadeInAudio(bgm, 2000);
+  }).catch(() => {});
+
+  document.addEventListener("click", () => {
+    if (bgm.paused) {
+      bgm.play().then(() => {
+        fadeInAudio(bgm, 2000);
+      }).catch(() => {});
+    }
+  }, { once: true });
+
+  const switchBtn = document.getElementById("light-switch");
+  const fadeOverlay = document.getElementById("fade-overlay");
+  const switchSound = document.getElementById("switch-sound");
+
+  switchBtn.addEventListener("click", () => {
+    switchBtn.src = "switch-on.png";
+
+    if (switchSound) {
+      switchSound.currentTime = 0;
+      switchSound.play().catch(() => {});
     }
 
-    bgm.play().then(() => {
-      fadeInAudio(bgm, 2000);
-    }).catch(() => {});
+    if (bgm) {
+      bgm.pause();
+    }
 
-    document.addEventListener("click", () => {
-      if (bgm.paused) {
-        bgm.play().then(() => {
-          fadeInAudio(bgm, 2000);
-        }).catch(() => {});
-      }
-    }, { once: true });
+    setTimeout(() => {
+      fadeOverlay.style.opacity = "1";
+    }, 80);
 
-    const switchBtn = document.getElementById("light-switch");
-    const fadeOverlay = document.getElementById("fade-overlay");
-    const switchSound = document.getElementById("switch-sound");
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 430);
+  });
 
-    switchBtn.addEventListener("click", () => {
-      switchBtn.src = "switch-on.png";
-
-      if (switchSound) {
-        switchSound.currentTime = 0;
-        switchSound.play().catch(() => {});
-      }
-
-      if (bgm) {
-        bgm.pause();
-      }
-
-      setTimeout(() => {
-        fadeOverlay.style.opacity = "1";
-      }, 80);
-
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 430);
-    });
-
-    window.addEventListener("pageshow", () => {
-      fadeOverlay.style.opacity = "0";
-      switchBtn.src = "switch-off2.png";
-      switchBtn.style.opacity = "1";
-    });
-  </script>
-
-  <script src="random.js"></script>
+  window.addEventListener("pageshow", () => {
+    fadeOverlay.style.opacity = "0";
+    switchBtn.src = "switch-off2.png";
+    switchBtn.style.opacity = "1";
+  });
+</script>
 </body>
 </html>
