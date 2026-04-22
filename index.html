@@ -71,7 +71,7 @@
       top: 24px;
       width: 90px;
       cursor: pointer;
-      z-index: 10;
+      z-index: 1000;
       transition: transform 0.15s ease, opacity 0.3s ease;
     }
 
@@ -79,14 +79,19 @@
       transform: scale(1.04);
     }
 
-    body {
+    #fade-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
       transition: opacity 0.35s ease;
     }
   </style>
 </head>
 <body>
   <div class="container">
-
     <img class="background" src="haikei.png" alt="背景画像">
 
     <h1 id="title" onclick="location.href='index.html';">嶋英治</h1>
@@ -103,51 +108,51 @@
   </div>
 
   <img id="light-switch" src="switch-off.png" alt="light switch">
+  <div id="fade-overlay"></div>
+  <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
 
-<script>
-  const title = document.getElementById('title');
-  const text = title.textContent;
-  title.innerHTML = '';
+  <script>
+    const title = document.getElementById('title');
+    const text = title.textContent;
+    title.innerHTML = '';
 
-  const maxOffset = 35;
+    const maxOffset = 35;
 
-  for (let char of text) {
-    const span = document.createElement('span');
-    span.textContent = char;
-    const x = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
-    const y = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
-    span.style.left = `${x}px`;
-    span.style.top = `${y}px`;
-    title.appendChild(span);
-  }
+    for (let char of text) {
+      const span = document.createElement('span');
+      span.textContent = char;
+      const x = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
+      const y = Math.floor(Math.random() * (maxOffset * 2 + 1)) - maxOffset;
+      span.style.left = `${x}px`;
+      span.style.top = `${y}px`;
+      title.appendChild(span);
+    }
 
-  const switchBtn = document.getElementById("light-switch");
-  const fadeOverlay = document.getElementById("fade-overlay");
-  const switchSound = document.getElementById("switch-sound");
+    const switchBtn = document.getElementById("light-switch");
+    const fadeOverlay = document.getElementById("fade-overlay");
+    const switchSound = document.getElementById("switch-sound");
 
-  switchBtn.addEventListener("click", () => {
-    switchBtn.src = "switch-on.png";
+    switchBtn.addEventListener("click", () => {
+      switchBtn.src = "switch-on.png";
 
-    // 音を鳴らす
-    switchSound.currentTime = 0;
-    switchSound.play();
+      if (switchSound) {
+        switchSound.currentTime = 0;
+        switchSound.play().catch(() => {});
+      }
 
-    // 少し待って暗転
-    setTimeout(() => {
-      fadeOverlay.style.opacity = "1";
-    }, 80);
+      setTimeout(() => {
+        fadeOverlay.style.opacity = "1";
+      }, 80);
 
-    // 遷移
-    setTimeout(() => {
-      window.location.href = "diary.html";
-    }, 430);
-  });
+      setTimeout(() => {
+        window.location.href = "diary.html";
+      }, 430);
+    });
 
-  // 「戻る」で戻ってきた時のリセット
-  window.addEventListener("pageshow", () => {
-    fadeOverlay.style.opacity = "0";
-    switchBtn.src = "switch-off.png";
-  });
-</script>
+    window.addEventListener("pageshow", () => {
+      fadeOverlay.style.opacity = "0";
+      switchBtn.src = "switch-off.png";
+    });
+  </script>
 </body>
 </html>
