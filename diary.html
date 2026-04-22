@@ -238,6 +238,30 @@
       switchBtn.src = "switch-off2.png";
       switchBtn.style.opacity = "1";
     });
+
+    const bgm = document.getElementById("diary-bgm");
+
+// 最初は音量0
+bgm.volume = 0;
+
+// フェードイン関数
+function fadeInAudio(audio, duration = 2000) {
+  const step = 0.02;
+  const interval = duration * step;
+
+  const fade = setInterval(() => {
+    if (audio.volume < 1) {
+      audio.volume = Math.min(1, audio.volume + step);
+    } else {
+      clearInterval(fade);
+    }
+  }, interval);
+}
+
+// 再生時にフェードイン
+bgm.play().then(() => {
+  fadeInAudio(bgm, 2000); // 2秒フェード
+}).catch(() => {});
   </script>
 
   <script src="random.js"></script>
