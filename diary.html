@@ -1,3 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>diary</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      color: #fff;
+      text-decoration: none;
+      transition: transform 0.15s ease;
+    }
+
+    a:hover {
+      transform: scale(1.02);
+    }
+
+    #title-wrapper {
+      margin-top: 40px;
+    }
+
+    #honbun {
+      text-align: center;
+      margin-top: 80px;
+      padding: 0 20px 80px;
+    }
+
+    #diary-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #diary-list li {
+      margin: 18px 0;
+    }
+
+    #diary-list a {
+      display: inline-block;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    #article-view {
+      display: none;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: left;
+      line-height: 1.9;
+    }
+
+    #article-view h3 {
+      text-align: center;
+      font-weight: normal;
+      margin-bottom: 40px;
+    }
+
+    #article-view p {
+      margin: 0 0 1.2em 0;
+    }
+
+    #back-link-wrap {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    #back-link {
+      display: inline-block;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    #light-switch {
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      width: 90px;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.15s ease, opacity 0.3s ease;
+    }
+
+    #light-switch:hover {
+      transform: scale(1.04);
+    }
+
+    #fade-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      transition: opacity 0.35s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="title-wrapper">
+    <h1 onclick="location.href='index.html';">嶋英治</h1>
+    <h2>diary</h2>
+  </div>
+
+  <div id="honbun">
+    <ul id="diary-list"></ul>
+    <div id="article-view"></div>
+  </div>
+
+  <img id="light-switch" src="switch-off2.png" alt="light switch">
+  <div id="fade-overlay"></div>
+
+  <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
+  <audio id="diary-bgm" src="diaryaudio.mp3" autoplay loop></audio>
+
 <script>
   const diaryEntries = [
     {
@@ -158,3 +284,5 @@
     switchBtn.style.opacity = "1";
   });
 </script>
+</body>
+</html>
