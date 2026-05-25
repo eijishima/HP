@@ -67,8 +67,9 @@
     }
 
     #article-view p {
-      margin: 0 0 1.2em 0;
-    }
+  margin: 0 0 1.2em 0;
+  text-align: center;
+}
 
     #back-link-wrap {
       text-align: center;
@@ -104,6 +105,14 @@
       z-index: 999;
       transition: opacity 0.35s ease;
     }
+
+    .topic-link {
+  color: #ff8c42 !important;
+}
+
+.topic-link:hover {
+  opacity: 0.7;
+}
   </style>
 </head>
 <body>
@@ -134,8 +143,8 @@
         <p>少なくとも君のためになるようなことは、一つも</p>
         <p>うん...そうだな、でも手ぶらで帰ってもらうのもね、何か話そうか</p>
 
-        <p><a href="#" data-topic="dog">犬について</a></p>
-        <p><a href="#" data-topic="food">好きな食べ物について</a></p>
+       <p><a href="#" class="topic-link" data-topic="dog">犬について</a></p>
+        <p><a href="#" class="topic-link" data-topic="food">犬について２</a></p>
       `
     }
   ];
