@@ -60,16 +60,10 @@
       line-height: 1.9;
     }
 
-    #article-view h3 {
-      text-align: center;
-      font-weight: normal;
-      margin-bottom: 40px;
-    }
-
     #article-view p {
-  margin: 0 0 1.2em 0;
-  text-align: center;
-}
+      margin: 0 0 1.2em 0;
+      text-align: center;
+    }
 
     #back-link-wrap {
       text-align: center;
@@ -105,14 +99,6 @@
       z-index: 999;
       transition: opacity 0.35s ease;
     }
-
-    .topic-link {
-  color: #ff8c42 !important;
-}
-
-.topic-link:hover {
-  opacity: 0.7;
-}
   </style>
 </head>
 <body>
@@ -135,21 +121,20 @@
 
 <script>
   const diaryEntries = [
-  {
-    title: "バイトについて",
-    content: `
-      <p>俺は普段、コンビニでアルバイトをしている。</p>
-      <p>...</p>
-      
-    `,
-  };
+    {
+      title: "バイトについて",
+      content: `
+        <p>俺は普段、コンビニでアルバイトをしている。</p>
+        <p>...</p>
+      `,
+    }
+  ];
 
   const list = document.getElementById("diary-list");
   const articleView = document.getElementById("article-view");
   const bgm = document.getElementById("diary-bgm");
 
   let savedScrollY = 0;
-  let currentMainContent = "";
 
   function showList() {
     articleView.style.display = "none";
@@ -157,9 +142,7 @@
     window.scrollTo(0, savedScrollY);
   }
 
-  function showMainContent(content) {
-    currentMainContent = content;
-
+  function showArticle(content) {
     list.style.display = "none";
     articleView.style.display = "block";
 
@@ -176,16 +159,6 @@
       e.preventDefault();
       showList();
     });
-
-    articleView.querySelectorAll("[data-topic]").forEach(link => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        showTopic(link.dataset.topic);
-      });
-    });
-  }
-
- 
   }
 
   diaryEntries.forEach(entry => {
@@ -197,7 +170,7 @@
     a.addEventListener("click", (e) => {
       e.preventDefault();
       savedScrollY = window.scrollY;
-      showMainContent(entry.content);
+      showArticle(entry.content);
     });
 
     li.appendChild(a);
@@ -206,29 +179,20 @@
 
   function fadeInAudio(audio, duration = 2000) {
     audio.volume = 0;
-
     const step = 0.02;
-    const interval = duration * step;
-
     const fade = setInterval(() => {
       if (audio.volume < 1) {
         audio.volume = Math.min(1, audio.volume + step);
       } else {
         clearInterval(fade);
       }
-    }, interval);
+    }, duration * step);
   }
 
-  bgm.play().then(() => {
-    fadeInAudio(bgm, 2000);
-  }).catch(() => {});
+  bgm.play().then(() => fadeInAudio(bgm)).catch(() => {});
 
   document.addEventListener("click", () => {
-    if (bgm.paused) {
-      bgm.play().then(() => {
-        fadeInAudio(bgm, 2000);
-      }).catch(() => {});
-    }
+    if (bgm.paused) bgm.play().then(() => fadeInAudio(bgm)).catch(() => {});
   }, { once: true });
 
   const switchBtn = document.getElementById("light-switch");
@@ -237,23 +201,12 @@
 
   switchBtn.addEventListener("click", () => {
     switchBtn.src = "switch-on.png";
+    switchSound.currentTime = 0;
+    switchSound.play().catch(() => {});
+    bgm.pause();
 
-    if (switchSound) {
-      switchSound.currentTime = 0;
-      switchSound.play().catch(() => {});
-    }
-
-    if (bgm) {
-      bgm.pause();
-    }
-
-    setTimeout(() => {
-      fadeOverlay.style.opacity = "1";
-    }, 80);
-
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 430);
+    setTimeout(() => { fadeOverlay.style.opacity = "1"; }, 80);
+    setTimeout(() => { window.location.href = "index.html"; }, 430);
   });
 
   window.addEventListener("pageshow", () => {
