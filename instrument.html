@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ドラム機材管理</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f5;
+  --bg3: #eeeeee;
+  --text: #1a1a1a;
+  --text2: #666666;
+  --text3: #999999;
+  --border: rgba(0,0,0,0.12);
+  --border2: rgba(0,0,0,0.22);
+  --teal: #1D9E75;
+  --teal-bg: #E1F5EE;
+  --teal-text: #0F6E56;
+  --blue-bg: #E6F1FB;
+  --blue-text: #185FA5;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1e;
+    --bg2: #2c2c2e;
+    --bg3: #3a3a3c;
+    --text: #f2f2f7;
+    --text2: #aeaeb2;
+    --text3: #636366;
+    --border: rgba(255,255,255,0.12);
+    --border2: rgba(255,255,255,0.22);
+    --teal-bg: #083d2e;
+    --teal-text: #5DCAA5;
+    --blue-bg: #0c2a4a;
+    --blue-text: #85B7EB;
+  }
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+.app { max-width: 540px; margin: 0 auto; background: var(--bg); min-height: 100vh; }
+.header { padding: 16px 16px 0; padding-top: max(16px, env(safe-area-inset-top)); }
+.tab-bar { display: flex; border-bottom: 0.5px solid var(--border); margin: 0 -16px; padding: 0 16px; }
+.tab { padding: 10px 16px; font-size: 14px; cursor: pointer; border: none; background: none; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+.body { padding: 16px; padding-bottom: max(80px, calc(16px + env(safe-area-inset-bottom))); }
+.section-label { font-size: 12px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 8px; overflow: hidden; }
+.card-pad { padding: 12px 16px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+input[type="text"], input[type="date"], input[type="number"], select {
+  width: 100%; padding: 10px 12px; font-size: 15px; border: 0.5px solid var(--border2);
+  border-radius: var(--radius); background: var(--bg); color: var(--text);
+  outline: none; font-family: inherit;
+}
+input:focus, select:focus { border-color: var(--teal); }
+input[type="number"] { width: 60px; text-align: center; }
+button {
+  padding: 9px 16px; font-size: 14px; border: 0.5px solid var(--border2);
+  border-radius: var(--radius); background: var(--bg); color: var(--text);
+  cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+}
+button:active { opacity: 0.7; }
+button.primary { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 500; }
+.btn-icon { background: none; border: none; padding: 6px; color: var(--text2); cursor: pointer; border-radius: var(--radius); display: flex; align-items: center; }
+.btn-icon:active { background: var(--bg3); }
+.btn-icon.danger { color: #E24B4A; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.badge.base { background: var(--teal-bg); color: var(--teal-text); }
+.badge.count { background: var(--blue-bg); color: var(--blue-text); }
+.item-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 0.5px solid var(--border); }
+.item-row:last-child { border-bottom: none; }
+.item-row .name { flex: 1; font-size: 15px; }
+.item-row .qty { font-size: 13px; color: var(--text2); }
+.toggle-btn { font-size: 12px; padding: 4px 12px; border-radius: 20px; cursor: pointer; border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2); }
+.toggle-btn.included { background: var(--teal-bg); border-color: var(--teal); color: var(--teal-text); }
+.toggle-btn.excluded { color: var(--text3); text-decoration: line-through; }
+.check-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.check-row:last-child { border-bottom: none; }
+.check-row.checked .check-name { text-decoration: line-through; color: var(--text3); }
+.check-name { flex: 1; font-size: 16px; }
+.check-qty { font-size: 13px; color: var(--text2); }
+input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--teal); flex-shrink: 0; }
+.progress-bar { height: 4px; background: var(--bg3); border-radius: 2px; }
+.progress-fill { height: 4px; background: var(--teal); border-radius: 2px; transition: width 0.3s; }
+.empty { text-align: center; color: var(--text3); font-size: 14px; padding: 3rem 0; }
+.back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; color: var(--text2); font-size: 15px; padding: 8px 0; margin-bottom: 4px; font-family: inherit; }
+.add-form { background: var(--bg2); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
+.gig-card { cursor: pointer; }
+.gig-meta { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.cat-label { font-size: 12px; font-weight: 500; color: var(--text3); padding: 10px 16px 6px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div id="app-title" style="font-size:18px;font-weight:600;padding:8px 0 12px">🥁 機材管理</div>
+    <div class="tab-bar" id="main-tabs">
+      <button class="tab active" data-tab="gigs">現場</button>
+      <button class="tab" data-tab="gear">機材マスター</button>
+    </div>
+  </div>
+  <div class="body" id="root"></div>
+</div>
+
+<script>
+const CATEGORIES = ["ドラム本体","シンバル","ペダル","スタンド","スティック・ブラシ","その他"];
+
+function load(key, def) {
+  try { return JSON.parse(localStorage.getItem('drumgear_' + key)) ?? def; } catch { return def; }
+}
+function save(key, val) { localStorage.setItem('drumgear_' + key, JSON.stringify(val)); }
+
+let state = {
+  view: 'gigs',
+  activeGigId: null,
+  gigView: 'list',
+  showAddGig: false,
+  showAddGear: false,
+  showAddExtra: false,
+  gear: load('gear', [
+    {id:1,name:'バスドラム',qty:1,cat:'ドラム本体',base:true},
+    {id:2,name:'スネア',qty:1,cat:'ドラム本体',base:true},
+    {id:3,name:'ハイハット',qty:1,cat:'シンバル',base:true},
+    {id:4,name:'クラッシュシンバル',qty:2,cat:'シンバル',base:true},
+    {id:5,name:'ライドシンバル',qty:1,cat:'シンバル',base:true},
+    {id:6,name:'バスドラムペダル',qty:1,cat:'ペダル',base:true},
+    {id:7,name:'ハイハットスタンド',qty:1,cat:'スタンド',base:true},
+    {id:8,name:'スネアスタンド',qty:1,cat:'スタンド',base:true},
+    {id:9,name:'シンバルスタンド',qty:3,cat:'スタンド',base:true},
+    {id:10,name:'スティック',qty:2,cat:'スティック・ブラシ',base:true},
+  ]),
+  gigs: load('gigs', []),
+  nextId: load('nextId', 100),
+};
+
+function setState(patch) { Object.assign(state, patch); render(); }
+function saveAll() { save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); }
+function newId() { state.nextId++; return state.nextId; }
+function getGig(id) { return state.gigs.find(g => g.id === id); }
+
+function gigItems(gig) {
+  const base = state.gear.map(g => {
+    const ov = (gig.overrides||[]).find(o => o.gearId === g.id);
+    return { ...g, included: ov ? ov.included : g.base };
+  });
+  const extras = (gig.extras||[]).map(e => ({...e, included:true, extra:true}));
+  return [...base, ...extras];
+}
+
+function renderGigs() {
+  let h = '';
+  if (state.showAddGig) {
+    h += `<div class="add-form">
+      <input type="text" id="new-gig-name" placeholder="現場名（例：渋谷 CLUB QUATTRO）">
+      <input type="date" id="new-gig-date">
+      <div class="row" style="justify-content:flex-end;gap:8px">
+        <button id="cancel-gig">キャンセル</button>
+        <button class="primary" id="save-gig">作成</button>
+      </div>
+    </div>`;
+  } else {
+    h += `<div class="row-between" style="margin-bottom:12px">
+      <span class="section-label" style="margin:0">現場一覧</span>
+      <button class="btn-icon" id="add-gig-btn"><i class="ti ti-plus" style="font-size:22px"></i></button>
+    </div>`;
+  }
+
+  if (state.gigs.length === 0 && !state.showAddGig) {
+    h += `<div class="empty"><i class="ti ti-music" style="font-size:40px;display:block;margin-bottom:12px"></i>現場がまだありません<br><small>＋から追加してください</small></div>`;
+  } else {
+    [...state.gigs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(g => {
+      const items = gigItems(g).filter(i=>i.included);
+      const checks = (g.checks||[]).length;
+      const pct = items.length > 0 ? Math.round(checks/items.length*100) : 0;
+      const dateStr = g.date ? new Date(g.date+'T00:00:00').toLocaleDateString('ja-JP',{month:'long',day:'numeric'}) : '';
+      h += `<div class="card gig-card" data-gig="${g.id}">
+        <div class="card-pad">
+          <div class="row-between">
+            <span style="font-weight:600;font-size:16px">${esc(g.name)}</span>
+            <div class="row" style="gap:4px">
+              <span class="badge count">${items.length}点</span>
+              <button class="btn-icon danger" data-del-gig="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
+            </div>
+          </div>
+          ${dateStr?`<div class="gig-meta"><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>${dateStr}</div>`:''}
+          <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:5px">積み込み ${checks}/${items.length}点</div>
+        </div>
+      </div>`;
+    });
+  }
+  return h;
+}
+
+function renderGear() {
+  let h = '';
+  if (state.showAddGear) {
+    h += `<div class="add-form">
+      <input type="text" id="new-gear-name" placeholder="機材名">
+      <div class="row" style="gap:8px">
+        <input type="number" id="new-gear-qty" value="1" min="1" max="99">
+        <select id="new-gear-cat" style="flex:1">${CATEGORIES.map(c=>`<option>${c}</option>`).join('')}</select>
+      </div>
+      <label style="font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="new-gear-base" checked style="width:18px;height:18px">ベースセットに含める
+      </label>
+      <div class="row" style="justify-content:flex-end;gap:8px">
+        <button id="cancel-gear">キャンセル</button>
+        <button class="primary" id="save-gear">追加</button>
+      </div>
+    </div>`;
+  } else {
+    h += `<div class="row-between" style="margin-bottom:12px">
+      <span class="section-label" style="margin:0">全機材リスト</span>
+      <button class="btn-icon" id="add-gear-btn"><i class="ti ti-plus" style="font-size:22px"></i></button>
+    </div>`;
+  }
+
+  const by = {};
+  CATEGORIES.forEach(c => by[c] = []);
+  state.gear.forEach(g => (by[g.cat]||by['その他']).push(g));
+
+  CATEGORIES.forEach(cat => {
+    if (!by[cat].length) return;
+    h += `<div class="card" style="margin-bottom:10px">
+      <div class="cat-label">${cat}</div>`;
+    by[cat].forEach(g => {
+      h += `<div class="item-row">
+        <span class="name">${esc(g.name)}</span>
+        <span class="qty">×${g.qty}</span>
+        <span class="badge ${g.base?'base':''}">${g.base?'ベース':'追加'}</span>
+        <button class="btn-icon danger" data-del-gear="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
+      </div>`;
+    });
+    h += `</div>`;
+  });
+  return h;
+}
+
+function renderGigDetail() {
+  const gig = getGig(state.activeGigId);
+  if (!gig) return '';
+  const allItems = gigItems(gig);
+  const included = allItems.filter(i=>i.included);
+  const checks = gig.checks || [];
+  const dateStr = gig.date ? new Date(gig.date+'T00:00:00').toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '';
+
+  let h = `<button class="back-btn" id="back-btn"><i class="ti ti-arrow-left" style="font-size:18px"></i>一覧に戻る</button>
+  <div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:600">${esc(gig.name)}</div>
+    ${dateStr?`<div class="gig-meta">${dateStr}</div>`:''}
+  </div>
+  <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px">
+    <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
+    <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
+  </div>`;
+
+  if (state.gigView === 'list') {
+    const by = {};
+    CATEGORIES.forEach(c => by[c] = []);
+    allItems.filter(i=>!i.extra).forEach(g => (by[g.cat]||by['その他']).push(g));
+
+    CATEGORIES.forEach(cat => {
+      if (!by[cat].length) return;
+      h += `<div class="card" style="margin-bottom:10px">
+        <div class="cat-label">${cat}</div>`;
+      by[cat].forEach(g => {
+        const incl = g.included;
+        h += `<div class="item-row">
+          <span class="name" style="${!incl?'text-decoration:line-through;color:var(--text3)':''}">${esc(g.name)}</span>
+          <span class="qty">×${g.qty}</span>
+          <button class="toggle-btn ${incl?'included':'excluded'}" data-toggle="${g.id}">${incl?'含む':'除外'}</button>
+        </div>`;
+      });
+      h += `</div>`;
+    });
+
+    if ((gig.extras||[]).length > 0) {
+      h += `<div class="section-label" style="margin-top:16px">この現場のみの追加</div>
+      <div class="card" style="margin-bottom:10px">`;
+      gig.extras.forEach(e => {
+        h += `<div class="item-row">
+          <span class="name">${esc(e.name)}</span>
+          <span class="qty">×${e.qty}</span>
+          <button class="btn-icon danger" data-del-extra="${e.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
+        </div>`;
+      });
+      h += `</div>`;
+    }
+
+    if (state.showAddExtra) {
+      h += `<div class="add-form">
+        <input type="text" id="extra-name" placeholder="追加機材名">
+        <input type="number" id="extra-qty" value="1" min="1" max="99" style="width:60px">
+        <div class="row" style="justify-content:flex-end;gap:8px">
+          <button id="cancel-extra">キャンセル</button>
+          <button class="primary" id="save-extra">追加</button>
+        </div>
+      </div>`;
+    } else {
+      h += `<button id="add-extra-btn" style="width:100%;justify-content:center"><i class="ti ti-plus"></i>この現場だけの機材を追加</button>`;
+    }
+  } else {
+    const pct = included.length > 0 ? Math.round(checks.length/included.length*100) : 0;
+    h += `<div style="margin-bottom:16px">
+      <div class="row-between" style="margin-bottom:6px">
+        <span style="font-size:14px;color:var(--text2)">${checks.length}/${included.length}点</span>
+        <span style="font-weight:600;font-size:16px;color:var(--teal)">${pct}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+    if (checks.length > 0) {
+      h += `<button id="clear-checks" style="margin-bottom:12px;font-size:13px"><i class="ti ti-refresh" style="font-size:14px"></i>リセット</button>`;
+    }
+    h += `<div class="card">`;
+    included.forEach(g => {
+      const checked = checks.includes(g.id);
+      h += `<div class="check-row ${checked?'checked':''}" data-check="${g.id}">
+        <input type="checkbox" ${checked?'checked':''} data-check-input="${g.id}">
+        <span class="check-name">${esc(g.name)}</span>
+        <span class="check-qty">×${g.qty}</span>
+      </div>`;
+    });
+    h += `</div>`;
+  }
+  return h;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const root = document.getElementById('root');
+  const mainTabs = document.getElementById('main-tabs');
+  const appTitle = document.getElementById('app-title');
+
+  if (state.view === 'gigDetail') {
+    mainTabs.style.display = 'none';
+    appTitle.style.display = 'none';
+    root.innerHTML = renderGigDetail();
+  } else {
+    mainTabs.style.display = 'flex';
+    appTitle.style.display = 'block';
+    document.querySelectorAll('#main-tabs .tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === state.view);
+    });
+    root.innerHTML = state.view === 'gigs' ? renderGigs() : renderGear();
+  }
+  attachEvents();
+}
+
+function attachEvents() {
+  document.querySelectorAll('[data-tab]').forEach(el =>
+    el.addEventListener('click', () => setState({view:el.dataset.tab, showAddGig:false, showAddGear:false})));
+  document.querySelectorAll('[data-gig-tab]').forEach(el =>
+    el.addEventListener('click', () => setState({gigView:el.dataset.gigTab})));
+
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) backBtn.addEventListener('click', () => setState({view:'gigs', activeGigId:null}));
+
+  const addGigBtn = document.getElementById('add-gig-btn');
+  if (addGigBtn) addGigBtn.addEventListener('click', () => setState({showAddGig:true}));
+
+  const cancelGig = document.getElementById('cancel-gig');
+  if (cancelGig) cancelGig.addEventListener('click', () => setState({showAddGig:false}));
+
+  const saveGig = document.getElementById('save-gig');
+  if (saveGig) saveGig.addEventListener('click', () => {
+    const name = document.getElementById('new-gig-name').value.trim();
+    if (!name) return;
+    const date = document.getElementById('new-gig-date').value;
+    state.gigs.push({id:newId(), name, date, overrides:[], extras:[], checks:[]});
+    saveAll(); setState({showAddGig:false});
+  });
+
+  document.querySelectorAll('[data-del-gig]').forEach(el =>
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!confirm(`「${getGig(+el.dataset.delGig)?.name}」を削除しますか？`)) return;
+      state.gigs = state.gigs.filter(g => g.id !== +el.dataset.delGig);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('.gig-card').forEach(el =>
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-del-gig]')) return;
+      setState({view:'gigDetail', activeGigId:+el.dataset.gig, gigView:'list'});
+    }));
+
+  const addGearBtn = document.getElementById('add-gear-btn');
+  if (addGearBtn) addGearBtn.addEventListener('click', () => setState({showAddGear:true}));
+
+  const cancelGear = document.getElementById('cancel-gear');
+  if (cancelGear) cancelGear.addEventListener('click', () => setState({showAddGear:false}));
+
+  const saveGear = document.getElementById('save-gear');
+  if (saveGear) saveGear.addEventListener('click', () => {
+    const name = document.getElementById('new-gear-name').value.trim();
+    if (!name) return;
+    const qty = parseInt(document.getElementById('new-gear-qty').value) || 1;
+    const cat = document.getElementById('new-gear-cat').value;
+    const base = document.getElementById('new-gear-base').checked;
+    state.gear.push({id:newId(), name, qty, cat, base});
+    saveAll(); setState({showAddGear:false});
+  });
+
+  document.querySelectorAll('[data-del-gear]').forEach(el =>
+    el.addEventListener('click', () => {
+      state.gear = state.gear.filter(g => g.id !== +el.dataset.delGear);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-toggle]').forEach(el =>
+    el.addEventListener('click', () => {
+      const gig = getGig(state.activeGigId);
+      const gearId = +el.dataset.toggle;
+      const gear = state.gear.find(g => g.id === gearId);
+      if (!gig.overrides) gig.overrides = [];
+      const idx = gig.overrides.findIndex(o => o.gearId === gearId);
+      const cur = idx >= 0 ? gig.overrides[idx].included : gear.base;
+      if (idx >= 0) gig.overrides[idx].included = !cur;
+      else gig.overrides.push({gearId, included: !cur});
+      saveAll(); render();
+    }));
+
+  const addExtraBtn = document.getElementById('add-extra-btn');
+  if (addExtraBtn) addExtraBtn.addEventListener('click', () => setState({showAddExtra:true}));
+
+  const cancelExtra = document.getElementById('cancel-extra');
+  if (cancelExtra) cancelExtra.addEventListener('click', () => setState({showAddExtra:false}));
+
+  const saveExtra = document.getElementById('save-extra');
+  if (saveExtra) saveExtra.addEventListener('click', () => {
+    const name = document.getElementById('extra-name').value.trim();
+    if (!name) return;
+    const qty = parseInt(document.getElementById('extra-qty').value) || 1;
+    const gig = getGig(state.activeGigId);
+    if (!gig.extras) gig.extras = [];
+    gig.extras.push({id:newId(), name, qty});
+    saveAll(); setState({showAddExtra:false});
+  });
+
+  document.querySelectorAll('[data-del-extra]').forEach(el =>
+    el.addEventListener('click', () => {
+      const gig = getGig(state.activeGigId);
+      gig.extras = gig.extras.filter(e => e.id !== +el.dataset.delExtra);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-check]').forEach(el =>
+    el.addEventListener('click', e => {
+      if (e.target.tagName === 'INPUT') return;
+      const gig = getGig(state.activeGigId);
+      const id = +el.dataset.check;
+      if (!gig.checks) gig.checks = [];
+      const idx = gig.checks.indexOf(id);
+      if (idx >= 0) gig.checks.splice(idx, 1);
+      else gig.checks.push(id);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-check-input]').forEach(el =>
+    el.addEventListener('change', () => {
+      const gig = getGig(state.activeGigId);
+      const id = +el.dataset.checkInput;
+      if (!gig.checks) gig.checks = [];
+      const idx = gig.checks.indexOf(id);
+      if (el.checked && idx < 0) gig.checks.push(id);
+      else if (!el.checked && idx >= 0) gig.checks.splice(idx, 1);
+      saveAll(); render();
+    }));
+
+  const clearChecks = document.getElementById('clear-checks');
+  if (clearChecks) clearChecks.addEventListener('click', () => {
+    const gig = getGig(state.activeGigId);
+    gig.checks = [];
+    saveAll(); render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
