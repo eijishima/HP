@@ -93,6 +93,18 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
 .gig-card { cursor: pointer; }
 .gig-meta { font-size: 13px; color: var(--text2); margin-top: 4px; }
 .cat-label { font-size: 12px; font-weight: 500; color: var(--text3); padding: 10px 16px 6px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+.gig-type-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+[data-type="rehearsal"] > .card-pad, .gig-type-badge[data-type="rehearsal"] { background: #EDE9FE; }
+.gig-type-badge[data-type="rehearsal"] { color: #5B21B6; }
+[data-type="live"] > .card-pad, .gig-type-badge[data-type="live"] { background: #FEE2E2; }
+.gig-type-badge[data-type="live"] { color: #991B1B; }
+@media (prefers-color-scheme: dark) {
+  [data-type="rehearsal"] > .card-pad { background: #2E1065; }
+  .gig-type-badge[data-type="rehearsal"] { background: #2E1065; color: #C4B5FD; }
+  [data-type="live"] > .card-pad { background: #450A0A; }
+  .gig-type-badge[data-type="live"] { background: #FEE2E2; color: #991B1B; }
+}
+.type-selected { border-color: var(--teal) !important; color: var(--teal) !important; background: var(--teal-bg) !important; }
 </style>
 </head>
 <body>
@@ -123,6 +135,7 @@ let state = {
   showAddGear: false,
   showAddExtra: false,
   showAddCat: false,
+  editingGig: false,
   gear: load('gear', [
     {id:1,name:'バスドラム',qty:1,cat:'ドラム本体',base:true},
     {id:2,name:'スネア',qty:1,cat:'ドラム本体',base:true},
@@ -153,18 +166,39 @@ function gigItems(gig) {
   return [...base, ...extras];
 }
 
+const GIG_TYPES = {rehearsal:{label:'リハーサル',bg:'#EDE9FE',text:'#5B21B6',darkBg:'#2E1065',darkText:'#C4B5FD'}, live:{label:'本番',bg:'#FEE2E2',text:'#991B1B',darkBg:'#450A0A',darkText:'#FCA5A5'}, other:{label:'その他',bg:'',text:''}};
+
+function gigTypeBadge(type) {
+  if (!type || type === 'other') return '';
+  const t = GIG_TYPES[type];
+  return `<span class="gig-type-badge" data-type="${type}">${t.label}</span>`;
+}
+
+function gigForm(gig) {
+  const isEdit = !!gig;
+  const g = gig || {};
+  return `<div class="add-form" id="gig-form">
+    <input type="text" id="gig-f-name" placeholder="現場名" value="${esc(g.name||'')}">
+    <input type="text" id="gig-f-artist" placeholder="アーティスト名" value="${esc(g.artist||'')}">
+    <input type="text" id="gig-f-venue" placeholder="場所" value="${esc(g.venue||'')}">
+    <input type="date" id="gig-f-date" value="${g.date||''}">
+    <div class="row" style="gap:6px">
+      ${['rehearsal','live','other'].map(t=>`<label style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;font-size:13px" class="type-opt ${(g.type||'other')===t?'type-selected':''}">
+        <input type="radio" name="gig-type" value="${t}" ${(g.type||'other')===t?'checked':''} style="width:14px;height:14px;accent-color:var(--teal)">
+        ${GIG_TYPES[t].label}
+      </label>`).join('')}
+    </div>
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button id="cancel-gig-form">キャンセル</button>
+      <button class="primary" id="save-gig-form" data-edit-id="${g.id||''}">${isEdit?'保存':'作成'}</button>
+    </div>
+  </div>`;
+}
+
 function renderGigs() {
   let h = '';
   if (state.showAddGig) {
-    h += `<div class="add-form">
-      <input type="text" id="new-gig-name" placeholder="現場名（例：渋谷 CLUB QUATTRO）">
-      <input type="text" id="new-gig-venue" placeholder="場所（例：渋谷 CLUB QUATTRO）">
-      <input type="date" id="new-gig-date">
-      <div class="row" style="justify-content:flex-end;gap:8px">
-        <button id="cancel-gig">キャンセル</button>
-        <button class="primary" id="save-gig">作成</button>
-      </div>
-    </div>`;
+    h += gigForm(null);
   } else {
     h += `<div class="row-between" style="margin-bottom:12px">
       <span class="section-label" style="margin:0">現場一覧</span>
@@ -180,16 +214,20 @@ function renderGigs() {
       const checks = (g.checks||[]).length;
       const pct = items.length > 0 ? Math.round(checks/items.length*100) : 0;
       const dateStr = g.date ? new Date(g.date+'T00:00:00').toLocaleDateString('ja-JP',{month:'long',day:'numeric'}) : '';
-      h += `<div class="card gig-card" data-gig="${g.id}">
+      h += `<div class="card gig-card" data-gig="${g.id}" data-type="${g.type||'other'}">
         <div class="card-pad">
           <div class="row-between">
-            <span style="font-weight:600;font-size:16px">${esc(g.name)}</span>
-            <div class="row" style="gap:4px">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              ${gigTypeBadge(g.type)}
+              <span style="font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span>
+            </div>
+            <div class="row" style="gap:4px;flex-shrink:0">
               <span class="badge count">${items.length}点</span>
               <button class="btn-icon danger" data-del-gig="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
             </div>
           </div>
-          <div class="gig-meta" style="margin-top:4px">
+          ${g.artist?`<div class="gig-meta" style="margin-top:3px"><i class="ti ti-user" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(g.artist)}</div>`:''}
+          <div class="gig-meta" style="margin-top:3px">
             ${dateStr?`<span><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${dateStr}</span>`:''}
             ${g.venue?`<span style="margin-left:${dateStr?'10px':'0'}"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(g.venue)}</span>`:''}
           </div>
@@ -281,18 +319,32 @@ function renderGigDetail() {
   const checks = gig.checks || [];
   const dateStr = gig.date ? new Date(gig.date+'T00:00:00').toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '';
 
-  let h = `<button class="back-btn" id="back-btn"><i class="ti ti-arrow-left" style="font-size:18px"></i>一覧に戻る</button>
-  <div style="margin-bottom:16px">
-    <div style="font-size:20px;font-weight:600">${esc(gig.name)}</div>
-    <div class="gig-meta" style="margin-top:4px">
-      ${dateStr?`<span><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${dateStr}</span>`:''}
-      ${gig.venue?`<span style="margin-left:${dateStr?'10px':'0'}"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.venue)}</span>`:''}
+  let h = `<button class="back-btn" id="back-btn"><i class="ti ti-arrow-left" style="font-size:18px"></i>一覧に戻る</button>`;
+
+  if (state.editingGig) {
+    h += gigForm(gig);
+    h += `<div style="display:flex;gap:4px;margin-top:20px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px">
+      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
+      <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
+    </div>`;
+  } else {
+    h += `<div style="margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        ${gigTypeBadge(gig.type)}
+        <span style="font-size:20px;font-weight:600">${esc(gig.name)}</span>
+        <button class="btn-icon" id="edit-gig-btn" style="margin-left:auto"><i class="ti ti-edit" style="font-size:18px"></i></button>
+      </div>
+      ${gig.artist?`<div class="gig-meta"><i class="ti ti-user" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.artist)}</div>`:''}
+      <div class="gig-meta" style="margin-top:2px">
+        ${dateStr?`<span><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${dateStr}</span>`:''}
+        ${gig.venue?`<span style="margin-left:${dateStr?'10px':'0'}"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.venue)}</span>`:''}
+      </div>
     </div>
-  </div>
-  <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px">
-    <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
-    <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
-  </div>`;
+    <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px;margin-top:12px">
+      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
+      <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
+    </div>`;
+  }
 
   if (state.gigView === 'list') {
     const by = {};
@@ -401,18 +453,37 @@ function attachEvents() {
   const addGigBtn = document.getElementById('add-gig-btn');
   if (addGigBtn) addGigBtn.addEventListener('click', () => setState({showAddGig:true}));
 
-  const cancelGig = document.getElementById('cancel-gig');
-  if (cancelGig) cancelGig.addEventListener('click', () => setState({showAddGig:false}));
+  const cancelGigForm = document.getElementById('cancel-gig-form');
+  if (cancelGigForm) cancelGigForm.addEventListener('click', () => setState({showAddGig:false, editingGig:false}));
 
-  const saveGig = document.getElementById('save-gig');
-  if (saveGig) saveGig.addEventListener('click', () => {
-    const name = document.getElementById('new-gig-name').value.trim();
-    if (!name) return;
-    const venue = document.getElementById('new-gig-venue').value.trim();
-    const date = document.getElementById('new-gig-date').value;
-    state.gigs.push({id:newId(), name, venue, date, overrides:[], extras:[], checks:[]});
-    saveAll(); setState({showAddGig:false});
+  document.querySelectorAll('.type-opt').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('type-selected'));
+      el.classList.add('type-selected');
+    });
   });
+
+  const saveGigForm = document.getElementById('save-gig-form');
+  if (saveGigForm) saveGigForm.addEventListener('click', () => {
+    const name = document.getElementById('gig-f-name').value.trim();
+    if (!name) return;
+    const artist = document.getElementById('gig-f-artist').value.trim();
+    const venue = document.getElementById('gig-f-venue').value.trim();
+    const date = document.getElementById('gig-f-date').value;
+    const type = document.querySelector('input[name="gig-type"]:checked')?.value || 'other';
+    const editId = saveGigForm.dataset.editId;
+    if (editId) {
+      const gig = getGig(+editId);
+      Object.assign(gig, {name, artist, venue, date, type});
+      saveAll(); setState({editingGig:false});
+    } else {
+      state.gigs.push({id:newId(), name, artist, venue, date, type, overrides:[], extras:[], checks:[]});
+      saveAll(); setState({showAddGig:false});
+    }
+  });
+
+  const editGigBtn = document.getElementById('edit-gig-btn');
+  if (editGigBtn) editGigBtn.addEventListener('click', () => setState({editingGig:true}));
 
   document.querySelectorAll('[data-del-gig]').forEach(el =>
     el.addEventListener('click', e => {
