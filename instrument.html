@@ -108,7 +108,7 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
 </div>
 
 <script>
-const CATEGORIES = ["ドラム本体","シンバル","ペダル","スタンド","スティック・ブラシ","その他"];
+let CATEGORIES = load('categories', ["ドラム本体","シンバル","ペダル","スタンド","スティック・ブラシ","その他"]);
 
 function load(key, def) {
   try { return JSON.parse(localStorage.getItem('drumgear_' + key)) ?? def; } catch { return def; }
@@ -122,6 +122,7 @@ let state = {
   showAddGig: false,
   showAddGear: false,
   showAddExtra: false,
+  showAddCat: false,
   gear: load('gear', [
     {id:1,name:'バスドラム',qty:1,cat:'ドラム本体',base:true},
     {id:2,name:'スネア',qty:1,cat:'ドラム本体',base:true},
@@ -139,7 +140,7 @@ let state = {
 };
 
 function setState(patch) { Object.assign(state, patch); render(); }
-function saveAll() { save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); }
+function saveAll() { save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES); }
 function newId() { state.nextId++; return state.nextId; }
 function getGig(id) { return state.gigs.find(g => g.id === id); }
 
@@ -157,6 +158,7 @@ function renderGigs() {
   if (state.showAddGig) {
     h += `<div class="add-form">
       <input type="text" id="new-gig-name" placeholder="現場名（例：渋谷 CLUB QUATTRO）">
+      <input type="text" id="new-gig-venue" placeholder="場所（例：渋谷 CLUB QUATTRO）">
       <input type="date" id="new-gig-date">
       <div class="row" style="justify-content:flex-end;gap:8px">
         <button id="cancel-gig">キャンセル</button>
@@ -173,7 +175,7 @@ function renderGigs() {
   if (state.gigs.length === 0 && !state.showAddGig) {
     h += `<div class="empty"><i class="ti ti-music" style="font-size:40px;display:block;margin-bottom:12px"></i>現場がまだありません<br><small>＋から追加してください</small></div>`;
   } else {
-    [...state.gigs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(g => {
+    [...state.gigs].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(g => {
       const items = gigItems(g).filter(i=>i.included);
       const checks = (g.checks||[]).length;
       const pct = items.length > 0 ? Math.round(checks/items.length*100) : 0;
@@ -187,7 +189,10 @@ function renderGigs() {
               <button class="btn-icon danger" data-del-gig="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
             </div>
           </div>
-          ${dateStr?`<div class="gig-meta"><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>${dateStr}</div>`:''}
+          <div class="gig-meta" style="margin-top:4px">
+            ${dateStr?`<span><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${dateStr}</span>`:''}
+            ${g.venue?`<span style="margin-left:${dateStr?'10px':'0'}"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(g.venue)}</span>`:''}
+          </div>
           <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${pct}%"></div></div>
           <div style="font-size:12px;color:var(--text3);margin-top:5px">積み込み ${checks}/${items.length}点</div>
         </div>
@@ -221,6 +226,32 @@ function renderGear() {
     </div>`;
   }
 
+  h += `<div class="section-label" style="margin-top:20px;margin-bottom:8px">カテゴリ</div>
+  <div class="card" style="margin-bottom:16px">`;
+  CATEGORIES.forEach((cat, i) => {
+    h += `<div class="item-row">
+      <span class="name">${esc(cat)}</span>
+      ${i > 0 ? `<button class="btn-icon" data-cat-up="${i}" title="上へ"><i class="ti ti-arrow-up" style="font-size:15px"></i></button>` : '<span style="width:27px"></span>'}
+      ${i < CATEGORIES.length-1 ? `<button class="btn-icon" data-cat-down="${i}" title="下へ"><i class="ti ti-arrow-down" style="font-size:15px"></i></button>` : '<span style="width:27px"></span>'}
+      <button class="btn-icon danger" data-del-cat="${i}"><i class="ti ti-trash" style="font-size:15px"></i></button>
+    </div>`;
+  });
+  if (state.showAddCat) {
+    h += `<div style="padding:10px 16px;border-top:0.5px solid var(--border)">
+      <div class="row" style="gap:8px">
+        <input type="text" id="new-cat-name" placeholder="カテゴリ名" style="flex:1">
+        <button id="cancel-cat">キャンセル</button>
+        <button class="primary" id="save-cat">追加</button>
+      </div>
+    </div>`;
+  } else {
+    h += `<div style="padding:8px 16px;border-top:0.5px solid var(--border)">
+      <button id="add-cat-btn" style="border:none;padding:0;font-size:13px;color:var(--teal)"><i class="ti ti-plus" style="font-size:14px"></i> カテゴリを追加</button>
+    </div>`;
+  }
+  h += `</div>`;
+
+  h += `<div class="section-label" style="margin-bottom:8px">機材</div>`;
   const by = {};
   CATEGORIES.forEach(c => by[c] = []);
   state.gear.forEach(g => (by[g.cat]||by['その他']).push(g));
@@ -253,7 +284,10 @@ function renderGigDetail() {
   let h = `<button class="back-btn" id="back-btn"><i class="ti ti-arrow-left" style="font-size:18px"></i>一覧に戻る</button>
   <div style="margin-bottom:16px">
     <div style="font-size:20px;font-weight:600">${esc(gig.name)}</div>
-    ${dateStr?`<div class="gig-meta">${dateStr}</div>`:''}
+    <div class="gig-meta" style="margin-top:4px">
+      ${dateStr?`<span><i class="ti ti-calendar" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${dateStr}</span>`:''}
+      ${gig.venue?`<span style="margin-left:${dateStr?'10px':'0'}"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.venue)}</span>`:''}
+    </div>
   </div>
   <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px">
     <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
@@ -374,8 +408,9 @@ function attachEvents() {
   if (saveGig) saveGig.addEventListener('click', () => {
     const name = document.getElementById('new-gig-name').value.trim();
     if (!name) return;
+    const venue = document.getElementById('new-gig-venue').value.trim();
     const date = document.getElementById('new-gig-date').value;
-    state.gigs.push({id:newId(), name, date, overrides:[], extras:[], checks:[]});
+    state.gigs.push({id:newId(), name, venue, date, overrides:[], extras:[], checks:[]});
     saveAll(); setState({showAddGig:false});
   });
 
@@ -413,6 +448,46 @@ function attachEvents() {
   document.querySelectorAll('[data-del-gear]').forEach(el =>
     el.addEventListener('click', () => {
       state.gear = state.gear.filter(g => g.id !== +el.dataset.delGear);
+      saveAll(); render();
+    }));
+
+  const addCatBtn = document.getElementById('add-cat-btn');
+  if (addCatBtn) addCatBtn.addEventListener('click', () => setState({showAddCat:true}));
+
+  const cancelCat = document.getElementById('cancel-cat');
+  if (cancelCat) cancelCat.addEventListener('click', () => setState({showAddCat:false}));
+
+  const saveCat = document.getElementById('save-cat');
+  if (saveCat) saveCat.addEventListener('click', () => {
+    const name = document.getElementById('new-cat-name').value.trim();
+    if (!name || CATEGORIES.includes(name)) return;
+    CATEGORIES.push(name);
+    saveAll(); setState({showAddCat:false});
+  });
+
+  document.querySelectorAll('[data-del-cat]').forEach(el =>
+    el.addEventListener('click', () => {
+      const i = +el.dataset.delCat;
+      const cat = CATEGORIES[i];
+      if (state.gear.some(g => g.cat === cat)) {
+        alert(`「${cat}」に機材が登録されています。先に機材を削除または移動してください。`);
+        return;
+      }
+      CATEGORIES.splice(i, 1);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-cat-up]').forEach(el =>
+    el.addEventListener('click', () => {
+      const i = +el.dataset.catUp;
+      [CATEGORIES[i-1], CATEGORIES[i]] = [CATEGORIES[i], CATEGORIES[i-1]];
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-cat-down]').forEach(el =>
+    el.addEventListener('click', () => {
+      const i = +el.dataset.catDown;
+      [CATEGORIES[i], CATEGORIES[i+1]] = [CATEGORIES[i+1], CATEGORIES[i]];
       saveAll(); render();
     }));
 
