@@ -52,30 +52,6 @@
       letter-spacing: 0.04em;
     }
 
-    #article-view {
-      display: none;
-      max-width: 720px;
-      margin: 0 auto;
-      text-align: left;
-      line-height: 1.9;
-    }
-
-    #article-view p {
-      margin: 0 0 1.2em 0;
-      text-align: center;
-    }
-
-    #back-link-wrap {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    #back-link {
-      display: inline-block;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
     #light-switch {
       position: fixed;
       right: 24px;
@@ -110,7 +86,6 @@
 
   <div id="honbun">
     <ul id="diary-list"></ul>
-    <div id="article-view"></div>
   </div>
 
   <img id="light-switch" src="switch-off2.png" alt="light switch">
@@ -123,55 +98,19 @@
   const diaryEntries = [
     {
       title: "session#1",
-      content: `
-        <p><a href="https://www.youtube.com/watch?v=9LmKmhKp7s4" target="_blank">session#1</a></p>
-      `,
+      url: "https://www.youtube.com/watch?v=9LmKmhKp7s4",
     }
   ];
 
   const list = document.getElementById("diary-list");
-  const articleView = document.getElementById("article-view");
   const bgm = document.getElementById("diary-bgm");
-
-  let savedScrollY = 0;
-
-  function showList() {
-    articleView.style.display = "none";
-    list.style.display = "block";
-    window.scrollTo(0, savedScrollY);
-  }
-
-  function showArticle(content) {
-    list.style.display = "none";
-    articleView.style.display = "block";
-
-    articleView.innerHTML = `
-      <div id="back-link-wrap">
-        <a href="#" id="back-link">← back</a>
-      </div>
-      ${content}
-    `;
-
-    window.scrollTo(0, 0);
-
-    document.getElementById("back-link").addEventListener("click", (e) => {
-      e.preventDefault();
-      showList();
-    });
-  }
 
   diaryEntries.forEach(entry => {
     const li = document.createElement("li");
     const a = document.createElement("a");
-    a.href = "#";
+    a.href = entry.url;
+    a.target = "_blank";
     a.textContent = entry.title;
-
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      savedScrollY = window.scrollY;
-      showArticle(entry.content);
-    });
-
     li.appendChild(a);
     list.appendChild(li);
   });
