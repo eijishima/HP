@@ -475,12 +475,12 @@ function attachEvents() {
 
   const saveGigForm = document.getElementById('save-gig-form');
   if (saveGigForm) saveGigForm.addEventListener('click', () => {
-    const name = document.getElementById('gig-f-name').value.trim();
-    if (!name) return;
+    const type = document.querySelector('input[name="gig-type"]:checked')?.value || 'other';
+    const rawName = document.getElementById('gig-f-name').value.trim();
+    const name = rawName || GIG_TYPES[type].label;
     const artist = document.getElementById('gig-f-artist').value.trim();
     const venue = document.getElementById('gig-f-venue').value.trim();
     const date = document.getElementById('gig-f-date').value;
-    const type = document.querySelector('input[name="gig-type"]:checked')?.value || 'other';
     const editId = saveGigForm.dataset.editId;
     if (editId) {
       const gig = getGig(+editId);
