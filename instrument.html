@@ -185,12 +185,19 @@ function isAutoName(gig) {
   return GIG_TYPES[gig.type||'other'] && gig.name === GIG_TYPES[gig.type||'other'].label;
 }
 
+function knownArtists() {
+  const set = new Set();
+  state.gigs.forEach(g => { if (g.artist) set.add(g.artist); });
+  return [...set];
+}
+
 function gigForm(gig) {
   const isEdit = !!gig;
   const g = gig || {};
   return `<div class="add-form" id="gig-form">
     <input type="text" id="gig-f-name" placeholder="現場名" value="${esc(g.name||'')}">
-    <input type="text" id="gig-f-artist" placeholder="アーティスト名" value="${esc(g.artist||'')}">
+    <input type="text" id="gig-f-artist" placeholder="アーティスト名" value="${esc(g.artist||'')}" list="artist-suggestions">
+    <datalist id="artist-suggestions">${knownArtists().map(a=>`<option value="${esc(a)}">`).join('')}</datalist>
     <input type="text" id="gig-f-venue" placeholder="場所" value="${esc(g.venue||'')}">
     <div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:4px">日程</div>
