@@ -110,6 +110,8 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
 @media (prefers-color-scheme: dark) {
   .group-badge.warn { background: #451A03; color: #FCD34D; }
 }
+.month-header { font-size: 15px; font-weight: 600; color: var(--text); margin: 20px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border2); }
+.month-header:first-child { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -125,7 +127,8 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
     </div>
     <div class="tab-bar" id="main-tabs">
       <button class="tab active" data-tab="gigs">現場</button>
-      <button class="tab" data-tab="gear">機材マスター</button>
+      <button class="tab" data-tab="gear">機材</button>
+      <button class="tab" data-tab="revenue">売上</button>
     </div>
   </div>
   <div class="body" id="root"></div>
@@ -243,6 +246,10 @@ function gigForm(gig) {
     <datalist id="artist-suggestions">${knownArtists().map(a=>`<option value="${esc(a)}">`).join('')}</datalist>
     <input type="text" id="gig-f-name" placeholder="現場名" value="${esc(g.name||'')}">
     <input type="text" id="gig-f-venue" placeholder="場所" value="${esc(g.venue||'')}">
+    <div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">ギャラ（円）</div>
+      <input type="number" id="gig-f-fee" placeholder="0" min="0" step="1" value="${g.fee||''}" style="width:100%;text-align:left">
+    </div>
     <div class="row" style="gap:6px">
       ${['rehearsal','live','other'].map(t=>`<label style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border:0.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;font-size:13px" class="type-opt ${(g.type||'other')===t?'type-selected':''}">
         <input type="radio" name="gig-type" value="${t}" ${(g.type||'other')===t?'checked':''} style="width:14px;height:14px;accent-color:var(--teal)">
@@ -273,7 +280,14 @@ function renderGigs() {
   if (state.gigs.length === 0 && !state.showAddGig) {
     h += `<div class="empty"><i class="ti ti-music" style="font-size:40px;display:block;margin-bottom:12px"></i>現場がまだありません<br><small>＋から追加してください</small></div>`;
   } else {
+    let lastMonthKey = null;
     [...state.gigs].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(g => {
+      const monthKey = g.date ? g.date.slice(0,7) : 'none';
+      if (monthKey !== lastMonthKey) {
+        lastMonthKey = monthKey;
+        const monthLabel = g.date ? new Date(g.date+'T00:00:00').toLocaleDateString('ja-JP',{year:'numeric',month:'long'}) : '日程未定';
+        h += `<div class="month-header">${monthLabel}</div>`;
+      }
       const items = gigItems(g).filter(i=>i.included);
       const checks = (g.checks||[]).length;
       const pct = items.length > 0 ? Math.round(checks/items.length*100) : 0;
@@ -287,7 +301,10 @@ function renderGigs() {
               <button class="btn-icon danger" data-del-gig="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
             </div>
           </div>
-          ${g.artist?`<div style="font-size:15px;font-weight:500;margin-top:4px"><i class="ti ti-user" style="font-size:14px;vertical-align:-1px;margin-right:3px;color:var(--text2)"></i>${esc(g.artist)}</div>`:''}
+          <div class="row-between" style="margin-top:4px">
+            ${g.artist?`<div style="font-size:15px;font-weight:500"><i class="ti ti-user" style="font-size:14px;vertical-align:-1px;margin-right:3px;color:var(--text2)"></i>${esc(g.artist)}</div>`:'<span></span>'}
+            ${g.fee?`<span style="font-size:13px;color:var(--text2)">¥${g.fee.toLocaleString()}</span>`:''}
+          </div>
           <div class="gig-meta" style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             ${gigTypeBadge(g.type)}
             ${!isAutoName(g) ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span>` : ''}
@@ -415,7 +432,10 @@ function renderGigDetail() {
         <span style="font-size:22px;font-weight:700">${dateStr || '日程未定'}</span>
         <button class="btn-icon" id="edit-gig-btn"><i class="ti ti-edit" style="font-size:18px"></i></button>
       </div>
-      ${gig.artist?`<div style="font-size:16px;font-weight:500;margin-top:4px"><i class="ti ti-user" style="font-size:14px;vertical-align:-1px;margin-right:3px;color:var(--text2)"></i>${esc(gig.artist)}</div>`:''}
+      <div class="row-between" style="margin-top:4px">
+        ${gig.artist?`<div style="font-size:16px;font-weight:500"><i class="ti ti-user" style="font-size:14px;vertical-align:-1px;margin-right:3px;color:var(--text2)"></i>${esc(gig.artist)}</div>`:'<span></span>'}
+        ${gig.fee?`<span style="font-size:14px;color:var(--text2)">¥${gig.fee.toLocaleString()}</span>`:''}
+      </div>
       <div class="gig-meta" style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         ${gigTypeBadge(gig.type)}
         ${!isAutoName(gig) ? `<span>${esc(gig.name)}</span>` : ''}
@@ -550,9 +570,43 @@ function render() {
     document.querySelectorAll('#main-tabs .tab').forEach(t => {
       t.classList.toggle('active', t.dataset.tab === state.view);
     });
-    root.innerHTML = state.view === 'gigs' ? renderGigs() : renderGear();
+    root.innerHTML = state.view === 'gigs' ? renderGigs() : state.view === 'gear' ? renderGear() : renderRevenue();
   }
   attachEvents();
+}
+
+function renderRevenue() {
+  const byMonth = {};
+  state.gigs.forEach(g => {
+    if (!g.date) return;
+    const key = g.date.slice(0,7);
+    if (!byMonth[key]) byMonth[key] = { total: 0, count: 0 };
+    byMonth[key].total += g.fee || 0;
+    byMonth[key].count += 1;
+  });
+  const months = Object.keys(byMonth).sort().reverse();
+  let h = `<div class="section-label" style="margin-bottom:12px">月別売上</div>`;
+  if (months.length === 0) {
+    h += `<div class="empty"><i class="ti ti-coin" style="font-size:40px;display:block;margin-bottom:12px"></i>売上データがまだありません</div>`;
+    return h;
+  }
+  const yearTotal = months.filter(m => m.startsWith(String(new Date().getFullYear()))).reduce((s,m)=>s+byMonth[m].total, 0);
+  h += `<div class="card-pad" style="background:var(--bg2);border-radius:var(--radius-lg);margin-bottom:16px">
+    <div style="font-size:12px;color:var(--text2)">${new Date().getFullYear()}年の合計</div>
+    <div style="font-size:24px;font-weight:700;margin-top:2px">¥${yearTotal.toLocaleString()}</div>
+  </div>`;
+  h += `<div class="card">`;
+  months.forEach((key, i) => {
+    const [y,m] = key.split('-');
+    const label = `${y}年${parseInt(m)}月`;
+    h += `<div class="item-row" style="${i===months.length-1?'border-bottom:none':''}">
+      <span class="name">${label}</span>
+      <span style="font-size:13px;color:var(--text3)">${byMonth[key].count}件</span>
+      <span style="font-weight:600;font-size:15px;margin-left:auto">¥${byMonth[key].total.toLocaleString()}</span>
+    </div>`;
+  });
+  h += `</div>`;
+  return h;
 }
 
 function attachEvents() {
@@ -585,15 +639,16 @@ function attachEvents() {
     const artist = document.getElementById('gig-f-artist').value.trim();
     const venue = document.getElementById('gig-f-venue').value.trim();
     const date = document.getElementById('gig-f-date').value;
+    const fee = parseInt(document.getElementById('gig-f-fee').value) || 0;
     const needsCar = document.getElementById('gig-f-needscar').checked;
     const editId = saveGigForm.dataset.editId;
     if (editId) {
       const gig = getGig(+editId);
       const carBooked = needsCar ? gig.carBooked : false;
-      Object.assign(gig, {name, artist, venue, date, type, needsCar, carBooked});
+      Object.assign(gig, {name, artist, venue, date, fee, type, needsCar, carBooked});
       saveAll(); setState({editingGig:false});
     } else {
-      state.gigs.push({id:newId(), name, artist, venue, date, type, needsCar, carBooked:false, overrides:[], extras:[], checks:[]});
+      state.gigs.push({id:newId(), name, artist, venue, date, fee, type, needsCar, carBooked:false, overrides:[], extras:[], checks:[]});
       saveAll(); setState({showAddGig:false});
     }
   });
