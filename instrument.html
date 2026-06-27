@@ -105,6 +105,11 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
   .gig-type-badge[data-type="live"] { background: #FEE2E2; color: #991B1B; }
 }
 .type-selected { border-color: var(--teal) !important; color: var(--teal) !important; background: var(--teal-bg) !important; }
+.group-badge { background: var(--blue-bg); color: var(--blue-text); }
+.group-badge.warn { background: #FEF3C7; color: #92400E; font-weight: 500; }
+@media (prefers-color-scheme: dark) {
+  .group-badge.warn { background: #451A03; color: #FCD34D; }
+}
 </style>
 </head>
 <body>
@@ -143,6 +148,7 @@ let state = {
   showAddExtra: false,
   showAddCat: false,
   editingGig: false,
+  editingGearId: null,
   gear: load('gear', [
     {id:1,name:'バスドラム',qty:1,cat:'ドラム本体',base:true},
     {id:2,name:'スネア',qty:1,cat:'ドラム本体',base:true},
@@ -163,6 +169,15 @@ function setState(patch) { Object.assign(state, patch); render(); }
 function saveAll() { save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES); }
 function newId() { state.nextId++; return state.nextId; }
 function getGig(id) { return state.gigs.find(g => g.id === id); }
+
+function groupBadge(allItems, item, checks) {
+  if (!item.group) return '';
+  const members = allItems.filter(i => !i.extra && i.group === item.group);
+  const total = members.length;
+  const done = checks ? members.filter(i => i.included && checks.includes(i.id)).length : members.filter(i => i.included).length;
+  const complete = done >= total;
+  return `<span class="badge group-badge ${complete?'':'warn'}"><i class="ti ti-link" style="font-size:11px;vertical-align:-1px;margin-right:2px"></i>${esc(item.group)} ${done}/${total}</span>`;
+}
 
 function gigItems(gig) {
   const base = state.gear.map(g => {
@@ -286,23 +301,40 @@ function renderGigs() {
   return h;
 }
 
+function knownGroups() {
+  const set = new Set();
+  state.gear.forEach(g => { if (g.group) set.add(g.group); });
+  return [...set];
+}
+
+function gearForm(gear) {
+  const isEdit = !!gear;
+  const g = gear || {};
+  return `<div class="add-form">
+    <input type="text" id="gear-f-name" placeholder="機材名" value="${esc(g.name||'')}">
+    <div class="row" style="gap:8px">
+      <input type="number" id="gear-f-qty" value="${g.qty||1}" min="1" max="99">
+      <select id="gear-f-cat" style="flex:1">${CATEGORIES.map(c=>`<option ${g.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+    </div>
+    <div>
+      <input type="text" id="gear-f-group" placeholder="セット名（任意・例：フロアタム）" value="${esc(g.group||'')}" list="group-suggestions">
+      <datalist id="group-suggestions">${knownGroups().map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">同じセット名を付けると、両方揃うまで警告が出ます</div>
+    </div>
+    <label style="font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="gear-f-base" ${g.base!==false?'checked':''} style="width:18px;height:18px">ベースセットに含める
+    </label>
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button id="cancel-gear">キャンセル</button>
+      <button class="primary" id="save-gear" data-edit-id="${g.id||''}">${isEdit?'保存':'追加'}</button>
+    </div>
+  </div>`;
+}
+
 function renderGear() {
   let h = '';
   if (state.showAddGear) {
-    h += `<div class="add-form">
-      <input type="text" id="new-gear-name" placeholder="機材名">
-      <div class="row" style="gap:8px">
-        <input type="number" id="new-gear-qty" value="1" min="1" max="99">
-        <select id="new-gear-cat" style="flex:1">${CATEGORIES.map(c=>`<option>${c}</option>`).join('')}</select>
-      </div>
-      <label style="font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="new-gear-base" checked style="width:18px;height:18px">ベースセットに含める
-      </label>
-      <div class="row" style="justify-content:flex-end;gap:8px">
-        <button id="cancel-gear">キャンセル</button>
-        <button class="primary" id="save-gear">追加</button>
-      </div>
-    </div>`;
+    h += gearForm(state.editingGearId ? state.gear.find(g=>g.id===state.editingGearId) : null);
   } else {
     h += `<div class="row-between" style="margin-bottom:12px">
       <span class="section-label" style="margin:0">全機材リスト</span>
@@ -348,7 +380,9 @@ function renderGear() {
       h += `<div class="item-row">
         <span class="name">${esc(g.name)}</span>
         <span class="qty">×${g.qty}</span>
+        ${g.group?`<span class="badge" style="background:var(--blue-bg);color:var(--blue-text)"><i class="ti ti-link" style="font-size:11px;vertical-align:-1px;margin-right:2px"></i>${esc(g.group)}</span>`:''}
         <span class="badge ${g.base?'base':''}">${g.base?'ベース':'追加'}</span>
+        <button class="btn-icon" data-edit-gear="${g.id}"><i class="ti ti-edit" style="font-size:15px"></i></button>
         <button class="btn-icon danger" data-del-gear="${g.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
       </div>`;
     });
@@ -407,6 +441,7 @@ function renderGigDetail() {
         h += `<div class="item-row">
           <span class="name" style="${!incl?'text-decoration:line-through;color:var(--text3)':''}">${esc(g.name)}</span>
           <span class="qty">×${g.qty}</span>
+          ${groupBadge(allItems, g)}
           <button class="toggle-btn ${incl?'included':'excluded'}" data-toggle="${g.id}">${incl?'含む':'除外'}</button>
         </div>`;
       });
@@ -460,6 +495,7 @@ function renderGigDetail() {
         <input type="checkbox" ${checked?'checked':''} data-check-input="${g.id}">
         <span class="check-name">${esc(g.name)}</span>
         ${g.delivered?`<span class="badge" style="background:var(--teal-bg);color:var(--teal-text)">預け済</span>`:''}
+        ${groupBadge(allItems, g, checks)}
         <span class="check-qty">×${g.qty}</span>
       </div>`;
     });
@@ -560,21 +596,31 @@ function attachEvents() {
     }));
 
   const addGearBtn = document.getElementById('add-gear-btn');
-  if (addGearBtn) addGearBtn.addEventListener('click', () => setState({showAddGear:true}));
+  if (addGearBtn) addGearBtn.addEventListener('click', () => setState({showAddGear:true, editingGearId:null}));
 
   const cancelGear = document.getElementById('cancel-gear');
-  if (cancelGear) cancelGear.addEventListener('click', () => setState({showAddGear:false}));
+  if (cancelGear) cancelGear.addEventListener('click', () => setState({showAddGear:false, editingGearId:null}));
 
   const saveGear = document.getElementById('save-gear');
   if (saveGear) saveGear.addEventListener('click', () => {
-    const name = document.getElementById('new-gear-name').value.trim();
+    const name = document.getElementById('gear-f-name').value.trim();
     if (!name) return;
-    const qty = parseInt(document.getElementById('new-gear-qty').value) || 1;
-    const cat = document.getElementById('new-gear-cat').value;
-    const base = document.getElementById('new-gear-base').checked;
-    state.gear.push({id:newId(), name, qty, cat, base});
-    saveAll(); setState({showAddGear:false});
+    const qty = parseInt(document.getElementById('gear-f-qty').value) || 1;
+    const cat = document.getElementById('gear-f-cat').value;
+    const group = document.getElementById('gear-f-group').value.trim();
+    const base = document.getElementById('gear-f-base').checked;
+    const editId = saveGear.dataset.editId;
+    if (editId) {
+      const gear = state.gear.find(g => g.id === +editId);
+      Object.assign(gear, {name, qty, cat, group, base});
+    } else {
+      state.gear.push({id:newId(), name, qty, cat, group, base});
+    }
+    saveAll(); setState({showAddGear:false, editingGearId:null});
   });
+
+  document.querySelectorAll('[data-edit-gear]').forEach(el =>
+    el.addEventListener('click', () => setState({showAddGear:true, editingGearId:+el.dataset.editGear})));
 
   document.querySelectorAll('[data-del-gear]').forEach(el =>
     el.addEventListener('click', () => {
