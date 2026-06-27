@@ -181,6 +181,10 @@ function gigTypeBadge(type) {
   return `<span class="gig-type-badge" data-type="${type}">${t.label}</span>`;
 }
 
+function isAutoName(gig) {
+  return GIG_TYPES[gig.type||'other'] && gig.name === GIG_TYPES[gig.type||'other'].label;
+}
+
 function gigForm(gig) {
   const isEdit = !!gig;
   const g = gig || {};
@@ -228,8 +232,7 @@ function renderGigs() {
         <div class="card-pad">
           <div class="row-between">
             <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-              ${gigTypeBadge(g.type)}
-              <span style="font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span>
+              ${isAutoName(g) ? gigTypeBadge(g.type) || `<span style="font-weight:600;font-size:16px">${esc(g.name)}</span>` : `${gigTypeBadge(g.type)}<span style="font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span>`}
             </div>
             <div class="row" style="gap:4px;flex-shrink:0">
               <span class="badge count">${items.length}点</span>
@@ -340,8 +343,7 @@ function renderGigDetail() {
   } else {
     h += `<div style="margin-bottom:4px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        ${gigTypeBadge(gig.type)}
-        <span style="font-size:20px;font-weight:600">${esc(gig.name)}</span>
+        ${isAutoName(gig) ? (gigTypeBadge(gig.type) ? `<span style="font-size:20px;font-weight:600">${gigTypeBadge(gig.type)}</span>` : `<span style="font-size:20px;font-weight:600">${esc(gig.name)}</span>`) : `${gigTypeBadge(gig.type)}<span style="font-size:20px;font-weight:600">${esc(gig.name)}</span>`}
         <button class="btn-icon" id="edit-gig-btn" style="margin-left:auto"><i class="ti ti-edit" style="font-size:18px"></i></button>
       </div>
       ${gig.artist?`<div class="gig-meta"><i class="ti ti-user" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.artist)}</div>`:''}
