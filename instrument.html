@@ -420,6 +420,9 @@ function renderGigDetail() {
         h += `<div class="item-row">
           <span class="name">${esc(e.name)}</span>
           <span class="qty">×${e.qty}</span>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--text2)">
+            <input type="checkbox" data-toggle-delivered="${e.id}" ${e.delivered?'checked':''} style="width:16px;height:16px">預け済
+          </label>
           <button class="btn-icon danger" data-del-extra="${e.id}"><i class="ti ti-trash" style="font-size:17px"></i></button>
         </div>`;
       });
@@ -456,6 +459,7 @@ function renderGigDetail() {
       h += `<div class="check-row ${checked?'checked':''}" data-check="${g.id}">
         <input type="checkbox" ${checked?'checked':''} data-check-input="${g.id}">
         <span class="check-name">${esc(g.name)}</span>
+        ${g.delivered?`<span class="badge" style="background:var(--teal-bg);color:var(--teal-text)">預け済</span>`:''}
         <span class="check-qty">×${g.qty}</span>
       </div>`;
     });
@@ -652,6 +656,14 @@ function attachEvents() {
     el.addEventListener('click', () => {
       const gig = getGig(state.activeGigId);
       gig.extras = gig.extras.filter(e => e.id !== +el.dataset.delExtra);
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-toggle-delivered]').forEach(el =>
+    el.addEventListener('change', () => {
+      const gig = getGig(state.activeGigId);
+      const extra = gig.extras.find(e => e.id === +el.dataset.toggleDelivered);
+      extra.delivered = el.checked;
       saveAll(); render();
     }));
 
