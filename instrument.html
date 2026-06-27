@@ -185,6 +185,29 @@ function isAutoName(gig) {
   return GIG_TYPES[gig.type||'other'] && gig.name === GIG_TYPES[gig.type||'other'].label;
 }
 
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr+'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+
+function carStatus(gig) {
+  if (!gig.needsCar) return null;
+  if (gig.carBooked) return 'booked';
+  const d = daysUntil(gig.date);
+  if (d === null) return 'pending';
+  return d <= 14 ? 'urgent' : 'pending';
+}
+
+function carBadge(gig) {
+  const status = carStatus(gig);
+  if (!status) return '';
+  if (status === 'booked') return `<span class="badge" style="background:var(--teal-bg);color:var(--teal-text)"><i class="ti ti-car" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>予約済み</span>`;
+  if (status === 'urgent') return `<span class="badge" style="background:#FEE2E2;color:#991B1B"><i class="ti ti-alert-triangle" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>レンタカー予約可</span>`;
+  return `<span class="badge" style="background:var(--bg3);color:var(--text2)"><i class="ti ti-car" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>レンタカー必要</span>`;
+}
+
 function knownArtists() {
   const set = new Set();
   state.gigs.forEach(g => { if (g.artist) set.add(g.artist); });
@@ -209,6 +232,9 @@ function gigForm(gig) {
         ${GIG_TYPES[t].label}
       </label>`).join('')}
     </div>
+    <label style="font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="gig-f-needscar" ${g.needsCar?'checked':''} style="width:18px;height:18px">レンタカーが必要
+    </label>
     <div class="row" style="justify-content:flex-end;gap:8px">
       <button id="cancel-gig-form">キャンセル</button>
       <button class="primary" id="save-gig-form" data-edit-id="${g.id||''}">${isEdit?'保存':'作成'}</button>
@@ -250,6 +276,7 @@ function renderGigs() {
             ${!isAutoName(g) ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span>` : ''}
             ${g.venue?`<span><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(g.venue)}</span>`:''}
           </div>
+          ${g.needsCar?`<div style="margin-top:6px">${carBadge(g)}</div>`:''}
           <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${pct}%"></div></div>
           <div style="font-size:12px;color:var(--text3);margin-top:5px">積み込み ${checks}/${items.length}点</div>
         </div>
@@ -358,6 +385,7 @@ function renderGigDetail() {
         ${!isAutoName(gig) ? `<span>${esc(gig.name)}</span>` : ''}
         ${gig.venue?`<span><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.venue)}</span>`:''}
       </div>
+      ${gig.needsCar?`<div class="row" style="margin-top:8px;gap:8px">${carBadge(gig)}<button id="toggle-car-btn" data-gig-id="${gig.id}" style="font-size:12px;padding:4px 10px">${gig.carBooked?'予約を取り消す':'予約完了にする'}</button></div>`:''}
     </div>
     <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px;margin-top:12px">
       <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
@@ -490,19 +518,28 @@ function attachEvents() {
     const artist = document.getElementById('gig-f-artist').value.trim();
     const venue = document.getElementById('gig-f-venue').value.trim();
     const date = document.getElementById('gig-f-date').value;
+    const needsCar = document.getElementById('gig-f-needscar').checked;
     const editId = saveGigForm.dataset.editId;
     if (editId) {
       const gig = getGig(+editId);
-      Object.assign(gig, {name, artist, venue, date, type});
+      const carBooked = needsCar ? gig.carBooked : false;
+      Object.assign(gig, {name, artist, venue, date, type, needsCar, carBooked});
       saveAll(); setState({editingGig:false});
     } else {
-      state.gigs.push({id:newId(), name, artist, venue, date, type, overrides:[], extras:[], checks:[]});
+      state.gigs.push({id:newId(), name, artist, venue, date, type, needsCar, carBooked:false, overrides:[], extras:[], checks:[]});
       saveAll(); setState({showAddGig:false});
     }
   });
 
   const editGigBtn = document.getElementById('edit-gig-btn');
   if (editGigBtn) editGigBtn.addEventListener('click', () => setState({editingGig:true}));
+
+  const toggleCarBtn = document.getElementById('toggle-car-btn');
+  if (toggleCarBtn) toggleCarBtn.addEventListener('click', () => {
+    const gig = getGig(+toggleCarBtn.dataset.gigId);
+    gig.carBooked = !gig.carBooked;
+    saveAll(); render();
+  });
 
   document.querySelectorAll('[data-del-gig]').forEach(el =>
     el.addEventListener('click', e => {
