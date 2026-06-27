@@ -260,6 +260,10 @@ function gigForm(gig) {
     <label style="font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer">
       <input type="checkbox" id="gig-f-needscar" ${g.needsCar?'checked':''} style="width:18px;height:18px">レンタカーが必要
     </label>
+    <div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">メモ（セットリストなど）</div>
+      <textarea id="gig-f-memo" rows="4" placeholder="セットリスト、注意事項など" style="width:100%;padding:10px 12px;font-size:15px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;resize:vertical">${esc(g.memo||'')}</textarea>
+    </div>
     <div class="row" style="justify-content:flex-end;gap:8px">
       <button id="cancel-gig-form">キャンセル</button>
       <button class="primary" id="save-gig-form" data-edit-id="${g.id||''}">${isEdit?'保存':'作成'}</button>
@@ -454,6 +458,12 @@ function renderGigDetail() {
         ${gig.venue?`<span><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${esc(gig.venue)}</span>`:''}
       </div>
       ${gig.needsCar?`<div class="row" style="margin-top:8px;gap:8px">${carBadge(gig)}<button id="toggle-car-btn" data-gig-id="${gig.id}" style="font-size:12px;padding:4px 10px">${gig.carBooked?'予約を取り消す':'予約完了にする'}</button></div>`:''}
+      ${gig.memo?`<div class="card" style="margin-top:10px;margin-bottom:0">
+        <div class="card-pad">
+          <div class="section-label" style="margin-bottom:6px">メモ</div>
+          <div style="font-size:14px;white-space:pre-wrap;line-height:1.6">${esc(gig.memo)}</div>
+        </div>
+      </div>`:''}
     </div>
     <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px;margin-top:12px">
       <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物</button>
@@ -658,14 +668,15 @@ function attachEvents() {
     const date = document.getElementById('gig-f-date').value;
     const fee = parseInt(document.getElementById('gig-f-fee').value) || 0;
     const needsCar = document.getElementById('gig-f-needscar').checked;
+    const memo = document.getElementById('gig-f-memo').value;
     const editId = saveGigForm.dataset.editId;
     if (editId) {
       const gig = getGig(+editId);
       const carBooked = needsCar ? gig.carBooked : false;
-      Object.assign(gig, {name, artist, venue, date, fee, type, needsCar, carBooked});
+      Object.assign(gig, {name, artist, venue, date, fee, type, needsCar, carBooked, memo});
       saveAll(); setState({editingGig:false});
     } else {
-      state.gigs.push({id:newId(), name, artist, venue, date, fee, type, needsCar, carBooked:false, overrides:[], extras:[], checks:[]});
+      state.gigs.push({id:newId(), name, artist, venue, date, fee, type, needsCar, carBooked:false, memo, overrides:[], extras:[], checks:[]});
       saveAll(); setState({showAddGig:false});
     }
   });
