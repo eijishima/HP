@@ -110,7 +110,14 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
 <body>
 <div class="app">
   <div class="header">
-    <div id="app-title" style="font-size:18px;font-weight:600;padding:8px 0 12px">🥁 機材管理</div>
+    <div id="app-title" class="row-between" style="padding:8px 0 12px">
+      <span style="font-size:18px;font-weight:600">🥁 機材管理</span>
+      <div class="row" style="gap:4px">
+        <button class="btn-icon" id="export-btn" title="データを書き出す"><i class="ti ti-download" style="font-size:19px"></i></button>
+        <button class="btn-icon" id="import-btn" title="データを読み込む"><i class="ti ti-upload" style="font-size:19px"></i></button>
+        <input type="file" id="import-file" accept="application/json" style="display:none">
+      </div>
+    </div>
     <div class="tab-bar" id="main-tabs">
       <button class="tab active" data-tab="gigs">現場</button>
       <button class="tab" data-tab="gear">機材マスター</button>
@@ -632,6 +639,47 @@ function attachEvents() {
     saveAll(); render();
   });
 }
+
+function exportData() {
+  const data = { gear: state.gear, gigs: state.gigs, categories: CATEGORIES, nextId: state.nextId };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `drum-gear-backup-${today}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.gear || !data.gigs) throw new Error('invalid');
+      if (!confirm('現在のデータを上書きして読み込みます。よろしいですか？')) return;
+      state.gear = data.gear;
+      state.gigs = data.gigs;
+      state.nextId = data.nextId || 100;
+      CATEGORIES = data.categories || CATEGORIES;
+      saveAll();
+      setState({view:'gigs', activeGigId:null});
+      alert('読み込みました。');
+    } catch {
+      alert('ファイルを読み込めませんでした。書き出したJSONファイルを選択してください。');
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('export-btn').addEventListener('click', exportData);
+document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
+document.getElementById('import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) importData(file);
+  e.target.value = '';
+});
 
 render();
 </script>
