@@ -149,6 +149,8 @@ let state = {
   showAddCat: false,
   editingGig: false,
   editingGearId: null,
+  showGearPicker: false,
+  pickerCat: 'all',
   gear: load('gear', [
     {id:1,name:'バスドラム',qty:1,cat:'ドラム本体',base:true},
     {id:2,name:'スネア',qty:1,cat:'ドラム本体',base:true},
@@ -404,7 +406,7 @@ function renderGigDetail() {
   if (state.editingGig) {
     h += gigForm(gig);
     h += `<div style="display:flex;gap:4px;margin-top:20px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px">
-      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
+      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物</button>
       <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
     </div>`;
   } else {
@@ -422,7 +424,7 @@ function renderGigDetail() {
       ${gig.needsCar?`<div class="row" style="margin-top:8px;gap:8px">${carBadge(gig)}<button id="toggle-car-btn" data-gig-id="${gig.id}" style="font-size:12px;padding:4px 10px">${gig.carBooked?'予約を取り消す':'予約完了にする'}</button></div>`:''}
     </div>
     <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:0.5px solid var(--border);margin-left:-16px;margin-right:-16px;padding:0 16px;margin-top:12px">
-      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物設定</button>
+      <button class="tab ${state.gigView==='list'?'active':''}" data-gig-tab="list">持ち物</button>
       <button class="tab ${state.gigView==='check'?'active':''}" data-gig-tab="check">当日チェック</button>
     </div>`;
   }
@@ -430,7 +432,7 @@ function renderGigDetail() {
   if (state.gigView === 'list') {
     const by = {};
     CATEGORIES.forEach(c => by[c] = []);
-    allItems.filter(i=>!i.extra).forEach(g => (by[g.cat]||by['その他']).push(g));
+    allItems.filter(i => !i.extra && (i.base || i.included)).forEach(g => (by[g.cat]||by['その他']).push(g));
 
     CATEGORIES.forEach(cat => {
       if (!by[cat].length) return;
@@ -442,11 +444,36 @@ function renderGigDetail() {
           <span class="name" style="${!incl?'text-decoration:line-through;color:var(--text3)':''}">${esc(g.name)}</span>
           <span class="qty">×${g.qty}</span>
           ${groupBadge(allItems, g)}
-          <button class="toggle-btn ${incl?'included':'excluded'}" data-toggle="${g.id}">${incl?'含む':'除外'}</button>
+          ${g.base
+            ? `<button class="toggle-btn ${incl?'included':'excluded'}" data-toggle="${g.id}">${incl?'含む':'除外'}</button>`
+            : `<button class="btn-icon danger" data-remove-extra-gear="${g.id}"><i class="ti ti-trash" style="font-size:16px"></i></button>`}
         </div>`;
       });
       h += `</div>`;
     });
+
+    const addable = state.gear.filter(g => !g.base && !allItems.find(i=>!i.extra && i.id===g.id && i.included));
+    const pickerCat = state.pickerCat || 'all';
+    const addableFiltered = pickerCat === 'all' ? addable : addable.filter(g => g.cat === pickerCat);
+
+    if (state.showGearPicker) {
+      h += `<div class="add-form">
+        <div class="row" style="gap:6px;flex-wrap:wrap">
+          <button class="toggle-btn ${pickerCat==='all'?'included':''}" data-picker-cat="all">すべて</button>
+          ${CATEGORIES.map(c=>`<button class="toggle-btn ${pickerCat===c?'included':''}" data-picker-cat="${esc(c)}">${esc(c)}</button>`).join('')}
+        </div>
+        ${addableFiltered.length === 0
+          ? `<div class="empty" style="padding:1.5rem 0">追加できる機材がありません</div>`
+          : `<div class="card" style="margin:0">${addableFiltered.map(g=>`<div class="item-row">
+              <span class="name">${esc(g.name)}</span>
+              <span class="qty">×${g.qty}</span>
+              <button class="btn-icon" data-add-extra-gear="${g.id}"><i class="ti ti-plus" style="font-size:17px;color:var(--teal)"></i></button>
+            </div>`).join('')}</div>`}
+        <button id="close-picker-btn">閉じる</button>
+      </div>`;
+    } else {
+      h += `<button id="open-picker-btn" style="width:100%;justify-content:center;margin-bottom:16px"><i class="ti ti-plus"></i>機材を追加</button>`;
+    }
 
     if ((gig.extras||[]).length > 0) {
       h += `<div class="section-label" style="margin-top:16px">この現場のみの追加</div>
@@ -678,6 +705,37 @@ function attachEvents() {
       const cur = idx >= 0 ? gig.overrides[idx].included : gear.base;
       if (idx >= 0) gig.overrides[idx].included = !cur;
       else gig.overrides.push({gearId, included: !cur});
+      saveAll(); render();
+    }));
+
+  const openPickerBtn = document.getElementById('open-picker-btn');
+  if (openPickerBtn) openPickerBtn.addEventListener('click', () => setState({showGearPicker:true}));
+
+  const closePickerBtn = document.getElementById('close-picker-btn');
+  if (closePickerBtn) closePickerBtn.addEventListener('click', () => setState({showGearPicker:false}));
+
+  document.querySelectorAll('[data-picker-cat]').forEach(el =>
+    el.addEventListener('click', () => setState({pickerCat: el.dataset.pickerCat})));
+
+  document.querySelectorAll('[data-add-extra-gear]').forEach(el =>
+    el.addEventListener('click', () => {
+      const gig = getGig(state.activeGigId);
+      const gearId = +el.dataset.addExtraGear;
+      if (!gig.overrides) gig.overrides = [];
+      const idx = gig.overrides.findIndex(o => o.gearId === gearId);
+      if (idx >= 0) gig.overrides[idx].included = true;
+      else gig.overrides.push({gearId, included:true});
+      saveAll(); render();
+    }));
+
+  document.querySelectorAll('[data-remove-extra-gear]').forEach(el =>
+    el.addEventListener('click', () => {
+      const gig = getGig(state.activeGigId);
+      const gearId = +el.dataset.removeExtraGear;
+      if (!gig.overrides) gig.overrides = [];
+      const idx = gig.overrides.findIndex(o => o.gearId === gearId);
+      if (idx >= 0) gig.overrides[idx].included = false;
+      else gig.overrides.push({gearId, included:false});
       saveAll(); render();
     }));
 
