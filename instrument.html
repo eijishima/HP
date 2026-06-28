@@ -612,13 +612,28 @@ function renderRevenue() {
     h += `<div class="empty"><i class="ti ti-coin" style="font-size:40px;display:block;margin-bottom:12px"></i>売上データがまだありません</div>`;
     return h;
   }
-  const yearTotal = months.filter(m => m.startsWith(String(new Date().getFullYear()))).reduce((s,m)=>s+byMonth[m].total, 0);
+  const todayStr = new Date().toISOString().slice(0,10);
+  const thisYear = String(new Date().getFullYear());
+
+  const todoneTotal = state.gigs.filter(g => g.date && g.date <= todayStr).reduce((s,g)=>s+(g.fee||0), 0);
+  const todoneExclTax = Math.round(todoneTotal / 1.1);
+  const todoneTax = todoneTotal - todoneExclTax;
+
+  const yearTotal = months.filter(m => m.startsWith(thisYear)).reduce((s,m)=>s+byMonth[m].total, 0);
   const yearExclTax = Math.round(yearTotal / 1.1);
   const yearTax = yearTotal - yearExclTax;
-  h += `<div class="card-pad" style="background:var(--bg2);border-radius:var(--radius-lg);margin-bottom:16px">
-    <div style="font-size:12px;color:var(--text2)">${new Date().getFullYear()}年の合計（税別）</div>
-    <div style="font-size:24px;font-weight:700;margin-top:2px">¥${yearExclTax.toLocaleString()}</div>
-    <div style="font-size:13px;color:var(--text2);margin-top:4px">＋消費税 ¥${yearTax.toLocaleString()}（税込 ¥${yearTotal.toLocaleString()}）</div>
+
+  h += `<div class="row" style="gap:10px;margin-bottom:16px;align-items:stretch">
+    <div class="card-pad" style="background:var(--bg2);border-radius:var(--radius-lg);flex:1">
+      <div style="font-size:12px;color:var(--text2)">今日までの売上（税別）</div>
+      <div style="font-size:22px;font-weight:700;margin-top:2px">¥${todoneExclTax.toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">＋税 ¥${todoneTax.toLocaleString()}（税込 ¥${todoneTotal.toLocaleString()}）</div>
+    </div>
+    <div class="card-pad" style="background:var(--bg2);border-radius:var(--radius-lg);flex:1">
+      <div style="font-size:12px;color:var(--text2)">${thisYear}年の売上見込み（税別）</div>
+      <div style="font-size:22px;font-weight:700;margin-top:2px">¥${yearExclTax.toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">＋税 ¥${yearTax.toLocaleString()}（税込 ¥${yearTotal.toLocaleString()}）</div>
+    </div>
   </div>`;
   h += `<div class="card">`;
   months.forEach((key, i) => {
