@@ -1186,7 +1186,15 @@ document.getElementById('drive-id-btn').addEventListener('click', () => {
 });
 
 if (load('driveConnected', false)) {
-  setDriveStatus('未接続（再接続が必要です）', 'ti ti-cloud-off');
+  setDriveStatus('自動接続を試しています...', 'ti ti-loader-2');
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      driveInitTokenClient();
+      if (driveTokenClient) {
+        driveTokenClient.requestAccessToken({ prompt: '' });
+      }
+    }, 300);
+  });
 }
 
 render();
