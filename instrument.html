@@ -1072,18 +1072,14 @@ async function driveSyncOnConnect() {
       if (remoteData && remoteData.gigs) {
         const localJSON = JSON.stringify(currentDataSnapshot());
         if (remoteText !== localJSON) {
-          if (confirm('Driveに保存されているデータが見つかりました。読み込んで現在のデータを上書きしますか？\n（キャンセルすると今の端末のデータをDriveに上書きします）')) {
-            state.gear = remoteData.gear || state.gear;
-            state.gigs = remoteData.gigs || state.gigs;
-            state.nextId = remoteData.nextId || state.nextId;
-            CATEGORIES = remoteData.categories || CATEGORIES;
-            save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
-            driveLastPushedJSON = remoteText;
-            setState({view:'gigs', activeGigId:null});
-          } else {
-            await driveUploadContent(fileId, localJSON);
-            driveLastPushedJSON = localJSON;
-          }
+          state.gear = remoteData.gear || state.gear;
+          state.gigs = remoteData.gigs || state.gigs;
+          state.nextId = remoteData.nextId || state.nextId;
+          CATEGORIES = remoteData.categories || CATEGORIES;
+          save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
+          driveLastPushedJSON = remoteText;
+          setState({view:'gigs', activeGigId:null});
+          alert('Driveの最新データを読み込みました。');
         } else {
           driveLastPushedJSON = remoteText;
         }
