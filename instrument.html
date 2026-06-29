@@ -1056,15 +1056,28 @@ async function driveUploadContent(fileId, content) {
   });
 }
 
+async function driveGetAccountEmail() {
+  try {
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + driveAccessToken }
+    });
+    const info = await res.json();
+    return info.email || '不明';
+  } catch {
+    return '不明';
+  }
+}
+
 async function driveSyncOnConnect() {
   setDriveStatus('接続中...', 'ti ti-loader-2');
   try {
+    const email = await driveGetAccountEmail();
     const fileId = await driveFindFile();
     if (!fileId) {
       const content = JSON.stringify(currentDataSnapshot());
       await driveCreateFile(content);
       driveLastPushedJSON = content;
-      setDriveStatus('同期済み', 'ti ti-cloud-check');
+      setDriveStatus(`同期済み（新規作成） / ${email} / 現場${state.gigs.length}件 / file:${driveFileId.slice(0,8)}`, 'ti ti-cloud-check');
     } else {
       const remoteText = await driveDownloadContent(fileId);
       let remoteData;
@@ -1079,12 +1092,12 @@ async function driveSyncOnConnect() {
           save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
           driveLastPushedJSON = remoteText;
           setState({view:'gigs', activeGigId:null});
-          alert('Driveの最新データを読み込みました。');
+          alert(`Driveの最新データを読み込みました。（${email} / 現場${state.gigs.length}件）`);
         } else {
           driveLastPushedJSON = remoteText;
         }
       }
-      setDriveStatus('同期済み', 'ti ti-cloud-check');
+      setDriveStatus(`同期済み / ${email} / 現場${state.gigs.length}件 / file:${fileId.slice(0,8)}`, 'ti ti-cloud-check');
     }
   } catch (e) {
     setDriveStatus('エラー: ' + e.message, 'ti ti-cloud-off');
