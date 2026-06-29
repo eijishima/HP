@@ -1186,15 +1186,7 @@ document.getElementById('drive-id-btn').addEventListener('click', () => {
 });
 
 if (load('driveConnected', false)) {
-  setDriveStatus('自動接続を試しています...', 'ti ti-loader-2');
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      driveInitTokenClient();
-      if (driveTokenClient) {
-        driveTokenClient.requestAccessToken({ prompt: '' });
-      }
-    }, 300);
-  });
+  setDriveStatus('未接続（「Driveと同期」を押してください）', 'ti ti-cloud-off');
 }
 
 render();
