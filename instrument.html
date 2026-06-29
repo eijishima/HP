@@ -1029,8 +1029,10 @@ async function driveConnectWithManualId(id) {
 }
 
 async function driveApi(path, opts = {}) {
-  const res = await fetch('https://www.googleapis.com' + path, {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch('https://www.googleapis.com' + path + sep + '_t=' + Date.now(), {
     ...opts,
+    cache: 'no-store',
     headers: { ...(opts.headers||{}), Authorization: 'Bearer ' + driveAccessToken }
   });
   if (!res.ok) {
