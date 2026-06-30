@@ -1073,8 +1073,11 @@ async function driveApi(path, opts = {}) {
 async function driveFindFile() {
   if (driveFileId) {
     try {
-      await driveApi(`/drive/v3/files/${driveFileId}?fields=id,modifiedTime`);
-      return driveFileId;
+      const res = await driveApi(`/drive/v3/files/${driveFileId}?fields=id,modifiedTime,trashed`);
+      const meta = await res.json();
+      if (!meta.trashed) return driveFileId;
+      driveFileId = null;
+      save('driveFileId', null);
     } catch {
       driveFileId = null;
       save('driveFileId', null);
