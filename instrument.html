@@ -126,11 +126,12 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
         <input type="file" id="import-file" accept=".json,application/json,text/plain" style="display:none">
       </div>
     </div>
-    <div class="row-between" style="padding-bottom:8px">
+    <div class="row-between" style="padding-bottom:8px;flex-wrap:wrap;gap:6px">
       <div id="drive-status" style="font-size:12px;color:var(--text3)"><i class="ti ti-cloud-off" style="font-size:14px;vertical-align:-2px;margin-right:3px"></i>Drive未接続</div>
       <div class="row" style="gap:4px">
         <button id="drive-id-btn" style="padding:5px 10px;font-size:11px">ファイルID指定</button>
-        <button id="drive-connect-btn" style="padding:5px 12px;font-size:12px"><i class="ti ti-brand-google-drive" style="font-size:14px"></i>Driveと同期</button>
+        <button id="drive-download-btn" style="padding:5px 10px;font-size:12px"><i class="ti ti-cloud-download" style="font-size:14px"></i>Driveから取得</button>
+        <button id="drive-upload-btn" style="padding:5px 10px;font-size:12px"><i class="ti ti-cloud-upload" style="font-size:14px"></i>Driveへ保存</button>
       </div>
     </div>
     <div class="tab-bar" id="main-tabs">
@@ -182,7 +183,6 @@ let state = {
 function setState(patch) { Object.assign(state, patch); render(); }
 function saveAll() {
   save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
-  scheduleDriveSync();
 }
 
 function currentDataSnapshot() {
@@ -973,8 +973,7 @@ const DRIVE_FILENAME = 'drum-gear-manager-data.json';
 let driveAccessToken = null;
 let driveFileId = load('driveFileId', null);
 let driveTokenClient = null;
-let driveSyncTimer = null;
-let driveLastPushedJSON = null;
+let pendingDriveAction = null;
 
 function setDriveStatus(text, iconClass) {
   const el = document.getElementById('drive-status');
@@ -993,38 +992,67 @@ function driveInitTokenClient() {
       }
       driveAccessToken = resp.access_token;
       save('driveConnected', true);
-      if (pendingManualFileId) {
-        const id = pendingManualFileId;
-        pendingManualFileId = null;
-        await driveConnectWithManualId(id);
-      } else {
-        await driveSyncOnConnect();
-      }
+      const action = pendingDriveAction;
+      pendingDriveAction = null;
+      if (action) await action();
     }
   });
 }
 
-let pendingManualFileId = null;
-
-async function driveConnectWithManualId(id) {
+function driveRun(action) {
+  driveInitTokenClient();
+  if (!driveTokenClient) {
+    alert('Googleログイン機能の読み込みに失敗しました。少し待ってから再度お試しください。');
+    return;
+  }
   setDriveStatus('接続中...', 'ti ti-loader-2');
+  if (driveAccessToken) {
+    action();
+  } else {
+    pendingDriveAction = action;
+    driveTokenClient.requestAccessToken();
+  }
+}
+
+async function driveDoDownload(idOverride) {
+  setDriveStatus('取得中...', 'ti ti-loader-2');
   try {
     const email = await driveGetAccountEmail();
-    const remoteText = await driveDownloadContent(id);
+    const fileId = idOverride || await driveFindFile();
+    if (!fileId) {
+      setDriveStatus('Driveにファイルがまだありません（先に「Driveへ保存」してください）', 'ti ti-cloud-off');
+      return;
+    }
+    const remoteText = await driveDownloadContent(fileId);
     const remoteData = JSON.parse(remoteText);
-    driveFileId = id;
+    driveFileId = fileId;
     save('driveFileId', driveFileId);
     state.gear = remoteData.gear || state.gear;
     state.gigs = remoteData.gigs || state.gigs;
     state.nextId = remoteData.nextId || state.nextId;
     CATEGORIES = remoteData.categories || CATEGORIES;
     save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
-    driveLastPushedJSON = remoteText;
     setState({view:'gigs', activeGigId:null});
-    setDriveStatus(`同期済み / ${email} / 現場${state.gigs.length}件 / ID:${driveFileId}`, 'ti ti-cloud-check');
-    alert(`指定したファイルを読み込みました。（現場${state.gigs.length}件）`);
+    setDriveStatus(`取得済み / ${email} / 現場${state.gigs.length}件/機材${state.gear.length}件 / ID:${driveFileId}`, 'ti ti-cloud-check');
   } catch (e) {
     setDriveStatus('エラー: ' + e.message, 'ti ti-cloud-off');
+  }
+}
+
+async function driveDoUpload() {
+  setDriveStatus('保存中...', 'ti ti-loader-2');
+  try {
+    const email = await driveGetAccountEmail();
+    const content = JSON.stringify(currentDataSnapshot());
+    const fileId = await driveFindFile();
+    if (!fileId) {
+      await driveCreateFile(content);
+    } else {
+      await driveUploadContent(fileId, content);
+    }
+    setDriveStatus(`保存済み / ${email} / 現場${state.gigs.length}件/機材${state.gear.length}件 / ID:${driveFileId}`, 'ti ti-cloud-check');
+  } catch (e) {
+    setDriveStatus('保存エラー: ' + e.message, 'ti ti-cloud-off');
   }
 }
 
@@ -1103,92 +1131,22 @@ async function driveGetAccountEmail() {
   }
 }
 
-async function driveSyncOnConnect() {
-  setDriveStatus('接続中...', 'ti ti-loader-2');
-  try {
-    const email = await driveGetAccountEmail();
-    const fileId = await driveFindFile();
-    if (!fileId) {
-      const content = JSON.stringify(currentDataSnapshot());
-      await driveCreateFile(content);
-      driveLastPushedJSON = content;
-      setDriveStatus(`同期済み（新規作成） / ${email} / 現場${state.gigs.length}件 / ID:${driveFileId}`, 'ti ti-cloud-check');
-    } else {
-      const remoteText = await driveDownloadContent(fileId);
-      let remoteData;
-      try { remoteData = JSON.parse(remoteText); } catch { remoteData = null; }
-      if (remoteData && remoteData.gigs) {
-        const localJSON = JSON.stringify(currentDataSnapshot());
-        if (remoteText !== localJSON) {
-          state.gear = remoteData.gear || state.gear;
-          state.gigs = remoteData.gigs || state.gigs;
-          state.nextId = remoteData.nextId || state.nextId;
-          CATEGORIES = remoteData.categories || CATEGORIES;
-          save('gear', state.gear); save('gigs', state.gigs); save('nextId', state.nextId); save('categories', CATEGORIES);
-          driveLastPushedJSON = remoteText;
-          setState({view:'gigs', activeGigId:null});
-          alert(`Driveの最新データを読み込みました。（${email} / 現場${state.gigs.length}件）`);
-        } else {
-          driveLastPushedJSON = remoteText;
-        }
-      }
-      setDriveStatus(`同期済み / ${email} / 現場${state.gigs.length}件 / ID:${fileId}`, 'ti ti-cloud-check');
-    }
-  } catch (e) {
-    setDriveStatus('エラー: ' + e.message, 'ti ti-cloud-off');
-  }
-}
+document.getElementById('drive-download-btn').addEventListener('click', () => {
+  driveRun(() => driveDoDownload());
+});
 
-function scheduleDriveSync() {
-  if (!driveAccessToken) return;
-  clearTimeout(driveSyncTimer);
-  driveSyncTimer = setTimeout(async () => {
-    try {
-      const content = JSON.stringify(currentDataSnapshot());
-      if (content === driveLastPushedJSON) return;
-      setDriveStatus('保存中...', 'ti ti-loader-2');
-      const fileId = await driveFindFile();
-      if (!fileId) await driveCreateFile(content);
-      else await driveUploadContent(fileId, content);
-      driveLastPushedJSON = content;
-      setDriveStatus('同期済み', 'ti ti-cloud-check');
-    } catch (e) {
-      setDriveStatus('保存エラー: ' + e.message, 'ti ti-cloud-off');
-    }
-  }, 2000);
-}
-
-document.getElementById('drive-connect-btn').addEventListener('click', () => {
-  driveInitTokenClient();
-  if (driveTokenClient) {
-    setDriveStatus('接続中...', 'ti ti-loader-2');
-    if (driveAccessToken) driveSyncOnConnect();
-    else driveTokenClient.requestAccessToken();
-  } else {
-    alert('Googleログイン機能の読み込みに失敗しました。少し待ってから再度お試しください。');
-  }
+document.getElementById('drive-upload-btn').addEventListener('click', () => {
+  driveRun(() => driveDoUpload());
 });
 
 document.getElementById('drive-id-btn').addEventListener('click', () => {
   const id = prompt('もう片方の端末のステータス表示にある「ID:」の後ろの文字列を貼り付けてください。');
   if (!id || !id.trim()) return;
-  pendingManualFileId = id.trim();
-  driveInitTokenClient();
-  if (driveTokenClient) {
-    if (driveAccessToken) {
-      driveConnectWithManualId(pendingManualFileId);
-      pendingManualFileId = null;
-    } else {
-      setDriveStatus('接続中...', 'ti ti-loader-2');
-      driveTokenClient.requestAccessToken();
-    }
-  } else {
-    alert('Googleログイン機能の読み込みに失敗しました。少し待ってから再度お試しください。');
-  }
+  driveRun(() => driveDoDownload(id.trim()));
 });
 
 if (load('driveConnected', false)) {
-  setDriveStatus('未接続（「Driveと同期」を押してください）', 'ti ti-cloud-off');
+  setDriveStatus('未接続（ボタンを押してください）', 'ti ti-cloud-off');
 }
 
 render();
