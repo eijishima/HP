@@ -122,6 +122,7 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
       <span style="font-size:18px;font-weight:600">🥁 機材管理</span>
       <div class="row" style="gap:6px">
         <button class="btn-icon" id="export-btn" title="データを書き出す"><i class="ti ti-upload" style="font-size:19px"></i></button>
+        <button id="csv-btn" style="padding:6px 12px;font-size:13px">CSV</button>
         <button id="import-btn" style="padding:6px 12px;font-size:13px">読み込む</button>
         <input type="file" id="import-file" accept=".json,application/json,text/plain" style="display:none">
       </div>
@@ -958,6 +959,31 @@ function importData(file) {
   reader.readAsText(file);
 }
 
+function exportCSV() {
+  const TYPE_LABELS = {rehearsal:'リハーサル', live:'本番', other:'その他'};
+  const rows = [['日付', 'アーティスト', '現場名', '場所', '種別', 'レンタカー']];
+  [...state.gigs].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(g => {
+    rows.push([
+      g.date || '',
+      g.artist || '',
+      isAutoName(g) ? '' : g.name,
+      g.venue || '',
+      TYPE_LABELS[g.type||'other'] || '',
+      g.needsCar ? (g.carBooked ? '予約済' : '必要') : '',
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const bom = '﻿';
+  const blob = new Blob([bom + csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `schedule-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('csv-btn').addEventListener('click', exportCSV);
 document.getElementById('export-btn').addEventListener('click', exportData);
 document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
 document.getElementById('import-file').addEventListener('change', e => {
