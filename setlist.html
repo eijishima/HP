@@ -42,39 +42,18 @@
       color: #111;
     }
 
-    #song-suggestions {
-      margin-top: 8px;
-      max-height: 260px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      max-width: 500px;
-      display: none;
+    .result-setlist {
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: #777;
+      line-height: 1.6;
     }
 
-    #song-suggestions.open {
-      display: block;
-    }
-
-    .suggestion-item {
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .suggestion-item:hover {
-      background: #f0f0f0;
-    }
-
-    .suggestion-count {
-      color: #888;
-      font-size: 12px;
-      padding-left: 6px;
-    }
-
-    #result-title {
-      margin-top: 28px;
-      font-size: 16px;
+    .result-setlist mark {
+      background: #fff2a8;
+      color: #111;
+      border-radius: 2px;
+      padding: 0 2px;
     }
 
     #result-list {
@@ -127,13 +106,11 @@
 <body>
 
   <h1>笹川真生 セトリ検索</h1>
-  <p id="desc">曲名を選ぶと、その曲を演奏した過去のライブが新しい順に出てきます。映像リンクは分かる範囲で少しずつ追加します。（バンドメンバー内共有用ページ）</p>
+  <p id="desc">全公演が新しい順に並んでいます。曲名で検索すると、その曲をやったライブだけに絞り込まれます。映像リンクは分かる範囲で少しずつ追加します。（バンドメンバー内共有用ページ）</p>
 
   <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
-  <div id="song-suggestions"></div>
   <p id="hint"></p>
 
-  <h3 id="result-title"></h3>
   <ul id="result-list"></ul>
 
   <!-- セトリ・映像データ -->
@@ -253,64 +230,48 @@
           .trim();
       }
 
-      // 曲名 -> 出演一覧 のインデックスを作る
-      const songIndex = new Map();
-      performances.forEach(perf => {
-        perf.setlist.forEach(rawSong => {
-          const song = normalize(rawSong);
-          if (!songIndex.has(song)) songIndex.set(song, []);
-          songIndex.get(song).push({ ...perf, rawSong });
-        });
-      });
+      // 全曲リスト（表記ゆれをまとめたもの）を集計しておく（件数の目安表示用）
+      const songSet = new Set();
+      performances.forEach(perf => perf.setlist.forEach(rawSong => songSet.add(normalize(rawSong))));
 
-      const allSongs = Array.from(songIndex.keys()).sort((a, b) => a.localeCompare(b, "ja"));
+      // 新しい順にソート
+      const sortedPerformances = [...performances].sort((a, b) => b.date.localeCompare(a.date));
 
       const searchBox = document.getElementById("search-box");
-      const suggestionsBox = document.getElementById("song-suggestions");
-      const resultTitle = document.getElementById("result-title");
       const resultList = document.getElementById("result-list");
       const hint = document.getElementById("hint");
 
-      hint.textContent = `全 ${allSongs.length} 曲 / ${performances.length} 公演分のセトリを収録`;
-
-      function renderSuggestions(query) {
-        suggestionsBox.innerHTML = "";
-        const q = query.trim();
-        const matches = q === ""
-          ? allSongs
-          : allSongs.filter(song => song.toLowerCase().includes(q.toLowerCase()));
-
-        if (matches.length === 0) {
-          suggestionsBox.classList.remove("open");
-          return;
-        }
-
-        matches.slice(0, 30).forEach(song => {
-          const item = document.createElement("div");
-          item.className = "suggestion-item";
-          item.innerHTML = `${song} <span class="suggestion-count">(${songIndex.get(song).length}回)</span>`;
-          item.addEventListener("click", () => {
-            searchBox.value = song;
-            suggestionsBox.classList.remove("open");
-            showSong(song);
-          });
-          suggestionsBox.appendChild(item);
-        });
-        suggestionsBox.classList.add("open");
+      function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
       }
 
-      function showSong(song) {
-        const entries = songIndex.get(song);
-        if (!entries) {
-          resultTitle.textContent = "";
-          resultList.innerHTML = "";
-          return;
-        }
-        const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
-        resultTitle.textContent = `「${song}」を演奏したライブ（${sorted.length}件・新しい順）`;
+      function highlight(rawSong, q) {
+        const safe = escapeHtml(rawSong);
+        if (!q) return safe;
+        const idx = safe.toLowerCase().indexOf(q.toLowerCase());
+        if (idx === -1) return safe;
+        return safe.slice(0, idx) + "<mark>" + safe.slice(idx, idx + q.length) + "</mark>" + safe.slice(idx + q.length);
+      }
+
+      function render(query) {
+        const q = query.trim();
+        const qLower = q.toLowerCase();
+
+        const filtered = q === ""
+          ? sortedPerformances
+          : sortedPerformances.filter(perf =>
+              perf.setlist.some(rawSong =>
+                rawSong.toLowerCase().includes(qLower) || normalize(rawSong).toLowerCase().includes(qLower)
+              )
+            );
+
+        hint.textContent = q === ""
+          ? `全 ${sortedPerformances.length} 公演 / ${songSet.size} 曲を収録`
+          : `${filtered.length} 件ヒット（全 ${sortedPerformances.length} 公演中）`;
+
         resultList.innerHTML = "";
 
-        sorted.forEach(perf => {
+        filtered.forEach(perf => {
           const li = document.createElement("li");
           li.className = "result-row";
 
@@ -324,22 +285,20 @@
             videoHtml = `<span class="no-video">映像未リンク</span>`;
           }
 
+          const setlistHtml = perf.setlist.map(rawSong => highlight(rawSong, q)).join("　/　");
+
           li.innerHTML = `
             <span class="result-date">${perf.date}</span>
-            <span class="result-event">${perf.event}${venueText}</span>${noteText}<br>
+            <span class="result-event">${escapeHtml(perf.event)}${escapeHtml(venueText)}</span>${noteText}<br>
             ${videoHtml}
+            <div class="result-setlist">${setlistHtml}</div>
           `;
           resultList.appendChild(li);
         });
       }
 
-      searchBox.addEventListener("input", () => renderSuggestions(searchBox.value));
-      searchBox.addEventListener("focus", () => renderSuggestions(searchBox.value));
-      document.addEventListener("click", (e) => {
-        if (!e.target.closest("#search-box") && !e.target.closest("#song-suggestions")) {
-          suggestionsBox.classList.remove("open");
-        }
-      });
+      searchBox.addEventListener("input", () => render(searchBox.value));
+      render("");
     </script>
 
 </body>
