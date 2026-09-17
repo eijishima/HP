@@ -43,10 +43,22 @@
     }
 
     .result-setlist {
-      margin-top: 4px;
-      font-size: 12.5px;
-      color: #777;
-      line-height: 1.6;
+      display: none;
+      margin-top: 8px;
+      padding: 4px 0 4px 12px;
+      border-left: 2px solid #eee;
+    }
+
+    .result-row.open .result-setlist {
+      display: block;
+    }
+
+    .result-setlist ol {
+      margin: 0;
+      padding-left: 1.4em;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.9;
     }
 
     .result-setlist mark {
@@ -73,8 +85,33 @@
       margin-right: 10px;
     }
 
+    .result-header {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .result-header:hover .result-event {
+      text-decoration: underline;
+    }
+
     .result-event {
       color: #333;
+    }
+
+    .toggle-arrow {
+      margin-left: auto;
+      color: #999;
+      font-size: 11px;
+      transition: transform 0.15s ease;
+      padding-left: 8px;
+      flex-shrink: 0;
+    }
+
+    .result-row.open .toggle-arrow {
+      transform: rotate(90deg);
     }
 
     .result-note {
@@ -234,12 +271,16 @@
       const songSet = new Set();
       performances.forEach(perf => perf.setlist.forEach(rawSong => songSet.add(normalize(rawSong))));
 
-      // 新しい順にソート
+      // 新しい順にソート、開閉状態を追うためのIDを振る
       const sortedPerformances = [...performances].sort((a, b) => b.date.localeCompare(a.date));
+      sortedPerformances.forEach((perf, i) => { perf.id = i; });
 
       const searchBox = document.getElementById("search-box");
       const resultList = document.getElementById("result-list");
       const hint = document.getElementById("hint");
+
+      // 同時に開けるアコーディオンは1公演だけ
+      let openId = null;
 
       function escapeHtml(str) {
         return str.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -273,7 +314,7 @@
 
         filtered.forEach(perf => {
           const li = document.createElement("li");
-          li.className = "result-row";
+          li.className = "result-row" + (perf.id === openId ? " open" : "");
 
           const venueText = perf.venue ? ` @${perf.venue}` : "";
           const noteText = perf.note ? ` <span class="result-note">${perf.note}</span>` : "";
@@ -285,19 +326,33 @@
             videoHtml = `<span class="no-video">映像未リンク</span>`;
           }
 
-          const setlistHtml = perf.setlist.map(rawSong => highlight(rawSong, q)).join("　/　");
+          const setlistHtml = perf.setlist
+            .map(rawSong => `<li>${highlight(rawSong, q)}</li>`)
+            .join("");
 
           li.innerHTML = `
-            <span class="result-date">${perf.date}</span>
-            <span class="result-event">${escapeHtml(perf.event)}${escapeHtml(venueText)}</span>${noteText}<br>
+            <div class="result-header">
+              <span class="result-date">${perf.date}</span>
+              <span class="result-event">${escapeHtml(perf.event)}${escapeHtml(venueText)}</span>${noteText}
+              <span class="toggle-arrow">▶</span>
+            </div>
             ${videoHtml}
-            <div class="result-setlist">${setlistHtml}</div>
+            <div class="result-setlist"><ol>${setlistHtml}</ol></div>
           `;
+
+          li.querySelector(".result-header").addEventListener("click", () => {
+            openId = (openId === perf.id) ? null : perf.id;
+            render(searchBox.value);
+          });
+
           resultList.appendChild(li);
         });
       }
 
-      searchBox.addEventListener("input", () => render(searchBox.value));
+      searchBox.addEventListener("input", () => {
+        openId = null;
+        render(searchBox.value);
+      });
       render("");
     </script>
 
