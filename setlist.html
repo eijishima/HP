@@ -24,12 +24,6 @@
       margin: 0 0 4px;
     }
 
-    #desc {
-      color: #666;
-      font-size: 13px;
-      margin: 0 0 18px;
-    }
-
     #search-box {
       font-family: inherit;
       font-size: 15px;
@@ -43,14 +37,19 @@
     }
 
     .result-setlist {
-      display: none;
-      margin-top: 8px;
-      padding: 4px 0 4px 12px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      margin-top: 0;
+      padding-left: 12px;
       border-left: 2px solid #eee;
+      transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.35s ease;
     }
 
     .result-row.open .result-setlist {
-      display: block;
+      max-height: 800px;
+      opacity: 1;
+      margin-top: 8px;
     }
 
     .result-setlist ol {
@@ -82,13 +81,14 @@
 
     .result-date {
       font-weight: bold;
-      margin-right: 10px;
+      flex-shrink: 0;
     }
 
     .result-header {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 8px;
+      flex-wrap: nowrap;
       cursor: pointer;
       user-select: none;
     }
@@ -99,6 +99,10 @@
 
     .result-event {
       color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .toggle-arrow {
@@ -112,11 +116,6 @@
 
     .result-row.open .toggle-arrow {
       transform: rotate(90deg);
-    }
-
-    .result-note {
-      color: #999;
-      font-size: 12px;
     }
 
     .no-video {
@@ -143,8 +142,6 @@
 <body>
 
   <h1>笹川真生 セトリ検索</h1>
-  <p id="desc">全公演が新しい順に並んでいます。曲名で検索すると、その曲をやったライブだけに絞り込まれます。映像リンクは分かる範囲で少しずつ追加します。（バンドメンバー内共有用ページ）</p>
-
   <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
   <p id="hint"></p>
 
@@ -191,7 +188,7 @@
           setlist: ["逆光","美しい術","コンタクティ","Dokujoutai","ですから、灼けました","最低","ないてわめいてきらめいて","溢れちゃった","ささやき-いのり-えいしょう-ねんじろ！","はじめての世界征服","不細工"] },
         { date: "2025-10-12", event: "FM802 MINAMI WHEEL 2025", venue: "LIVE HOUSE BRONZE", video: null,
           setlist: ["逆光","美しい術","ですから、灼けました","ないてわめいてきらめいて","ささやき-いのり-えいしょう-ねんじろ！","はじめての世界征服","不細工"] },
-        { date: "2025-08-24", event: "大阪万博2025 トーク&LIVE", venue: "大阪ヘルスケアパビリオン リボーンステージ", video: null, note: "セトリ一部不明（note記事の記載が途中まで）",
+        { date: "2025-08-24", event: "大阪万博2025 トーク&LIVE", venue: "大阪ヘルスケアパビリオン リボーンステージ", video: null,
           setlist: ["百年","だれかのうみ/さまよって","やわらかな"] },
         { date: "2025-08-09", event: "笹川真生 単独公演「ひかりのそこ 第５層」", venue: "東京キネマ倶楽部", video: null,
           setlist: ["わかちあうこと","コンタクティ","ですから、灼けました","Dokujoutai","逆光","美しい術","最低","ないてわめいてきらめいて","ささやき-いのり-えいしょう-ねんじろ！","ダイブ・ダイブ","溢れちゃった","光にしないで","はじめての世界征服","不細工","このほしにうまれて"] },
@@ -317,7 +314,7 @@
           li.className = "result-row" + (perf.id === openId ? " open" : "");
 
           const venueText = perf.venue ? ` @${perf.venue}` : "";
-          const noteText = perf.note ? ` <span class="result-note">${perf.note}</span>` : "";
+          const fullTitle = escapeHtml(`${perf.event}${venueText}`);
 
           let videoHtml;
           if (perf.video) {
@@ -333,7 +330,7 @@
           li.innerHTML = `
             <div class="result-header">
               <span class="result-date">${perf.date}</span>
-              <span class="result-event">${escapeHtml(perf.event)}${escapeHtml(venueText)}</span>${noteText}
+              <span class="result-event" title="${fullTitle}">${fullTitle}</span>
               <span class="toggle-arrow">▶</span>
             </div>
             ${videoHtml}
@@ -341,8 +338,13 @@
           `;
 
           li.querySelector(".result-header").addEventListener("click", () => {
-            openId = (openId === perf.id) ? null : perf.id;
-            render(searchBox.value);
+            const willOpen = !li.classList.contains("open");
+
+            resultList.querySelectorAll(".result-row.open").forEach(openLi => {
+              if (openLi !== li) openLi.classList.remove("open");
+            });
+            li.classList.toggle("open", willOpen);
+            openId = willOpen ? perf.id : null;
           });
 
           resultList.appendChild(li);
