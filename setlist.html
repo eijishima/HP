@@ -74,31 +74,54 @@
       max-width: 700px;
     }
 
+    .year-header {
+      font-size: 20px;
+      font-weight: bold;
+      color: #111;
+      margin: 30px 0 10px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #111;
+    }
+
+    .year-header:first-child {
+      margin-top: 0;
+    }
+
     .result-row {
-      padding: 10px 0;
+      padding: 8px 0;
       border-bottom: 1px solid #eee;
     }
 
     .result-date {
       font-weight: bold;
       flex-shrink: 0;
+      color: #666;
+      font-size: 13px;
     }
 
     .result-header {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 8px;
       flex-wrap: nowrap;
       cursor: pointer;
       user-select: none;
+      background: #f4f4f4;
+      padding: 9px 12px;
+      border-radius: 8px;
+      transition: background 0.15s ease;
     }
 
-    .result-header:hover .result-event {
-      text-decoration: underline;
+    .result-header:hover {
+      background: #eaeaea;
+    }
+
+    .result-header:active {
+      background: #e0e0e0;
     }
 
     .result-event {
-      color: #333;
+      color: #222;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -107,15 +130,12 @@
 
     .toggle-arrow {
       margin-left: auto;
-      color: #999;
-      font-size: 11px;
-      transition: transform 0.15s ease;
+      color: #06c;
+      font-size: 12.5px;
+      font-weight: bold;
+      white-space: nowrap;
       padding-left: 8px;
       flex-shrink: 0;
-    }
-
-    .result-row.open .toggle-arrow {
-      transform: rotate(90deg);
     }
 
     .no-video {
@@ -313,9 +333,26 @@
 
         resultList.innerHTML = "";
 
+        const OPEN_LABEL = "セトリを見る ▶";
+        const CLOSE_LABEL = "セトリを閉じる ▼";
+
+        let lastYear = null;
+
         filtered.forEach(perf => {
+          const year = perf.date.slice(0, 4);
+          const monthDay = perf.date.slice(5);
+
+          if (year !== lastYear) {
+            const yearHeader = document.createElement("li");
+            yearHeader.className = "year-header";
+            yearHeader.textContent = year;
+            resultList.appendChild(yearHeader);
+            lastYear = year;
+          }
+
           const li = document.createElement("li");
-          li.className = "result-row" + (perf.id === openId ? " open" : "");
+          const isOpen = perf.id === openId;
+          li.className = "result-row" + (isOpen ? " open" : "");
 
           const venueText = perf.venue ? ` @${perf.venue}` : "";
           const fullTitle = escapeHtml(`${perf.event}${venueText}`);
@@ -333,9 +370,9 @@
 
           li.innerHTML = `
             <div class="result-header">
-              <span class="result-date">${perf.date}</span>
+              <span class="result-date">${monthDay}</span>
               <span class="result-event" title="${fullTitle}">${fullTitle}</span>
-              <span class="toggle-arrow">▶</span>
+              <span class="toggle-arrow">${isOpen ? CLOSE_LABEL : OPEN_LABEL}</span>
             </div>
             ${videoHtml}
             <div class="result-setlist"><ol>${setlistHtml}</ol></div>
@@ -345,9 +382,15 @@
             const willOpen = !li.classList.contains("open");
 
             resultList.querySelectorAll(".result-row.open").forEach(openLi => {
-              if (openLi !== li) openLi.classList.remove("open");
+              if (openLi !== li) {
+                openLi.classList.remove("open");
+                const otherArrow = openLi.querySelector(".toggle-arrow");
+                if (otherArrow) otherArrow.textContent = OPEN_LABEL;
+              }
             });
+
             li.classList.toggle("open", willOpen);
+            li.querySelector(".toggle-arrow").textContent = willOpen ? CLOSE_LABEL : OPEN_LABEL;
             openId = willOpen ? perf.id : null;
           });
 
