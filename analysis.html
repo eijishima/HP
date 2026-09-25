@@ -97,15 +97,41 @@
       max-width: 700px;
     }
 
-    .bar-row {
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .bar-main {
+    .list-header {
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 4px 0;
+      margin-top: 10px;
+      border-bottom: 1px solid #ddd;
+      font-size: 11px;
+      color: #999;
+    }
+
+    .list-header .h-label {
+      flex: 0 0 34%;
+    }
+
+    .list-header .h-track {
+      flex: 1;
+    }
+
+    .list-header .h-value {
+      flex: 0 0 28px;
+      text-align: right;
+    }
+
+    .list-header .h-date {
+      flex: 0 0 82px;
+      text-align: right;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #eee;
     }
 
     .bar-label {
@@ -142,20 +168,11 @@
       color: #06c;
     }
 
-    .bar-last {
-      font-size: 12.5px;
+    .bar-lastdate {
+      flex: 0 0 82px;
+      text-align: right;
+      font-size: 12px;
       color: #777;
-      padding: 6px 0 0;
-    }
-
-    .bar-last a {
-      color: #06c;
-      text-decoration: none;
-      margin-left: 6px;
-    }
-
-    .bar-last a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
@@ -168,6 +185,12 @@
   <div id="tag-filter"></div>
   <p id="hint"></p>
 
+  <div class="list-header">
+    <span class="h-label">曲名</span>
+    <span class="h-track"></span>
+    <span class="h-value">回数</span>
+    <span class="h-date">最後にやった日</span>
+  </div>
   <ul id="song-list"></ul>
 
   <script src="setlist-data.js"></script>
@@ -196,18 +219,17 @@
       return str.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     }
 
-    // 曲ごとに集計：回数・最終公演日・最終公演の情報
+    // 曲ごとに集計：回数・最後にやった日
     function buildStats(perfList) {
       const stats = new Map();
       perfList.forEach(perf => {
         perf.setlist.forEach(rawSong => {
           const song = normalize(rawSong);
-          if (!stats.has(song)) stats.set(song, { song, count: 0, lastDate: null, lastPerf: null });
+          if (!stats.has(song)) stats.set(song, { song, count: 0, lastDate: null });
           const s = stats.get(song);
           s.count += 1;
           if (!s.lastDate || perf.date > s.lastDate) {
             s.lastDate = perf.date;
-            s.lastPerf = perf;
           }
         });
       });
@@ -238,23 +260,15 @@
       stats.forEach(s => {
         const li = document.createElement("li");
         li.className = "bar-row";
+        li.title = `最後にやった日：${s.lastDate}`;
 
-        const perf = s.lastPerf;
-        const venueText = perf.venue ? ` @${perf.venue}` : "";
         const pct = Math.max((s.count / maxCount) * 100, 2);
 
-        let videoHtml = "";
-        if (perf.video) {
-          videoHtml = `<a href="${perf.video}" target="_blank">▶ 映像を見る</a>`;
-        }
-
         li.innerHTML = `
-          <div class="bar-main">
-            <span class="bar-label" title="${escapeHtml(s.song)}">${escapeHtml(s.song)}</span>
-            <div class="bar-track"><div class="bar-fill" style="width: ${pct}%"></div></div>
-            <span class="bar-value">${s.count}</span>
-          </div>
-          <div class="bar-last">最終：${perf.date}　${escapeHtml(perf.event)}${escapeHtml(venueText)}${videoHtml}</div>
+          <span class="bar-label" title="${escapeHtml(s.song)}">${escapeHtml(s.song)}</span>
+          <div class="bar-track"><div class="bar-fill" style="width: ${pct}%"></div></div>
+          <span class="bar-value">${s.count}</span>
+          <span class="bar-lastdate">${s.lastDate}</span>
         `;
         songList.appendChild(li);
       });
