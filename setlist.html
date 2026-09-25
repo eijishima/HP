@@ -24,6 +24,20 @@
       margin: 0 0 4px;
     }
 
+    #page-nav {
+      margin-bottom: 14px;
+    }
+
+    #page-nav a {
+      font-size: 13px;
+      color: #06c;
+      text-decoration: none;
+    }
+
+    #page-nav a:hover {
+      text-decoration: underline;
+    }
+
     #search-box {
       font-family: inherit;
       font-size: 15px;
@@ -34,6 +48,44 @@
       border-radius: 6px;
       background: #fff;
       color: #111;
+    }
+
+    #tag-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag-btn {
+      font-family: inherit;
+      font-size: 12.5px;
+      padding: 5px 12px;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .tag-btn:hover {
+      background: #f4f4f4;
+    }
+
+    .tag-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+
+    .tag-badge {
+      font-size: 11px;
+      color: #888;
+      background: #ececec;
+      border-radius: 4px;
+      padding: 2px 7px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .result-setlist {
@@ -161,137 +213,17 @@
 </head>
 <body>
 
+  <div id="page-nav"><a href="analysis.html">→ 集計・分析ページ</a></div>
   <h1>笹川真生 セトリ検索</h1>
   <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
+  <div id="tag-filter"></div>
   <p id="hint"></p>
 
   <ul id="result-list"></ul>
 
-  <!-- セトリ・映像データ -->
+  <script src="setlist-data.js"></script>
+  <!-- 検索・表示ロジック -->
     <script>
-      // performances: 笹川真生 ライブのセットリスト一覧（note記事「笹川真生 セトリまとめ」をもとに作成）
-      // video: YouTube等のURL。分かったら書き足してください（null のままなら「映像未リンク」と表示されます）
-      const performances = [
-        { date: "2026-09-11", event: "WALL&WALL 10th Anniversary", venue: "表参道WALL&WALL", video: "https://www.youtube.com/watch?v=YxYeDgOiElo",
-          setlist: ["美しい術","三文芝居","きみになっていく","ないてわめいてきらめいて","オーバーナイトバス","ボトルネック","水泳教室","パレード","ちゅるちゅる","不細工","what's your poison?","Replaceable Goodbye"] },
-        { date: "2026-08-30", event: "Now 2 -笹川真生×宇宙ネコ子-", venue: "下北沢近道", video: "https://www.youtube.com/watch?v=nHK8jGrfPBY",
-          setlist: ["わたしのほねのうみ","美しい術","日本の九月の気層です","きみになっていく","Swim","水泳教室","屋上階","なんもない","かみさま"] },
-        { date: "2026-08-10", event: "笹川真生「脈拍」Vol.6", venue: "SHIBUYA CLUB QUATTRO", video: "https://www.youtube.com/watch?v=k08Kl6Gg2xc",
-          setlist: ["ためらいあいいたい","新世界より","うろんなひと","三文芝居","きみになっていく","ダイブ・ダイブ","最低","美しい術","異邦人","きっと、こういうときに死ぬものよ","はきだす","懐古主義わたし","脳ない"] },
-        { date: "2026-08-05", event: "笹川真生「脈拍」Vol.6", venue: "心斎橋JANUS", video: "https://www.youtube.com/watch?v=jo2p4ucRzi8",
-          setlist: ["ためらいあいいたい","新世界より","うろんなひと","三文芝居","きみになっていく","ダイブ・ダイブ","最低","美しい術","異邦人","きっと、こういうときに死ぬものよ","はきだす","懐古主義わたし","脳ない"] },
-        { date: "2026-06-20", event: "YATSUI FESTIVAL! 2026", venue: "clubasia", video: "https://www.youtube.com/watch?v=080Jc-tvuQQ",
-          setlist: ["コンタクティ","ですから、灼けました","HAMETSUのねがい","懐古主義わたし","きみになっていく","官能と飽食","ゆうひ","ちゅるちゅる","ないてわめいてきらめいて"] },
-        { date: "2026-06-07", event: "Oaiko FES 2026", venue: "WWW X", video: "https://www.youtube.com/watch?v=AR74cnV4pEM",
-          setlist: ["やわらかな","コンタクティ","懐古主義わたし","きみになっていく","ゆうひ","水泳教室","ちゅるちゅる","SADMACHINEENSEMBLE","脳ない"] },
-        { date: "2026-05-23", event: "笹川真生 単独巡業「ひかりのそこ 第６層」【東京】", venue: "恵比寿LIQUIDROOM", video: "https://youtu.be/5vizK6iqkmc",
-          setlist: ["ノーヘヴン・ノーヘヴン","CULTURE DRUG ORCHESTRA","HAMETSUのねがい","懐古主義わたし","きみになっていく","ゆうひ","水泳教室","パレード","ちゅるちゅる","ゆうれいのまち","トゥ・ビート","SADMACHINEENSEMBLE","脳ない","かみさま","このほしにうまれて"] },
-        { date: "2026-05-17", event: "NIGHT HIKE - scramble - '26", venue: "Spotify O-EAST", video: "https://www.youtube.com/watch?v=PlWJaw2-B3o",
-          setlist: ["ですから、灼けました","サニーサイドへようこそ","Dokujoutai","懐古主義わたし","逆光","ちゅるちゅる","SADMACHINEENSEMBLE","脳ない","きみが大人になったんだ"] },
-        { date: "2026-05-16", event: "笹川真生 単独巡業「ひかりのそこ 第６層」【大阪】", venue: "梅田Shangri-La", video: "https://www.youtube.com/watch?v=V39-LZHYMz4",
-          setlist: ["不細工","CULTURE DRUG ORCHESTRA","HAMETSUのねがい","懐古主義わたし","きみになっていく","ゆうひ","水泳教室","パレード","ちゅるちゅる","ゆうれいのまち","トゥ・ビート","SADMACHINEENSEMBLE","脳ない","かみさま"] },
-        { date: "2026-05-15", event: "笹川真生 単独巡業「ひかりのそこ 第６層」【名古屋】", venue: "名古屋 ell.FITS ALL", video: "https://www.youtube.com/watch?v=qUL67z5hBLM",
-          setlist: ["キャロル","CULTURE DRUG ORCHESTRA","HAMETSUのねがい","懐古主義わたし","きみになっていく","ゆうひ","水泳教室","パレード","ちゅるちゅる","ゆうれいのまち","トゥ・ビート","SADMACHINEENSEMBLE","脳ない","かみさま"] },
-        { date: "2026-04-19", event: "\"MCMC\" Produced by MOTTO MUSIC & VIRAL", venue: "Zepp Shinjuku", video: "https://www.youtube.com/watch?v=paaqXdfZRNU",
-          setlist: ["ノーヘヴン・ノーヘヴン","サニーサイドへようこそ","きみになっていく","ちゅるちゅる","HAMETSUのねがい","トゥ・ビート","ですから、灼けました"] },
-        { date: "2026-04-11", event: "SYNCHRONICITY'26", venue: "clubasia", video: "https://www.youtube.com/watch?v=IfphBdLwYDc",
-          setlist: ["逆光","コンタクティ","Dokujoutai","きみになっていく","HAMETSUのねがい","ちゅるちゅる","トゥ・ビート","このほしにうまれて"] },
-        { date: "2026-03-21", event: "Chapter tour 2026", venue: "新宿MARZ", video: "https://www.youtube.com/watch?v=nKUBKMuF1HM",
-          setlist: ["Badclub","what's your poison?","Dokujoutai","ペーパームーン","ダイブ・ダイブ","ですから、灼けました","美しい術","溢れちゃった","ねぇママ"] },
-        { date: "2026-03-20", event: "IMAIKE GO NOW 2026", venue: "CLUB UPSET", video: "https://www.youtube.com/watch?v=u5t36vI3GCM",
-          setlist: ["ですから、灼けました","美しい術","最低","官能と飽食","ペーパームーン","はじめての世界征服","what's your poison?","ねぇママ"] },
-        { date: "2026-01-29", event: "JUST RIGHT!! vol.23", venue: "青山 月見ル君想フ", video: "https://www.youtube.com/watch?v=IZ7ubeGfZBA",
-          setlist: ["あたらしいからだ","コンタクティ","Dokujoutai","うろんなひと","三文芝居","逆光","美しい術","ないてわめいてきらめいて","ささやき-いのり-えいしょう-ねんじろ！","食虫植物","不細工"] },
-        { date: "2025-12-22", event: "O-nest presents \"österreich × 笹川真⽣\"", venue: "Spotify O-nest", video: "https://www.youtube.com/watch?v=qk5crVPz7yw",
-          setlist: ["ダイブ・ダイブ","やわらかな","胎児に月はキスをしない","Dokujoutai","はじめての世界征服","官能と飽食","閃光だった","溢れちゃった","逆光","美しい術","ささやき-いのり-えいしょう-ねんじろ！","コンタクティ","不細工","ですから、灼けました"] },
-        { date: "2025-12-19", event: "笹川真生「脈拍」Vol.5", venue: "梅田Shangri-la", video: "https://www.youtube.com/watch?v=zLZbUBmcROU",
-          setlist: ["ノーヘヴン・ノーヘヴン","はきだす","悪魔","Dokujoutai","美しい術","光にしないで","Darling","さめない","ないてわめいてきらめいて","コンタクティ","溢れちゃった","不細工","百年","極・ですから、灼けました"] },
-        { date: "2025-11-13", event: "笹川真生「脈拍」Vol.5", venue: "SHIBUYA CLUB QUATTRO", video: "https://www.youtube.com/watch?v=ToxXhTrrGUo",
-          setlist: ["ためらいあいいたい","はきだす","悪魔","Dokujoutai","美しい術","光にしないで","ボトルネック","あのひとが来て","ないてわめいてきらめいて","コンタクティ","溢れちゃった","不細工","Replaceable Goodbye","極・ですから、灼けました"] },
-        { date: "2025-11-01", event: "法政大学 市ケ谷キャンパス大学祭 \"Om Wave\"", venue: "法政大学市ヶ谷キャンパス ヘリオス特設ステージ", video: "https://www.youtube.com/watch?v=ivLCY9Bv6xs",
-          setlist: ["逆光","美しい術","コンタクティ","Dokujoutai","ですから、灼けました","最低","ないてわめいてきらめいて","溢れちゃった","ささやき-いのり-えいしょう-ねんじろ！","はじめての世界征服","不細工"] },
-        { date: "2025-10-12", event: "FM802 MINAMI WHEEL 2025", venue: "LIVE HOUSE BRONZE", video: "https://www.youtube.com/watch?v=oapqO5JVn2o",
-          setlist: ["逆光","美しい術","ですから、灼けました","ないてわめいてきらめいて","ささやき-いのり-えいしょう-ねんじろ！","はじめての世界征服","不細工"] },
-        { date: "2025-08-24", event: "大阪万博2025 トーク&LIVE", venue: "大阪ヘルスケアパビリオン リボーンステージ", video: null,
-          setlist: ["百年","だれかのうみ/さまよって","やわらかな"] },
-        { date: "2025-08-09", event: "笹川真生 単独公演「ひかりのそこ 第５層」", venue: "東京キネマ倶楽部", video: "https://www.youtube.com/watch?v=G37iL1jTq4A",
-          setlist: ["わかちあうこと","コンタクティ","ですから、灼けました","Dokujoutai","逆光","美しい術","最低","ないてわめいてきらめいて","ささやき-いのり-えいしょう-ねんじろ！","ダイブ・ダイブ","溢れちゃった","光にしないで","はじめての世界征服","不細工","このほしにうまれて"] },
-        { date: "2025-06-07", event: "Landscape", venue: "代官山UNIT", video: "https://youtu.be/bhEL5GOR670",
-          setlist: ["逆光","美しい術","ですから、灼けました","ささやき-いのり-えいしょう-ねんじろ！","溢れちゃった","はじめての世界征服","ないてわめいてきらめいて"] },
-        { date: "2025-05-08", event: "笹川真生「脈拍」Vol.4", venue: "渋谷QUATTRO", video: "https://youtu.be/oJLkt_b9H4U",
-          setlist: ["ダイブ・ダイブ","ささやき-いのり-えいしょう-ねんじろ！","さみしいひと","Dokujoutai","日本の九月の気層です","溢れちゃった","サニーサイドへようこそ","官能と飽食","美しい術","わたしレプリカ","きみが大人になったんだ","ないてわめいてきらめいて","ですから、灼けました","ねぇママ"] },
-        { date: "2025-04-25", event: "on tabuz twelve", venue: "LIVE HOUSE FEVER", video: "https://youtu.be/dHL-EOgNJvg",
-          setlist: ["ノーヘヴン・ノーヘヴン","ですから、灼けました","うろんなひと","サニーサイドへようこそ","屋上階","Dokujoutai","官能と飽食","ささやき-いのり-えいしょう-ねんじろ！","美しい術","ないてわめいてきらめいて","メチルオレンジ","きみが大人になったんだ"] },
-        { date: "2025-03-06", event: "O-nest 29th Anniversary", venue: "Spotify O-nest", video: "https://youtu.be/voHzOjD5-M0",
-          setlist: ["日本の九月の気層です","滞る夜","ボトルネック","ジュウロクグラム","nile perch","楽園","クラスで一番人気のあの子は校舎の裏で人を殺した","口約束で殺して。","エイプリル"] },
-        { date: "2025-01-09", event: "RAY × situasion presents「Past + New = Now」vol.2（振替公演）", venue: "clubasia", video: "https://www.dropbox.com/scl/fi/l3c65odkmeqwhuyu1xt0p/250109_-clubasia.mp4?rlkey=gxx6p3ojqm7c059m3t67ro6lr&st=e86h4dd0&dl=0",
-          setlist: ["やわらかな","新世界より","三文芝居","悪魔","ためらいあいいたい","日本の九月の気層です","ねぇママ"] },
-        { date: "2024-11-08", event: "笹川真生 単独公演「ひかりのそこ 第４層」", venue: "SHIBUYA PLEASURE PLEASURE", video: "https://youtu.be/waRp1ndQd2g",
-          setlist: ["あたらしいからだ","フロム天国","うろんなひと","メチルオレンジ","官能と飽食","さみしいひと","Darling","ノーヘヴン・ノーヘヴン","サニーサイドへようこそ","日本の九月の気層です","わたしレプリカ","きみが大人になったんだ","わかちあうこと"] },
-        { date: "2024-07-05", event: "Khamai Leon アルバムリリース東名阪ツアー『a hazy view from IHATOV』", venue: "東京 Spotify O-nest", video: "https://www.youtube.com/watch?v=bj4RkPdSy3A",
-          setlist: ["ねぇママ","サニーサイドへようこそ","うろんなひと","だれかのうみ/さまよって","くうはく","屋上階","日本の九月の気層です"] },
-        { date: "2023-10-20", event: "paionia 3rd Mini Album「PRODUCT」Release Tour \"Marketing Chance\" Tour -大阪編-", venue: "心斎橋Pangea", video: "https://m.youtube.com/watch?v=aMzc-lmXAls&pp=4gcPEg1qcC5uYXZlci5saW5liggCQAE%3D&ra=m",
-          setlist: ["うろんなひと","サニーサイドへようこそ","悪魔","ペーパームーン","官能と飽食","ノーヘヴン・ノーヘヴン","さめない","わたしレプリカ","極・日本の九月の気層です","あたらしいからだ"] },
-        { date: "2023-09-09", event: "colormal \"diode\" release party \"逆光\"", venue: "TOKIOTOKYO", video: "https://youtu.be/EB6h3q76AVI?feature=shared",
-          setlist: ["うろんなひと","新世界より","サニーサイドへようこそ","悪魔","官能と飽食","ノーヘヴン・ノーヘヴン","ふさわしくない","ゆめみる","やわらかな","滞る夜","日本の九月の気層です","わたしレプリカ","わかちあうこと","ねぇママ"] },
-        { date: "2023-08-23", event: "SHIBUYA CLUB QUATTRO 35TH ANNIV. \"NEW VIEW\" × 鬱屈ロックスディスカバリー", venue: "渋谷 CLUB QUATTRO", video: "https://youtu.be/IuZfbN1vFd4",
-          setlist: ["日本の九月の気層です","悪魔","官能と飽食","ためらいあいいたい","わたしレプリカ","サニーサイドへようこそ","あたらしいからだ","ねぇママ"] },
-        { date: "2023-07-01", event: "笹川真生「脈拍」Vol.3", venue: "Spotify O-WEST", video: "https://youtu.be/l_g3XI8Aze4?si=zNPdgU8VFtJ3XHi3",
-          setlist: ["うろんなひと","新世界より","キャロル","日本の九月の気層です","悪魔","ためらいあいいたい","ノーヘヴン・ノーヘヴン","サニーサイドへようこそ","滞る夜","What's your poison?","やわらかな","あたらしいからだ"] },
-        { date: "2023-04-14", event: "笹川真生 単独公演「ひかりのそこ 第３層 -サニーサイドへようこそ-」", venue: "LIVE HOUSE FEVER", video: "https://www.dropbox.com/sh/4mm3y5hywomxlqa/AAAxB0OHh7qy322apKEYaTy5a?dl=0",
-          setlist: ["産声","日本の九月の気層です","うろんなひと","悪魔","メチルオレンジ","swim","くうはく","異邦人","ためらいあいいたい","やさしくしないで","あかいいと","サニーサイドへようこそ","for lust","sasayaku","ノーヘヴン・ノーヘヴン","わかちあうこと","ねぇママ"] },
-        { date: "2023-04-02", event: "SYNCHRONICITY'23", venue: "clubasia", video: "https://youtu.be/Erk91rsTvEk",
-          setlist: ["うろんなひと","日本の九月の気層です","悪魔","swim","ためらいあいいたい","くうはく","サニーサイドへようこそ","ノーヘヴン・ノーヘヴン","ねぇママ"] },
-        { date: "2023-01-24", event: "of BLUE LAB vol.6 by HOT STUFF", venue: "渋谷WWW", video: "https://www.youtube.com/watch?v=VsfzJ05V-Oo",
-          setlist: ["日本の九月の気層です","悪魔","うろんなひと","異邦人","ためらいあいいたい","食虫植物","ノーヘヴン・ノーヘヴン","ねぇママ"] },
-        { date: "2022-10-15", event: "sea of green'22", venue: "福井県大野市「麻那姫湖青少年旅行村」", video: "https://youtu.be/3PONwK3QiXo",
-          setlist: ["悪魔","ねぇママ","三文芝居","うろんなひと","食虫植物","やわらかな","異邦人","あたらしいからだ"] },
-        { date: "2022-09-21", event: "笹川真生「脈拍」Vol.2", venue: "SHIBUYA CLUB QUATTRO", video: "https://www.dropbox.com/sh/nkypv8009rw6la9/AADWuYkMdha8IWOj8_RX5z52a?dl=0",
-          setlist: ["ためらいあいいたい","屋上階","悪魔","日本の九月の気層です","ペーパームーン","新曲","滞る夜","What's your poison?","ねぇママ"] },
-        { date: "2022-08-16", event: "Ten・P", venue: "梅田 Shangri-La", video: "https://youtu.be/1LheBsKn5Ek",
-          setlist: ["Maison","三文芝居","悪魔","やわらかな","日本の九月の気層です","異邦人","ボトルネック","屋上階","ためらいあいいたい","ねぇママ"] },
-        { date: "2022-07-31", event: "下北沢フェスごっこ2022", venue: "下北沢MOSAiC", video: "https://www.youtube.com/watch?v=-BW0C3BU4f0",
-          setlist: ["ためらいあいいたい","屋上階","悪魔","ボトルネック","日本の九月の気層です","やわらかな","ねぇママ"] },
-        { date: "2022-03-11", event: "笹川真生「脈拍」", venue: "Spotify O-nest", video: "https://www.youtube.com/watch?v=9TGEVwgaD74",
-          setlist: ["悪魔","日本の九月の気層です","官能と飽食","エンカウント","オーバーナイトバス","異邦人","食虫植物","Maison","ねぇママ"] },
-        { date: "2022-01-22", event: "MIRRORS vol.3", venue: "Spotify O-nest", video: null,
-          setlist: ["悪魔","ねぇママ","三文芝居","官能と飽食","滞る夜","やさしくしないで"] },
-        { date: "2021-09-05", event: "単独公演「ひかりのそこ 第二層」", venue: "渋谷WWW", video: "https://www.youtube.com/watch?v=ZW1-l3_oGDQ",
-          setlist: ["きこえる","エイプリル","What's your poison?","オーバーナイトバス","官能と飽食","おいで","ふさわしくない","異邦人","キャロル","悪魔","滞る夜","日本の九月の気層です","ためらいあいいたい","屋上階","やわらかな","ねぇママ","あたらしいからだ"] },
-        { date: "2021-06-26", event: "単独公演「物言わぬ種子」", venue: "下北沢MOSAiC", video: null,
-          setlist: ["わすれる","悪魔","ペーパームーン","キャロル","メチルオレンジ","ふさわしくない","食虫植物","十九月","あたらしいからだ","ねぇママ"] },
-        { date: "2020-09-23", event: "配信単独公演『ひかりのそこ』", venue: "新宿MARZ", video: "https://www.youtube.com/watch?v=wUlaodJKMN4&t=705s&pp=ygUh56y55bed55yf55Sf44CA44Gy44GL44KK44Gu44Gd44GT",
-          setlist: ["産声","ねぇママ","三文芝居","官能と飽食","メチルオレンジ","悪魔","ランデヴー","ボトルネック","屋上階","エイプリル","What's your poison?","あたらしいからだ"] },
-        { date: "2020-07-04", event: "SYNCHRONICITY2020 ONLINE FESTIVAL", venue: "", video: "https://www.youtube.com/watch?v=6oP5sne4AVo&feature=youtu.be",
-          setlist: ["ねぇママ","メチルオレンジ","悪魔","やわらかな","エイプリル","あたらしいからだ"] },
-        { date: "2019-12-21", event: "colormal pre. 「cremation」", venue: "代々木Zher the Zoo", video: "https://www.youtube.com/watch?v=xDdgCtlfNdo",
-          setlist: ["キャロル","三文芝居","官能と飽食","オーバーナイトバス","メチルオレンジ","おいで","滞る夜","what's your poison?","ペーパームーン","ねぇママ","Maison","あたらしいからだ"] },
-        { date: "2019-11-24", event: "BOYS ON THE RUN", venue: "下北沢ERA", video: null,
-          setlist: ["やわらかな","三文芝居","官能と飽食","オーバーナイトバス","what's your poison?","ねぇママ","あたらしいからだ"] },
-        { date: "2019-11-19", event: "フクザワ個展「OLのもっちゃんの部屋」", venue: "下北沢近松", video: "https://www.youtube.com/watch?v=uu9vXqFTHN8",
-          setlist: ["ペーパームーン","新世界より","官能と飽食","オーバーナイトバス","やわらかな","ねぇママ"] },
-        { date: "2019-10-29", event: "HOT STUFF pre.「Ruby Tuesday」38", venue: "渋谷WWW", video: null,
-          setlist: ["キャロル","三文芝居","官能と飽食","ふさわしくない","ペーパームーン","ねぇママ","あたらしいからだ"] },
-        { date: "2019-10-20", event: "NEWTOWN2019", venue: "デジタルハリウッド大学八王子制作スタジオ", video: null,
-          setlist: ["メチルオレンジ","ふさわしくない","swim","maison"] },
-        { date: "2019-09-26", event: "exPoP!!!!! volume125", venue: "TSUTAYA O-nest", video: "https://www.youtube.com/watch?v=ByzyGLn5GP4",
-          setlist: ["キャロル","やわらかな","官能と飽食","おいで","ペーパームーン","ねぇママ"] },
-        { date: "2019-09-01", event: "lazuli rena nicole『Euler's identity』リリースツアーファイナル", venue: "新潟 CLUB RIVERST", video: null,
-          setlist: ["キャロル","新世界より","官能と飽食","ボトルネック","ペーパームーン","ねぇママ"] },
-        { date: "2019-02-16", event: "キタニタツヤ 1st One Man Live \"I DO LOVE YOU\"", venue: "下北沢MOSAiC", video: "https://www.youtube.com/watch?v=Jp3lwyIQRs8",
-          setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","エイプリル","口約束で殺して"] },
-        { date: "2019-02-06", event: "（イベント名不明）", venue: "新潟", video: null,
-          setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","Darling","口約束で殺して"] },
-      ];
-
-      // 表記ゆれ（(新曲) や 極・ など）をまとめて同じ曲として検索できるようにする
-      function normalize(song) {
-        return song
-          .replace(/^極[・･]\s*/, "")
-          .replace(/\s*[\(（][^\)）]*[\)）]\s*$/, "")
-          .trim();
-      }
-
       // 全曲リスト（表記ゆれをまとめたもの）を集計しておく（件数の目安表示用）
       const songSet = new Set();
       performances.forEach(perf => perf.setlist.forEach(rawSong => songSet.add(normalize(rawSong))));
@@ -303,9 +235,25 @@
       const searchBox = document.getElementById("search-box");
       const resultList = document.getElementById("result-list");
       const hint = document.getElementById("hint");
+      const tagFilterBox = document.getElementById("tag-filter");
 
       // 同時に開けるアコーディオンは1公演だけ
       let openId = null;
+      let activeTag = "すべて";
+
+      TAGS.forEach(tag => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tag-btn" + (tag === activeTag ? " active" : "");
+        btn.textContent = tag;
+        btn.addEventListener("click", () => {
+          activeTag = tag;
+          tagFilterBox.querySelectorAll(".tag-btn").forEach(b => b.classList.toggle("active", b.textContent === tag));
+          openId = null;
+          render(searchBox.value);
+        });
+        tagFilterBox.appendChild(btn);
+      });
 
       function escapeHtml(str) {
         return str.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -323,7 +271,7 @@
         const q = query.trim();
         const qLower = q.toLowerCase();
 
-        const filtered = q === ""
+        const bySong = q === ""
           ? sortedPerformances
           : sortedPerformances.filter(perf =>
               perf.setlist.some(rawSong =>
@@ -331,7 +279,11 @@
               )
             );
 
-        hint.textContent = q === ""
+        const filtered = activeTag === "すべて"
+          ? bySong
+          : bySong.filter(perf => getTag(perf) === activeTag);
+
+        hint.textContent = q === "" && activeTag === "すべて"
           ? `全 ${sortedPerformances.length} 公演 / ${songSet.size} 曲を収録`
           : `${filtered.length} 件ヒット（全 ${sortedPerformances.length} 公演中）`;
 
@@ -360,6 +312,8 @@
 
           const venueText = perf.venue ? ` @${perf.venue}` : "";
           const fullTitle = escapeHtml(`${perf.event}${venueText}`);
+          const tag = getTag(perf);
+          const tagBadgeHtml = tag !== "無印" ? `<span class="tag-badge">${tag}</span>` : "";
 
           let videoHtml;
           if (perf.video) {
@@ -376,6 +330,7 @@
             <div class="result-header">
               <span class="result-date">${monthDay}</span>
               <span class="result-event" title="${fullTitle}">${fullTitle}</span>
+              ${tagBadgeHtml}
               <span class="toggle-arrow">${isOpen ? CLOSE_LABEL : OPEN_LABEL}</span>
             </div>
             ${videoHtml}

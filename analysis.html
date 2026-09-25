@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>笹川真生 セトリ集計</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 24px 20px 60px;
+      background: #fff;
+      color: #111;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 4px;
+    }
+
+    #page-nav {
+      margin-bottom: 14px;
+    }
+
+    #page-nav a {
+      font-size: 13px;
+      color: #06c;
+      text-decoration: none;
+    }
+
+    #page-nav a:hover {
+      text-decoration: underline;
+    }
+
+    #search-box {
+      font-family: inherit;
+      font-size: 15px;
+      padding: 8px 10px;
+      width: 320px;
+      max-width: 100%;
+      border: 1px solid #999;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+    }
+
+    #tag-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag-btn {
+      font-family: inherit;
+      font-size: 12.5px;
+      padding: 5px 12px;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .tag-btn:hover {
+      background: #f4f4f4;
+    }
+
+    .tag-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+
+    #sort-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .sort-btn {
+      font-family: inherit;
+      font-size: 12.5px;
+      padding: 5px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .sort-btn:hover {
+      background: #f4f4f4;
+    }
+
+    .sort-btn.active {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+
+    #hint {
+      color: #999;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    #song-list {
+      margin-top: 14px;
+      padding: 0;
+      list-style: none;
+      max-width: 700px;
+    }
+
+    .song-row {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .song-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      background: #f4f4f4;
+      padding: 9px 12px;
+      border-radius: 8px;
+    }
+
+    .song-name {
+      color: #222;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .song-count {
+      margin-left: auto;
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #06c;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .song-last {
+      font-size: 12.5px;
+      color: #777;
+      padding: 6px 4px 0;
+    }
+
+    .song-last a {
+      color: #06c;
+      text-decoration: none;
+      margin-left: 6px;
+    }
+
+    .song-last a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="page-nav"><a href="setlist.html">← セトリ検索に戻る</a></div>
+  <h1>笹川真生 セトリ集計</h1>
+
+  <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
+  <div id="tag-filter"></div>
+  <div id="sort-buttons"></div>
+  <p id="hint"></p>
+
+  <ul id="song-list"></ul>
+
+  <script src="setlist-data.js"></script>
+  <script>
+    const searchBox = document.getElementById("search-box");
+    const tagFilterBox = document.getElementById("tag-filter");
+    const sortButtonsBox = document.getElementById("sort-buttons");
+    const songList = document.getElementById("song-list");
+    const hint = document.getElementById("hint");
+
+    let activeTag = "すべて";
+    let sortMode = "count"; // "count" | "recent"
+
+    TAGS.forEach(tag => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tag-btn" + (tag === activeTag ? " active" : "");
+      btn.textContent = tag;
+      btn.addEventListener("click", () => {
+        activeTag = tag;
+        tagFilterBox.querySelectorAll(".tag-btn").forEach(b => b.classList.toggle("active", b.textContent === tag));
+        render();
+      });
+      tagFilterBox.appendChild(btn);
+    });
+
+    const SORT_LABELS = { count: "回数が多い順", recent: "直近にやった順" };
+    Object.keys(SORT_LABELS).forEach(mode => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sort-btn" + (mode === sortMode ? " active" : "");
+      btn.textContent = SORT_LABELS[mode];
+      btn.addEventListener("click", () => {
+        sortMode = mode;
+        sortButtonsBox.querySelectorAll(".sort-btn").forEach((b, i) => b.classList.toggle("active", Object.keys(SORT_LABELS)[i] === mode));
+        render();
+      });
+      sortButtonsBox.appendChild(btn);
+    });
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    // 曲ごとに集計：回数・最終公演日・最終公演の情報
+    function buildStats(perfList) {
+      const stats = new Map();
+      perfList.forEach(perf => {
+        perf.setlist.forEach(rawSong => {
+          const song = normalize(rawSong);
+          if (!stats.has(song)) stats.set(song, { song, count: 0, lastDate: null, lastPerf: null });
+          const s = stats.get(song);
+          s.count += 1;
+          if (!s.lastDate || perf.date > s.lastDate) {
+            s.lastDate = perf.date;
+            s.lastPerf = perf;
+          }
+        });
+      });
+      return Array.from(stats.values());
+    }
+
+    function render() {
+      const q = searchBox.value.trim().toLowerCase();
+
+      const perfInScope = activeTag === "すべて"
+        ? performances
+        : performances.filter(perf => getTag(perf) === activeTag);
+
+      let stats = buildStats(perfInScope);
+
+      if (q !== "") {
+        stats = stats.filter(s => s.song.toLowerCase().includes(q));
+      }
+
+      stats.sort((a, b) => {
+        if (sortMode === "count") {
+          return b.count - a.count || b.lastDate.localeCompare(a.lastDate);
+        }
+        return b.lastDate.localeCompare(a.lastDate) || b.count - a.count;
+      });
+
+      hint.textContent = `${stats.length} 曲を表示中（${perfInScope.length} 公演分から集計）`;
+
+      songList.innerHTML = "";
+
+      stats.forEach(s => {
+        const li = document.createElement("li");
+        li.className = "song-row";
+
+        const perf = s.lastPerf;
+        const venueText = perf.venue ? ` @${perf.venue}` : "";
+        const lastLabel = `${perf.date}　${escapeHtml(perf.event)}${escapeHtml(venueText)}`;
+
+        let videoHtml = "";
+        if (perf.video) {
+          videoHtml = `<a href="${perf.video}" target="_blank">▶ 映像を見る</a>`;
+        }
+
+        li.innerHTML = `
+          <div class="song-header">
+            <span class="song-name" title="${escapeHtml(s.song)}">${escapeHtml(s.song)}</span>
+            <span class="song-count">${s.count} 回</span>
+          </div>
+          <div class="song-last">最終：${lastLabel}${videoHtml}</div>
+        `;
+        songList.appendChild(li);
+      });
+    }
+
+    searchBox.addEventListener("input", render);
+    render();
+  </script>
+
+</body>
+</html>
