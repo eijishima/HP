@@ -25,17 +25,23 @@
     }
 
     #page-nav {
-      margin-bottom: 14px;
+      margin-bottom: 18px;
     }
 
     #page-nav a {
-      font-size: 13px;
-      color: #06c;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      background: #06c;
+      padding: 9px 18px;
+      border-radius: 999px;
       text-decoration: none;
+      transition: background 0.15s ease;
     }
 
     #page-nav a:hover {
-      text-decoration: underline;
+      background: #058;
     }
 
     #search-box {
@@ -78,33 +84,6 @@
       color: #fff;
     }
 
-    #sort-buttons {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .sort-btn {
-      font-family: inherit;
-      font-size: 12.5px;
-      padding: 5px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #fff;
-      color: #555;
-      cursor: pointer;
-    }
-
-    .sort-btn:hover {
-      background: #f4f4f4;
-    }
-
-    .sort-btn.active {
-      background: #111;
-      border-color: #111;
-      color: #fff;
-    }
-
     #hint {
       color: #999;
       font-size: 12px;
@@ -118,59 +97,15 @@
       max-width: 700px;
     }
 
-    .song-row {
+    .bar-row {
       padding: 8px 0;
       border-bottom: 1px solid #eee;
     }
 
-    .song-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: nowrap;
-      background: #f4f4f4;
-      padding: 9px 12px;
-      border-radius: 8px;
-    }
-
-    .song-name {
-      color: #222;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      min-width: 0;
-    }
-
-    .song-count {
-      margin-left: auto;
-      font-size: 12.5px;
-      font-weight: bold;
-      color: #06c;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .song-last {
-      font-size: 12.5px;
-      color: #777;
-      padding: 6px 4px 0;
-    }
-
-    .song-last a {
-      color: #06c;
-      text-decoration: none;
-      margin-left: 6px;
-    }
-
-    .song-last a:hover {
-      text-decoration: underline;
-    }
-
-    .bar-row {
+    .bar-main {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 5px 0;
     }
 
     .bar-label {
@@ -181,7 +116,6 @@
       white-space: nowrap;
       font-size: 13px;
       color: #333;
-      cursor: default;
     }
 
     .bar-track {
@@ -207,6 +141,22 @@
       font-weight: bold;
       color: #06c;
     }
+
+    .bar-last {
+      font-size: 12.5px;
+      color: #777;
+      padding: 6px 0 0;
+    }
+
+    .bar-last a {
+      color: #06c;
+      text-decoration: none;
+      margin-left: 6px;
+    }
+
+    .bar-last a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -216,7 +166,6 @@
 
   <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
   <div id="tag-filter"></div>
-  <div id="sort-buttons"></div>
   <p id="hint"></p>
 
   <ul id="song-list"></ul>
@@ -225,12 +174,10 @@
   <script>
     const searchBox = document.getElementById("search-box");
     const tagFilterBox = document.getElementById("tag-filter");
-    const sortButtonsBox = document.getElementById("sort-buttons");
     const songList = document.getElementById("song-list");
     const hint = document.getElementById("hint");
 
     let activeTag = "すべて";
-    let sortMode = "count"; // "count" | "recent"
 
     TAGS.forEach(tag => {
       const btn = document.createElement("button");
@@ -243,20 +190,6 @@
         render();
       });
       tagFilterBox.appendChild(btn);
-    });
-
-    const SORT_LABELS = { count: "回数が多い順", recent: "直近にやった順" };
-    Object.keys(SORT_LABELS).forEach(mode => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "sort-btn" + (mode === sortMode ? " active" : "");
-      btn.textContent = SORT_LABELS[mode];
-      btn.addEventListener("click", () => {
-        sortMode = mode;
-        sortButtonsBox.querySelectorAll(".sort-btn").forEach((b, i) => b.classList.toggle("active", Object.keys(SORT_LABELS)[i] === mode));
-        render();
-      });
-      sortButtonsBox.appendChild(btn);
     });
 
     function escapeHtml(str) {
@@ -294,47 +227,21 @@
         stats = stats.filter(s => s.song.toLowerCase().includes(q));
       }
 
-      stats.sort((a, b) => {
-        if (sortMode === "count") {
-          return b.count - a.count || b.lastDate.localeCompare(a.lastDate);
-        }
-        return b.lastDate.localeCompare(a.lastDate) || b.count - a.count;
-      });
+      stats.sort((a, b) => b.count - a.count || b.lastDate.localeCompare(a.lastDate));
 
       hint.textContent = `${stats.length} 曲を表示中（${perfInScope.length} 公演分から集計）`;
 
       songList.innerHTML = "";
 
-      if (sortMode === "count") {
-        const maxCount = stats.length ? stats[0].count : 1;
-
-        stats.forEach(s => {
-          const li = document.createElement("li");
-          li.className = "bar-row";
-
-          const perf = s.lastPerf;
-          const venueText = perf.venue ? ` @${perf.venue}` : "";
-          const tooltip = `${s.count}回 / 最終：${perf.date} ${perf.event}${venueText}`;
-          const pct = Math.max((s.count / maxCount) * 100, 2);
-
-          li.title = tooltip;
-          li.innerHTML = `
-            <span class="bar-label">${escapeHtml(s.song)}</span>
-            <div class="bar-track"><div class="bar-fill" style="width: ${pct}%"></div></div>
-            <span class="bar-value">${s.count}</span>
-          `;
-          songList.appendChild(li);
-        });
-        return;
-      }
+      const maxCount = stats.length ? stats[0].count : 1;
 
       stats.forEach(s => {
         const li = document.createElement("li");
-        li.className = "song-row";
+        li.className = "bar-row";
 
         const perf = s.lastPerf;
         const venueText = perf.venue ? ` @${perf.venue}` : "";
-        const lastLabel = `${perf.date}　${escapeHtml(perf.event)}${escapeHtml(venueText)}`;
+        const pct = Math.max((s.count / maxCount) * 100, 2);
 
         let videoHtml = "";
         if (perf.video) {
@@ -342,11 +249,12 @@
         }
 
         li.innerHTML = `
-          <div class="song-header">
-            <span class="song-name" title="${escapeHtml(s.song)}">${escapeHtml(s.song)}</span>
-            <span class="song-count">${s.count} 回</span>
+          <div class="bar-main">
+            <span class="bar-label" title="${escapeHtml(s.song)}">${escapeHtml(s.song)}</span>
+            <div class="bar-track"><div class="bar-fill" style="width: ${pct}%"></div></div>
+            <span class="bar-value">${s.count}</span>
           </div>
-          <div class="song-last">最終：${lastLabel}${videoHtml}</div>
+          <div class="bar-last">最終：${perf.date}　${escapeHtml(perf.event)}${escapeHtml(venueText)}${videoHtml}</div>
         `;
         songList.appendChild(li);
       });
