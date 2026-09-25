@@ -313,7 +313,7 @@
           const venueText = perf.venue ? ` @${perf.venue}` : "";
           const fullTitle = escapeHtml(`${perf.event}${venueText}`);
           const tag = getTag(perf);
-          const tagBadgeHtml = tag !== "無印" ? `<span class="tag-badge">${tag}</span>` : "";
+          const tagBadgeHtml = tag !== "イベント" ? `<span class="tag-badge">${tag}</span>` : "";
 
           let videoHtml;
           if (perf.video) {

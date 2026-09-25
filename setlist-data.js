@@ -2,6 +2,8 @@
 // video: YouTube等のURL。分かったら書き足してください（null のままなら「映像未リンク」と表示されます）
 // setlist.html と analysis.html の両方から読み込まれる共通データ
 const performances = [
+  { date: "2026-09-25", event: "Guiano Split Tour 2026 ―私の心に、あなたがいた―", venue: "仙台darwin", video: null,
+    setlist: ["コンタクティ","ですから、灼けました","きみになっていく","トゥ・ビート","水泳教室","だれかのうみ/さまよって","ボトルネック","ノマネ","懐古主義わたし","脳ない"] },
   { date: "2026-09-11", event: "WALL&WALL 10th Anniversary", venue: "表参道WALL&WALL", video: "https://www.youtube.com/watch?v=YxYeDgOiElo",
     setlist: ["美しい術","三文芝居","きみになっていく","ないてわめいてきらめいて","オーバーナイトバス","ボトルネック","水泳教室","パレード","ちゅるちゅる","不細工","what's your poison?","Replaceable Goodbye"] },
   { date: "2026-08-30", event: "Now 2 -笹川真生×宇宙ネコ子-", venue: "下北沢近道", video: "https://www.youtube.com/watch?v=nHK8jGrfPBY",
@@ -122,11 +124,11 @@ function normalize(song) {
     .trim();
 }
 
-// イベント名からツアー/企画タグを自動判定（"ひかりのそこ" と "脈拍" の2種類。それ以外は無印）
+// イベント名からツアー/企画タグを自動判定（"ひかりのそこ" と "脈拍" の2種類。それ以外はイベント）
 function getTag(perf) {
   if (perf.event.includes("ひかりのそこ")) return "ひかりのそこ";
   if (perf.event.includes("脈拍")) return "脈拍";
-  return "無印";
+  return "イベント";
 }
 
-const TAGS = ["すべて", "ひかりのそこ", "脈拍", "無印"];
+const TAGS = ["すべて", "ひかりのそこ", "脈拍", "イベント"];
