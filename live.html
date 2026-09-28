@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>live archive</title>
 
   <!-- フォント -->
@@ -32,6 +33,51 @@ a {
   transition: transform 0.15s ease;
 }
 
+/* スマホ：1件を「日付・アーティスト」「会場・タイトル」の2段に */
+@media (max-width: 600px) {
+  body {
+    padding: 16px;
+  }
+  #title-wrapper {
+    margin-left: 20px;
+  }
+  #honbun {
+    margin-top: 160px;
+    padding-bottom: 140px; /* 右下メニューに最後の行が隠れないように */
+  }
+  #live-list li {
+    margin-bottom: 14px;
+  }
+  #live-list a {
+    padding-left: 0;
+    line-height: 1.5;
+  }
+  #live-list li:hover,
+  #live-list a:hover {
+    transform: none;
+  }
+  #live-list .sep-main {
+    display: none;
+  }
+  #live-list .l-date {
+    margin-right: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  #live-list .l-sub {
+    display: block;
+    font-size: 13px;
+    color: #666;
+  }
+  .sidebar {
+    right: 12px;
+    bottom: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .sidebar p {
+    margin: 4px 0;
+  }
+}
 
 </style>
 </head>
@@ -158,7 +204,10 @@ a {
     lives.forEach(live => {
       const li = document.createElement("li");
       const a = document.createElement("a");
-      a.textContent = `${live.date} - ${live.artist} - ${live.place} - ${live.title}`;
+      a.innerHTML =
+        `<span class="l-date">${live.date}</span><span class="sep-main"> - </span>` +
+        `<span class="l-artist">${live.artist}</span><span class="sep-main"> - </span>` +
+        `<span class="l-sub"><span class="l-place">${live.place}</span> - <span class="l-title">${live.title}</span></span>`;
       a.href = live.url;
       a.target = "_blank";
       li.appendChild(a);
