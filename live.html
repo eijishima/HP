@@ -33,7 +33,7 @@ a {
   transition: transform 0.15s ease;
 }
 
-/* スマホ：1件を「日付・アーティスト」「会場・タイトル」の2段に */
+/* スマホ：1件を「日付・アーティスト・会場」「タイトル」の2段に */
 @media (max-width: 600px) {
   body {
     padding: 16px;
@@ -59,10 +59,23 @@ a {
   #live-list .sep-main {
     display: none;
   }
-  #live-list .l-date {
-    margin-right: 10px;
+  /* 1段目：日付・アーティスト・会場（1行に収める） */
+  #live-list .l-main {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+  #live-list .l-date,
+  #live-list .l-artist {
+    margin-right: 8px;
     font-variant-numeric: tabular-nums;
   }
+  #live-list .l-place {
+    color: #666;
+  }
+  /* 2段目：タイトル */
   #live-list .l-sub {
     display: block;
     font-size: 13px;
@@ -205,9 +218,10 @@ a {
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.innerHTML =
-        `<span class="l-date">${live.date}</span><span class="sep-main"> - </span>` +
+        `<span class="l-main"><span class="l-date">${live.date}</span><span class="sep-main"> - </span>` +
         `<span class="l-artist">${live.artist}</span><span class="sep-main"> - </span>` +
-        `<span class="l-sub"><span class="l-place">${live.place}</span> - <span class="l-title">${live.title}</span></span>`;
+        `<span class="l-place">${live.place}</span></span><span class="sep-main"> - </span>` +
+        `<span class="l-sub">${live.title}</span>`;
       a.href = live.url;
       a.target = "_blank";
       li.appendChild(a);
