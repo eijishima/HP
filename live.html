@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>live archive</title>
 
   <!-- フォント -->
@@ -32,6 +33,64 @@ a {
   transition: transform 0.15s ease;
 }
 
+/* スマホ：1件を「日付・アーティスト・会場」「タイトル」の2段に */
+@media (max-width: 600px) {
+  body {
+    padding: 16px;
+  }
+  #title-wrapper {
+    margin-left: 20px;
+  }
+  #honbun {
+    margin-top: 160px;
+    padding-bottom: 140px; /* 右下メニューに最後の行が隠れないように */
+  }
+  #live-list li {
+    margin-bottom: 14px;
+  }
+  #live-list a {
+    padding-left: 0;
+    line-height: 1.5;
+  }
+  #live-list li:hover,
+  #live-list a:hover {
+    transform: none;
+  }
+  #live-list .sep-main {
+    display: none;
+  }
+  /* 1段目：日付・アーティスト・会場（1行に収める） */
+  #live-list .l-main {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+  #live-list .l-date,
+  #live-list .l-artist {
+    margin-right: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  #live-list .l-place {
+    color: #666;
+  }
+  /* 2段目：タイトル */
+  #live-list .l-sub {
+    display: block;
+    font-size: 13px;
+    color: #666;
+  }
+  .sidebar {
+    right: 12px;
+    bottom: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .sidebar p {
+    margin: 4px 0;
+  }
+}
 
 </style>
 </head>
@@ -59,8 +118,10 @@ a {
   <script>
     const lives = [
 
+{ date: "2027-01-29", artist: "春野", place: "Billboard Live YOKOHAMA", title: "CHAMBRE", url: "https://www.billboard-live.com/yokohama/show?event_id=ev-21733" },
 { date: "2027-01-22〜24", artist: "REJAY", place: "沖縄？？？", title: "Music Lane Festival Okinawa", url: "https://www.musiclanefestival.com/" },
 { date: "2026-11-30", artist: "chilldspot", place: "東京都 SGC HALL ARIAKE", title: "TWO DOOR CINEMA CLUB 15th ANNIVERSARY TOUR", url: "https://www.creativeman.co.jp/event/two-door-cinema-club_2026/" },
+{ date: "2026-11-28", artist: "笹川真生", place: "渋谷WWW", title: "yeti let you notice tour 2026", url: "https://t.pia.jp/pia/event/event.do?eventBundleCd=b2669302" },
 { date: "2026-11-14", artist: "MO MOMA", place: "下北沢BASEMENTBAR", title: "Polygon-Pop-Paradise vol.3", url: "https://x.com/momoma_wave/status/2099468806536266070?s=20" },
 { date: "2026-11-06", artist: "現実みろ", place: "多摩？？？", title: "現実みろ1stワンマンライブ『Que Sera Sera』", url: "https://livepocket.jp/e/realmiro_1st_oneman" },
 { date: "2026-11-03", artist: "笹川真生", place: "京都KBSホール", title: "ボロフェスタ2026 〜25th anniversary〜", url: "https://borofesta.jp/" },
@@ -157,7 +218,11 @@ a {
     lives.forEach(live => {
       const li = document.createElement("li");
       const a = document.createElement("a");
-      a.textContent = `${live.date} - ${live.artist} - ${live.place} - ${live.title}`;
+      a.innerHTML =
+        `<span class="l-main"><span class="l-date">${live.date}</span><span class="sep-main"> - </span>` +
+        `<span class="l-artist">${live.artist}</span><span class="sep-main"> - </span>` +
+        `<span class="l-place">${live.place}</span></span><span class="sep-main"> - </span>` +
+        `<span class="l-sub">${live.title}</span>`;
       a.href = live.url;
       a.target = "_blank";
       li.appendChild(a);
