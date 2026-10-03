@@ -111,7 +111,7 @@ const performances = [
   { date: "2019-09-01", event: "lazuli rena nicole『Euler's identity』リリースツアーファイナル", venue: "新潟 CLUB RIVERST", video: null,
     setlist: ["キャロル","新世界より","官能と飽食","ボトルネック","ペーパームーン","ねぇママ"] },
   { date: "2019-02-16", event: "キタニタツヤ 1st One Man Live \"I DO LOVE YOU\"", venue: "下北沢MOSAiC", video: "https://www.youtube.com/watch?v=Jp3lwyIQRs8",
-    setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","エイプリル","口約束で殺して"] },
+    setlist: ["きっと、こういうときに死ぬものよ","新世界より","ランデヴー","What's your poison?","エイプリル","ねぇママ"] },
   { date: "2019-02-06", event: "（イベント名不明）", venue: "新潟", video: null,
     setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","Darling","口約束で殺して"] },
 ];
