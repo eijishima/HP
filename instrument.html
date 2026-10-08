@@ -1008,7 +1008,7 @@ function importData(file) {
 }
 
 function exportCSV() {
-  const TYPE_LABELS = {rehearsal:'リハーサル', live:'本番', other:'その他'};
+  const TYPE_LABELS = {rehearsal:'リハーサル', live:'本番', rec:'REC', other:'その他'};
   const rows = [['日付', 'アーティスト', '現場名', '場所', '種別', 'レンタカー', 'レンタカー代', '駐車場代']];
   [...state.gigs].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(g => {
     rows.push([
