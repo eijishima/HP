@@ -715,7 +715,10 @@ function attachEvents() {
     el.addEventListener('click', () => setState({gigFilter:el.dataset.gigFilter})));
 
   const backBtn = document.getElementById('back-btn');
-  if (backBtn) backBtn.addEventListener('click', () => setState({view:'gigs', activeGigId:null}));
+  if (backBtn) backBtn.addEventListener('click', () => {
+    setState({view:'gigs', activeGigId:null});
+    window.scrollTo(0, state.listScrollY || 0);
+  });
 
   const addGigBtn = document.getElementById('add-gig-btn');
   if (addGigBtn) addGigBtn.addEventListener('click', () => setState({showAddGig:true}));
@@ -776,7 +779,9 @@ function attachEvents() {
   document.querySelectorAll('.gig-card').forEach(el =>
     el.addEventListener('click', e => {
       if (e.target.closest('[data-del-gig]')) return;
+      state.listScrollY = window.scrollY;
       setState({view:'gigDetail', activeGigId:+el.dataset.gig, gigView:'list'});
+      window.scrollTo(0, 0);
     }));
 
   const addGearBtn = document.getElementById('add-gear-btn');
