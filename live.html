@@ -184,7 +184,7 @@ a {
     const lives = [
 
 { date: "2027-01-29", artist: "春野", place: "Billboard Live YOKOHAMA", title: "CHAMBRE", url: "https://www.billboard-live.com/yokohama/show?event_id=ev-21733" },
-{ date: "2027-01-22〜24", artist: "REJAY", place: "?沖縄", title: "Music Lane Festival Okinawa", url: "https://www.musiclanefestival.com/" },
+{ date: "2027-?01-22〜24", artist: "REJAY", place: "?沖縄", title: "Music Lane Festival Okinawa", url: "https://www.musiclanefestival.com/" },
 { date: "2026-12-16", artist: "chilldspot", place: "川崎CLUB CITTA'", title: "CLUB CITTA' Presents いいこと さらさ × chilldspot × シャッポ", url: "https://clubcitta.co.jp/schedule/1771" },
 { date: "2026-11-30", artist: "chilldspot", place: "東京都 SGC HALL ARIAKE", title: "TWO DOOR CINEMA CLUB 15th ANNIVERSARY TOUR", url: "https://www.creativeman.co.jp/event/two-door-cinema-club_2026/" },
 { date: "2026-11-28", artist: "笹川真生", place: "渋谷WWW", title: "yeti let you notice tour 2026", url: "https://t.pia.jp/pia/event/event.do?eventBundleCd=b2669302" },
@@ -279,7 +279,7 @@ a {
 
     ];
 
-    // 値が "?" で始まる項目は未定扱い（"?" の後ろの文字、空なら "？？？" をグリッチ表示）
+    // 値に "?" がある項目は未定扱い（"?" の後ろの文字、空なら "？？？" をグリッチ表示。"?" より前は普通に表示）
     // 1文字ずつ幅を固定したマスに入れて、置き換わっても文字数・幅が変わらないようにする
     const glitchCharsHalf = "!<>-_\\/[]{}=+*^?#";
     const glitchCharsFull = "＃＊＜＞／＼＝＋？■□▒▓█";
@@ -290,16 +290,21 @@ a {
     function field(text, className) {
       const span = document.createElement("span");
       span.className = className;
-      if (text.startsWith("?")) {
-        const real = text.slice(1) || "？？？";
-        span.classList.add("glitch");
+      const q = text.indexOf("?");
+      if (q >= 0) {
+        // "?" より前はそのまま表示（例："2027-?01-22" → "2027-" は普通、"01-22" がグリッチ）
+        if (q > 0) span.appendChild(document.createTextNode(text.slice(0, q)));
+        const real = text.slice(q + 1) || "？？？";
+        const g = document.createElement("span");
+        g.className = "glitch";
+        span.appendChild(g);
         for (const c of real) {
           const cell = document.createElement("span");
           cell.className = "g-cell";
           cell.textContent = c;
           cell.dataset.text = c;
           cell.dataset.orig = c;
-          span.appendChild(cell);
+          g.appendChild(cell);
           glitchCells.push(cell);
         }
       } else {
