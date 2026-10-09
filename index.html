@@ -92,7 +92,10 @@
 </head>
 <body>
   <div class="container">
-    <img class="background" src="haikei.png" alt="背景画像">
+    <picture>
+      <source media="(orientation: portrait)" srcset="haikei-sp.webp">
+      <img class="page-bg" src="haikei.png" alt="背景画像">
+    </picture>
 
     <h1 id="title" onclick="location.href='index.html';">嶋英治</h1>
 

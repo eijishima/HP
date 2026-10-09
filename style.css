@@ -75,3 +75,14 @@
   backdrop-filter: blur(5px);
   z-index: 9999;
 }
+
+/* 各ページの背景画像（画面に固定、文字の背面） */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
