@@ -92,6 +92,56 @@ a {
   }
 }
 
+
+/* 未定項目のグリッチ演出 */
+.glitch {
+  position: relative;
+  display: inline-block;
+  animation: shake 2.4s infinite;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glitch::before {
+  color: #f0f;
+  animation: sliceA 1.1s steps(1) infinite;
+}
+.glitch::after {
+  color: #0ff;
+  animation: sliceB 0.8s steps(1) infinite;
+}
+@keyframes sliceA {
+  0%   { transform: translate(-3px, 0); clip-path: inset(0 0 70% 0); }
+  20%  { transform: translate(4px, 0);  clip-path: inset(30% 0 40% 0); }
+  40%  { transform: translate(-2px, 0); clip-path: inset(60% 0 10% 0); }
+  60%  { transform: translate(5px, 0);  clip-path: inset(10% 0 80% 0); }
+  80%  { transform: translate(-4px, 0); clip-path: inset(45% 0 30% 0); }
+  100% { transform: translate(0, 0);    clip-path: inset(0 0 100% 0); }
+}
+@keyframes sliceB {
+  0%   { transform: translate(3px, 0);  clip-path: inset(50% 0 20% 0); }
+  25%  { transform: translate(-5px, 0); clip-path: inset(5% 0 75% 0); }
+  50%  { transform: translate(2px, 0);  clip-path: inset(70% 0 5% 0); }
+  75%  { transform: translate(-3px, 0); clip-path: inset(25% 0 50% 0); }
+  100% { transform: translate(0, 0);    clip-path: inset(100% 0 0 0); }
+}
+@keyframes shake {
+  0%, 86%, 100% { transform: translate(0, 0) skewX(0); }
+  88% { transform: translate(-3px, 1px) skewX(12deg); }
+  90% { transform: translate(4px, -1px) skewX(-10deg); }
+  92% { transform: translate(-2px, 0) skewX(4deg); }
+  94% { transform: translate(2px, 1px) skewX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glitch { animation: none; }
+  /* 動きを止めると色ずれの層が文字に重なったままになるので消す */
+  .glitch::before, .glitch::after { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -214,16 +264,49 @@ a {
 
     ];
 
+    // 値が "?" で始まる項目は未定扱い（"?" の後ろの文字、空なら "？？？" をグリッチ表示）
+    const glitchChars = "!<>-_\\/[]{}=+*^?#░▒▓█";
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function field(text, className) {
+      const span = document.createElement("span");
+      span.className = className;
+      if (text.startsWith("?")) {
+        const real = text.slice(1) || "？？？";
+        span.classList.add("glitch");
+        span.textContent = real;
+        span.dataset.text = real;
+        if (!reduce) {
+          setInterval(() => {
+            const t = [...real].map(c =>
+              Math.random() < 0.6 ? glitchChars[Math.floor(Math.random() * glitchChars.length)] : c
+            ).join("");
+            span.textContent = t;
+            span.dataset.text = t;
+          }, 90);
+        }
+      } else {
+        span.textContent = text;
+      }
+      return span;
+    }
+
+    function sep() {
+      const span = document.createElement("span");
+      span.className = "sep-main";
+      span.textContent = " - ";
+      return span;
+    }
+
     const list = document.getElementById("live-list");
 
     lives.forEach(live => {
       const li = document.createElement("li");
       const a = document.createElement("a");
-      a.innerHTML =
-        `<span class="l-main"><span class="l-date">${live.date}</span><span class="sep-main"> - </span>` +
-        `<span class="l-artist">${live.artist}</span><span class="sep-main"> - </span>` +
-        `<span class="l-place">${live.place}</span></span><span class="sep-main"> - </span>` +
-        `<span class="l-sub">${live.title}</span>`;
+      const main = document.createElement("span");
+      main.className = "l-main";
+      main.append(field(live.date, "l-date"), sep(), field(live.artist, "l-artist"), sep(), field(live.place, "l-place"));
+      a.append(main, sep(), field(live.title, "l-sub"));
       a.href = live.url;
       a.target = "_blank";
       li.appendChild(a);
