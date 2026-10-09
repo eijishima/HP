@@ -115,6 +115,8 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
 .month-header:first-child { margin-top: 0; }
 .today-divider { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--teal); margin: 4px 0 8px; }
 .today-divider::after { content: ''; flex: 1; height: 1px; background: var(--teal); }
+.to-top-btn { position: fixed; right: max(16px, calc((100vw - 540px) / 2 + 16px)); bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); width: 44px; height: 44px; padding: 0; justify-content: center; border-radius: 50%; background: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
+.to-top-btn.visible { opacity: 1; pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -144,6 +146,7 @@ input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-colo
     </div>
   </div>
   <div class="body" id="root"></div>
+  <button class="to-top-btn" id="to-top-btn" title="一番上へ"><i class="ti ti-arrow-up" style="font-size:20px"></i></button>
 </div>
 
 <script>
@@ -1263,6 +1266,12 @@ if (load('driveConnected', false)) {
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 render();
 window.addEventListener('load', () => { if (state.view === 'gigs') scrollToToday(); });
+
+const toTopBtn = document.getElementById('to-top-btn');
+function updateToTopBtn() { toTopBtn.classList.toggle('visible', window.scrollY > 300); }
+window.addEventListener('scroll', updateToTopBtn, { passive: true });
+toTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+updateToTopBtn();
 </script>
 </body>
 </html>
