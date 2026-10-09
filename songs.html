@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>笹川真生 楽曲データ</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 24px 20px 60px;
+      background: #fff;
+      color: #111;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 4px;
+    }
+
+    #page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    #page-nav a {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      background: #06c;
+      padding: 9px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    #page-nav a:hover {
+      background: #058;
+    }
+
+    #search-box {
+      font-family: inherit;
+      font-size: 15px;
+      padding: 8px 10px;
+      width: 320px;
+      max-width: 100%;
+      border: 1px solid #999;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+    }
+
+    #hint {
+      color: #999;
+      font-size: 12px;
+      margin: 8px 0 0;
+    }
+
+    #data-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      margin-top: 10px;
+    }
+
+    .tool-btn {
+      font-family: inherit;
+      font-size: 12.5px;
+      padding: 5px 12px;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .tool-btn:hover { background: #f4f4f4; }
+
+    .tool-note {
+      font-size: 11.5px;
+      color: #999;
+    }
+
+    #copy-status {
+      font-size: 12px;
+      color: #2a8a2a;
+    }
+
+    #song-table {
+      --cols: minmax(0, 1.25fr) 52px 92px minmax(0, 1fr) 54px 60px;
+      max-width: 900px;
+      margin-top: 12px;
+    }
+
+    .list-header,
+    .row-main {
+      display: grid;
+      grid-template-columns: var(--cols);
+      column-gap: 10px;
+      align-items: center;
+    }
+
+    .list-header {
+      padding: 4px 0;
+      border-bottom: 1px solid #ddd;
+      font-size: 11px;
+      color: #999;
+    }
+
+    .list-header .h-num,
+    .row-main .c-bpm {
+      text-align: right;
+      padding-right: 8px;
+    }
+
+    #song-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .song-row {
+      padding: 7px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .song-row.group-start { margin-top: 12px; }
+
+    .section-header {
+      margin: 26px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #111;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .c-name {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .trk {
+      flex: 0 0 1.7em;
+      text-align: right;
+      color: #aaa;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nm {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      color: #222;
+    }
+
+    .meta { display: contents; }
+
+    .c-bpm,
+    .c-rel {
+      font-size: 12.5px;
+      color: #444;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .c-album {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12.5px;
+      color: #444;
+    }
+
+    .is-empty { color: #ccc !important; }
+
+    .stem-link {
+      color: #06c;
+      font-weight: bold;
+      font-size: 12.5px;
+      text-decoration: none;
+    }
+
+    .stem-link:hover { text-decoration: underline; }
+
+    .edit-btn {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 4px 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .edit-btn:hover { background: #f4f4f4; }
+
+    .song-row.open .edit-btn {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+
+    .edit-wrap {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      visibility: hidden;
+      transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.35s ease, visibility 0s linear 0.35s;
+    }
+
+    .song-row.open .edit-wrap {
+      max-height: 560px;
+      opacity: 1;
+      margin-top: 8px;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .edit-form {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 10px 12px;
+      background: #f6f6f6;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .edit-form .f-album { grid-column: span 5; }
+    .edit-form .f-track { grid-column: span 2; }
+    .edit-form .f-bpm { grid-column: span 2; }
+    .edit-form .f-release { grid-column: span 3; }
+    .edit-form .f-stem { grid-column: span 12; }
+
+    .edit-form label {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 11px;
+      color: #777;
+    }
+
+    .edit-form input {
+      width: 100%;
+      font-family: inherit;
+      font-size: 16px;
+      padding: 7px 9px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+    }
+
+    .edit-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-btn,
+    .cancel-btn {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 7px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background: #06c;
+      border: 1px solid #06c;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .save-btn:hover { background: #058; }
+
+    .cancel-btn {
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #555;
+    }
+
+    .cancel-btn:hover { background: #f4f4f4; }
+
+    .form-error {
+      font-size: 12px;
+      color: #c33;
+    }
+
+    @media (max-width: 639px) {
+      .list-header { display: none; }
+
+      .row-main {
+        grid-template-columns: minmax(0, 1fr) 60px;
+        row-gap: 5px;
+      }
+
+      .c-edit { grid-column: 2; grid-row: 1; }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 14px;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        padding-left: calc(1.7em + 6px);
+      }
+
+      .meta > span.is-empty { display: none; }
+
+      .meta > span::before {
+        content: attr(data-label) " ";
+        font-size: 11px;
+        color: #aaa;
+      }
+
+      .meta > span[data-label=""]::before { content: none; }
+
+      .c-bpm { text-align: left; padding-right: 0; }
+
+      .edit-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .edit-form .f-album,
+      .edit-form .f-stem,
+      .edit-form .f-release { grid-column: span 2; }
+      .edit-form .f-track,
+      .edit-form .f-bpm { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="page-nav">
+    <a href="setlist.html">← セトリ検索</a>
+    <a href="analysis.html">→ 集計・分析ページ</a>
+  </div>
+  <h1>笹川真生 楽曲データ</h1>
+
+  <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
+  <p id="hint"></p>
+
+  <div id="data-tools">
+    <button type="button" class="tool-btn" id="copy-btn">編集内容をコピー</button>
+    <button type="button" class="tool-btn" id="reset-btn">この端末の編集をリセット</button>
+    <span id="copy-status"></span>
+  </div>
+  <div class="tool-note">※ 編集はこの端末のブラウザにのみ保存されます（全員に反映するには「編集内容をコピー」して送ってください）</div>
+
+  <datalist id="album-list"></datalist>
+
+  <div id="song-table">
+    <div class="list-header">
+      <span>曲名</span>
+      <span class="h-num">BPM</span>
+      <span>リリース日</span>
+      <span>アルバム名</span>
+      <span>STEM</span>
+      <span></span>
+    </div>
+    <ul id="song-list"></ul>
+  </div>
+
+  <script src="setlist-data.js"></script>
+  <script src="song-meta.js"></script>
+  <script>
+    const STORAGE_KEY = "songMetaEdits.v1";
+    const EMPTY_META = { bpm: "", release: "", album: "", track: "", stem: "" };
+
+    const searchBox = document.getElementById("search-box");
+    const hint = document.getElementById("hint");
+    const songList = document.getElementById("song-list");
+    const albumList = document.getElementById("album-list");
+    const copyBtn = document.getElementById("copy-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const copyStatus = document.getElementById("copy-status");
+
+    // 今までやった全曲（表記ゆれを正規化）と演奏回数
+    const plays = new Map();
+    performances.forEach(perf => perf.setlist.forEach(raw => {
+      const song = normalize(raw);
+      plays.set(song, (plays.get(song) || 0) + 1);
+    }));
+    const allSongs = Array.from(plays.keys());
+
+    function loadEdits() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function persistEdits() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(edits)); } catch (e) {}
+    }
+
+    let edits = loadEdits();
+    let openSong = null;
+
+    function getMeta(song) {
+      return Object.assign({}, EMPTY_META, songMeta[song], edits[song]);
+    }
+
+    function hasAnyMeta(m) {
+      return Object.values(m).some(v => String(v) !== "");
+    }
+
+    function isHttpUrl(str) {
+      return /^https?:\/\/\S+$/i.test(str);
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    // リリース日の新しい順 → 同じアルバムは曲順どおりにまとめる。未入力の曲は最後。
+    function orderSongs(songs) {
+      const groups = new Map();
+      const unset = [];
+
+      songs.forEach(song => {
+        const m = getMeta(song);
+        if (!m.release && !m.album) { unset.push(song); return; }
+        const key = m.album ? "a:" + m.album : "s:" + song;
+        if (!groups.has(key)) groups.set(key, { key, release: "", album: m.album, songs: [] });
+        const g = groups.get(key);
+        if (m.release > g.release) g.release = m.release;
+        g.songs.push(song);
+      });
+
+      const trackOf = s => Number(getMeta(s).track) || Infinity;
+      const sortedGroups = Array.from(groups.values()).sort((a, b) =>
+        b.release.localeCompare(a.release) || a.album.localeCompare(b.album, "ja"));
+
+      const out = [];
+      sortedGroups.forEach(g => {
+        g.songs.sort((a, b) => trackOf(a) - trackOf(b) || a.localeCompare(b, "ja"));
+        g.songs.forEach((song, i) => out.push({ song, groupStart: i === 0 && out.length > 0 }));
+      });
+
+      unset.sort((a, b) => plays.get(b) - plays.get(a) || a.localeCompare(b, "ja"));
+      unset.forEach((song, i) => out.push({ song, unsetStart: i === 0 }));
+      return out;
+    }
+
+    function cell(cls, label, html) {
+      return `<span class="${cls}${html ? "" : " is-empty"}" data-label="${label}">${html || "—"}</span>`;
+    }
+
+    function fieldValue(v) {
+      return escapeHtml(v === "" || v == null ? "" : v);
+    }
+
+    function render() {
+      const q = searchBox.value.trim().toLowerCase();
+      const ordered = orderSongs(allSongs).filter(item => q === "" || item.song.toLowerCase().includes(q));
+
+      if (openSong && !ordered.some(item => item.song === openSong)) openSong = null;
+
+      const filled = allSongs.filter(s => hasAnyMeta(getMeta(s))).length;
+      hint.textContent = `${ordered.length} 曲を表示中（全 ${allSongs.length} 曲 / 入力済み ${filled} 曲）`;
+
+      const albums = Array.from(new Set(allSongs.map(s => getMeta(s).album).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ja"));
+      albumList.innerHTML = albums.map(a => `<option value="${escapeHtml(a)}"></option>`).join("");
+
+      songList.innerHTML = "";
+
+      ordered.forEach(item => {
+        const song = item.song;
+        const m = getMeta(song);
+
+        if (item.unsetStart) {
+          const header = document.createElement("li");
+          header.className = "section-header";
+          header.textContent = "リリース日・アルバム未入力";
+          songList.appendChild(header);
+        }
+
+        const li = document.createElement("li");
+        li.className = "song-row" + (item.groupStart ? " group-start" : "") + (song === openSong ? " open" : "");
+
+        const stemHtml = isHttpUrl(m.stem)
+          ? `<a class="stem-link" href="${escapeHtml(m.stem)}" target="_blank" rel="noopener noreferrer">STEM</a>`
+          : "";
+        const trackText = m.track !== "" ? String(m.track).padStart(2, "0") : "";
+
+        li.innerHTML = `
+          <div class="row-main">
+            <span class="c-name"><span class="trk">${trackText}</span><span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}</span></span>
+            <div class="meta">
+              ${cell("c-bpm", "BPM", m.bpm !== "" ? escapeHtml(m.bpm) : "")}
+              ${cell("c-rel", "リリース", escapeHtml(m.release))}
+              ${cell("c-album", "アルバム", escapeHtml(m.album))}
+              ${cell("c-stem", "", stemHtml)}
+            </div>
+            <span class="c-edit"><button type="button" class="edit-btn" aria-expanded="${song === openSong}">編集</button></span>
+          </div>
+          <div class="edit-wrap">
+            <form class="edit-form" autocomplete="off" novalidate>
+              <div class="f-album"><label>アルバム名</label><input name="album" type="text" list="album-list" value="${fieldValue(m.album)}"></div>
+              <div class="f-track"><label>何曲目</label><input name="track" type="number" min="1" step="1" inputmode="numeric" value="${fieldValue(m.track)}"></div>
+              <div class="f-bpm"><label>BPM</label><input name="bpm" type="number" min="1" max="400" step="any" inputmode="decimal" value="${fieldValue(m.bpm)}"></div>
+              <div class="f-release"><label>リリース日</label><input name="release" type="date" value="${fieldValue(m.release)}"></div>
+              <div class="f-stem"><label>STEMリンク</label><input name="stem" type="text" inputmode="url" placeholder="https://..." value="${fieldValue(m.stem)}"></div>
+              <div class="edit-actions">
+                <button type="submit" class="save-btn">保存</button>
+                <button type="button" class="cancel-btn">キャンセル</button>
+                <span class="form-error"></span>
+              </div>
+            </form>
+          </div>
+        `;
+
+        const form = li.querySelector(".edit-form");
+        const errorBox = li.querySelector(".form-error");
+
+        function fillForm() {
+          const cur = getMeta(song);
+          Object.keys(EMPTY_META).forEach(k => { form.elements[k].value = cur[k]; });
+          errorBox.textContent = "";
+        }
+
+        function closePanel() {
+          li.classList.remove("open");
+          li.querySelector(".edit-btn").setAttribute("aria-expanded", "false");
+          openSong = null;
+        }
+
+        li.querySelector(".edit-btn").addEventListener("click", () => {
+          const willOpen = !li.classList.contains("open");
+          songList.querySelectorAll(".song-row.open").forEach(other => {
+            other.classList.remove("open");
+            other.querySelector(".edit-btn").setAttribute("aria-expanded", "false");
+          });
+          if (willOpen) {
+            fillForm();
+            li.classList.add("open");
+            li.querySelector(".edit-btn").setAttribute("aria-expanded", "true");
+            openSong = song;
+          } else {
+            openSong = null;
+          }
+        });
+
+        li.querySelector(".cancel-btn").addEventListener("click", () => {
+          closePanel();
+          fillForm();
+        });
+
+        // 同じアルバムが既にあればリリース日を補完
+        form.elements.album.addEventListener("change", () => {
+          const album = form.elements.album.value.trim();
+          if (!album || form.elements.release.value) return;
+          const sibling = allSongs.map(getMeta).find(x => x.album === album && x.release);
+          if (sibling) form.elements.release.value = sibling.release;
+        });
+
+        form.addEventListener("submit", e => {
+          e.preventDefault();
+          const f = form.elements;
+          const bpmRaw = f.bpm.value.trim();
+          const trackRaw = f.track.value.trim();
+          const stem = f.stem.value.trim();
+
+          if (bpmRaw !== "" && !(Number(bpmRaw) > 0)) { errorBox.textContent = "BPMは正の数で入力してください"; return; }
+          if (trackRaw !== "" && !(Number.isInteger(Number(trackRaw)) && Number(trackRaw) > 0)) { errorBox.textContent = "何曲目かは1以上の整数で入力してください"; return; }
+          if (stem !== "" && !isHttpUrl(stem)) { errorBox.textContent = "STEMリンクは http(s):// から始まるURLを入力してください"; return; }
+
+          edits[song] = {
+            bpm: bpmRaw === "" ? "" : Number(bpmRaw),
+            release: f.release.value,
+            album: f.album.value.trim(),
+            track: trackRaw === "" ? "" : Number(trackRaw),
+            stem
+          };
+          persistEdits();
+          openSong = null;
+          render();
+        });
+
+        songList.appendChild(li);
+      });
+    }
+
+    function buildExport() {
+      const lines = allSongs
+        .slice()
+        .sort((a, b) => a.localeCompare(b, "ja"))
+        .filter(s => hasAnyMeta(getMeta(s)))
+        .map(s => `  ${JSON.stringify(s)}: ${JSON.stringify(getMeta(s))},`);
+      return `const songMeta = {\n${lines.join("\n")}\n};\n`;
+    }
+
+    let statusTimer = null;
+    function flashStatus(text) {
+      copyStatus.textContent = text;
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => { copyStatus.textContent = ""; }, 2500);
+    }
+
+    copyBtn.addEventListener("click", async () => {
+      const text = buildExport();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      flashStatus("コピーしました");
+    });
+
+    resetBtn.addEventListener("click", () => {
+      if (!Object.keys(edits).length) { flashStatus("リセットする編集はありません"); return; }
+      if (!confirm("この端末に保存されている編集内容をすべて消して、公開済みのデータに戻します。よろしいですか？")) return;
+      edits = {};
+      persistEdits();
+      openSong = null;
+      render();
+      flashStatus("リセットしました");
+    });
+
+    searchBox.addEventListener("input", render);
+    render();
+  </script>
+
+</body>
+</html>

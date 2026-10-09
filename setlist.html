@@ -25,6 +25,9 @@
     }
 
     #page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 18px;
     }
 
@@ -219,7 +222,10 @@
 </head>
 <body>
 
-  <div id="page-nav"><a href="analysis.html">→ 集計・分析ページ</a></div>
+  <div id="page-nav">
+    <a href="analysis.html">→ 集計・分析ページ</a>
+    <a href="songs.html">→ 楽曲データ</a>
+  </div>
   <h1>笹川真生 セトリ検索</h1>
   <input type="text" id="search-box" placeholder="曲名で検索..." autocomplete="off">
   <div id="tag-filter"></div>
