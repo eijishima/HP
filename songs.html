@@ -66,7 +66,7 @@
     }
 
     #song-table {
-      --cols: minmax(0, 1.25fr) 52px 92px minmax(0, 1fr) 54px;
+      --cols: minmax(0, 1.25fr) 52px 52px 92px minmax(0, 1fr) 54px;
       max-width: 900px;
       margin-top: 12px;
     }
@@ -87,7 +87,8 @@
     }
 
     .list-header .h-num,
-    .row-main .c-bpm {
+    .row-main .c-bpm,
+    .row-main .c-len {
       text-align: right;
       padding-right: 8px;
     }
@@ -140,6 +141,7 @@
     .meta { display: contents; }
 
     .c-bpm,
+    .c-len,
     .c-rel {
       font-size: 12.5px;
       color: #444;
@@ -192,7 +194,7 @@
 
       .meta > span[data-label=""]::before { content: none; }
 
-      .c-bpm { text-align: left; padding-right: 0; }
+      .c-bpm, .c-len { text-align: left; padding-right: 0; }
     }
   </style>
 </head>
@@ -211,6 +213,7 @@
     <div class="list-header">
       <span>曲名</span>
       <span class="h-num">BPM</span>
+      <span class="h-num">時間</span>
       <span>リリース日</span>
       <span>アルバム名</span>
       <span>STEM</span>
@@ -221,7 +224,7 @@
   <script src="setlist-data.js"></script>
   <script src="song-meta.js"></script>
   <script>
-    const EMPTY_META = { bpm: "", release: "", album: "", track: "", stem: "" };
+    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "" };
 
     const searchBox = document.getElementById("search-box");
     const hint = document.getElementById("hint");
@@ -318,6 +321,7 @@
             <span class="c-name"><span class="trk">${trackText}</span><span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}</span></span>
             <div class="meta">
               ${cell("c-bpm", "BPM", m.bpm !== "" ? escapeHtml(m.bpm) : "")}
+              ${cell("c-len", "時間", escapeHtml(m.length))}
               ${cell("c-rel", "リリース", escapeHtml(m.release))}
               ${cell("c-album", "アルバム", escapeHtml(m.album))}
               ${cell("c-stem", "", stemHtml)}
