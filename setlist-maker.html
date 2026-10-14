@@ -36,6 +36,18 @@
     }
     #page-nav a:hover { background: #058; }
 
+    #page-nav .current {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #888;
+      background: #ddd;
+      padding: 9px 18px;
+      border-radius: 999px;
+      cursor: default;
+      user-select: none;
+    }
+
     .wrap { max-width: 900px; }
 
     input[type="text"], input[type="date"], input[type="number"] {
@@ -166,6 +178,7 @@
     <a href="setlist.html">セトリ検索</a>
     <a href="analysis.html">集計・分析</a>
     <a href="songs.html">楽曲データ</a>
+    <span class="current" aria-current="page">セトリ作成</span>
   </div>
   <h1>笹川真生 セトリ作成</h1>
 
@@ -279,26 +292,21 @@
     }
     const ordered = orderSongs(allSongs);
 
-    // ---------- 保存（このブラウザ内のみ） ----------
-    function save() {
-      try {
-        const data = { picked };
-        Object.keys(fields).forEach(k => data[k] = fields[k].value);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch (e) {}
+    // ---------- 入力内容は保存しない（再読み込み・ページ移動でリセット） ----------
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}   // 旧バージョンの下書きを消す
+    function save() {}
+
+    function isDirty() {
+      return picked.length > 0 ||
+        fields.date.value !== "" || fields.venue.value.trim() !== "" ||
+        fields.event.value.trim() !== "" || fields.memo.value.trim() !== "" ||
+        fields.limit.value !== fields.limit.defaultValue;
     }
-    function load() {
-      try {
-        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (!data) return;
-        Object.keys(fields).forEach(k => { if (typeof data[k] === "string") fields[k].value = data[k]; });
-        if (Array.isArray(data.picked)) {
-          picked = data.picked
-            .map(x => typeof x === "string" ? { type: "song", name: x } : x)
-            .filter(x => x && (x.type === "mc" ? x.sec >= 0 : plays.has(x.name)));
-        }
-      } catch (e) {}
-    }
+    window.addEventListener("beforeunload", e => {
+      if (!isDirty()) return;
+      e.preventDefault();
+      e.returnValue = "";   // ブラウザ標準の「変更が失われます」警告を出す
+    });
 
     // ---------- 作成ゾーン ----------
     const buildList = $("build-list");
@@ -493,7 +501,6 @@
     $("search-box").addEventListener("input", renderLib);
 
     function renderAll() { renderBuild(); renderLib(); }
-    load();
     renderAll();
   </script>
 

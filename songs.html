@@ -47,6 +47,18 @@
       background: #058;
     }
 
+    #page-nav .current {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #888;
+      background: #ddd;
+      padding: 9px 18px;
+      border-radius: 999px;
+      cursor: default;
+      user-select: none;
+    }
+
     #search-box {
       font-family: inherit;
       font-size: 15px;
@@ -203,6 +215,7 @@
   <div id="page-nav">
     <a href="setlist.html">セトリ検索</a>
     <a href="analysis.html">集計・分析</a>
+    <span class="current" aria-current="page">楽曲データ</span>
     <a href="setlist-maker.html">セトリ作成</a>
   </div>
   <h1>笹川真生 楽曲データ</h1>
