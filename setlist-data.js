@@ -2,11 +2,11 @@
 // video: YouTube等のURL。分かったら書き足してください（null のままなら「映像未リンク」と表示されます）
 // setlist.html と analysis.html の両方から読み込まれる共通データ
 const performances = [
-  { date: "2026-10-14", event: "nest30th (→) Anniversary \"Enfants × 笹川真生\"", venue: "Spotify O-nest", video: null,
+  { date: "2026-10-14", event: "nest30th (→) Anniversary \"Enfants × 笹川真生\"", venue: "Spotify O-nest", video: "https://youtu.be/Nu6fdws9MR8?si=YiOhCCucR08xOCz4",
     setlist: ["コンタクティ","Dokujoutai","きみになっていく","HAMETSUのねがい","ゆうひ","水泳教室","パレード","きっと、こういうときに死ぬものよ","ノマネ","滞る夜","懐古主義わたし","不細工"] },
   { date: "2026-10-12", event: "MINAMI WHEEL 2026", venue: "心斎橋CONPASS", video: "https://youtu.be/nvGvooSwu14?si=__cgBV0XSDyVAdWD",
     setlist: ["コンタクティ","HAMETSUのねがい","きみになっていく","ゆうひ","水泳教室","懐古主義わたし","不細工"] },
-  { date: "2026-09-25", event: "Guiano Split Tour 2026 ―私の心に、あなたがいた―", venue: "仙台darwin", video: null,
+  { date: "2026-09-25", event: "Guiano Split Tour 2026 ―私の心に、あなたがいた―", venue: "仙台darwin", video: "https://youtu.be/_Sxm0McuxXM?si=07QxhDDZTGtt8Eh2",
     setlist: ["コンタクティ","ですから、灼けました","きみになっていく","トゥ・ビート","水泳教室","だれかのうみ/さまよって","ボトルネック","ノマネ","懐古主義わたし","脳ない"] },
   { date: "2026-09-11", event: "WALL&WALL 10th Anniversary", venue: "表参道WALL&WALL", video: "https://www.youtube.com/watch?v=YxYeDgOiElo",
     setlist: ["美しい術","三文芝居","きみになっていく","ないてわめいてきらめいて","オーバーナイトバス","ボトルネック","水泳教室","パレード","ちゅるちゅる","不細工","What's your poison?","Replaceable Goodbye"] },
