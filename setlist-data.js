@@ -117,13 +117,14 @@ const performances = [
   { date: "2019-02-16", event: "キタニタツヤ 1st One Man Live \"I DO LOVE YOU\"", venue: "下北沢MOSAiC", video: "https://www.youtube.com/watch?v=Jp3lwyIQRs8",
     setlist: ["きっと、こういうときに死ぬものよ","新世界より","ランデヴー","What's your poison?","エイプリル","ねぇママ"] },
   { date: "2019-02-06", event: "（イベント名不明）", venue: "新潟", video: null,
-    setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","Darling","口約束で殺して"] },
+    setlist: ["滞る夜","きっと、こういうときに死ぬものよ","フロイデ","ボトルネック","Darling","口約束で殺して。"] },
 ];
 
 // 表記ゆれ（(新曲) や 極・ など）をまとめて同じ曲として扱うための正規化
 function normalize(song) {
   return song
     .replace(/^極[・･]\s*/, "")
+    .replace(/^口約束で殺して$/, "口約束で殺して。")
     .replace(/\s*[\(（][^\)）]*[\)）]\s*$/, "")
     .trim();
 }
