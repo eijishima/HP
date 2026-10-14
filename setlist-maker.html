@@ -86,20 +86,23 @@
     #build-list { list-style: none; margin: 0; padding: 0; }
     .build-row {
       display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) 50px 44px 46px auto;
+      grid-template-columns: 22px 26px minmax(0, 1fr) 62px 44px auto;
       column-gap: 8px;
       align-items: center;
       padding: 6px 0;
       border-bottom: 1px solid #e5e5e5;
       background: #fafafa;
+      user-select: none;
     }
-    .build-row.dragging { opacity: 0.4; }
-    .build-row.drag-over { box-shadow: 0 -2px 0 #06c; }
-    .build-row .no { text-align: right; color: #aaa; font-size: 12px; font-variant-numeric: tabular-nums; cursor: grab; }
+    .build-row.dragging { background: #e8f1fb; box-shadow: 0 2px 8px rgba(0,0,0,0.18); position: relative; z-index: 2; }
+    .grip { cursor: grab; touch-action: none; color: #999; text-align: center; font-size: 16px; line-height: 1; padding: 6px 0; }
+    .build-row.dragging .grip { cursor: grabbing; }
+    .build-row .no { text-align: right; color: #aaa; font-size: 12px; font-variant-numeric: tabular-nums; }
     .build-row .nm { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .build-row.mc .nm { color: #b26a00; font-weight: bold; }
     .build-row .num { font-size: 12.5px; color: #444; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
     .build-row .is-empty { color: #ccc; }
-    .ctrl { display: flex; gap: 4px; }
+    .mc-len { width: 62px; font-size: 13px !important; padding: 3px 5px !important; text-align: right; font-variant-numeric: tabular-nums; }
 
     .btn {
       font-family: inherit;
@@ -128,7 +131,7 @@
 
     .list-header, .lib-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 52px 52px 54px 64px;
+      grid-template-columns: minmax(0, 1fr) 52px 52px 64px;
       column-gap: 10px;
       align-items: center;
     }
@@ -139,15 +142,12 @@
     .lib-row .nm { font-size: 13px; color: #222; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lib-row .num { font-size: 12.5px; color: #444; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .is-empty { color: #ccc !important; }
-    .stem-link { color: #06c; font-weight: bold; font-size: 12.5px; text-decoration: none; }
-    .stem-link:hover { text-decoration: underline; }
 
     @media (max-width: 639px) {
       .info-grid { grid-template-columns: 1fr; }
-      .build-row { grid-template-columns: 22px minmax(0, 1fr) auto; row-gap: 4px; }
-      .build-row .num, .build-row .stem { grid-column: 2; display: inline; text-align: left; }
-      .build-row .meta-line { grid-column: 2; display: flex; gap: 14px; }
-      .build-row .ctrl { grid-column: 3; grid-row: 1; }
+      .build-row { grid-template-columns: 22px 26px minmax(0, 1fr) auto; row-gap: 4px; }
+      .build-row .meta-line { grid-column: 3; display: flex; gap: 14px; align-items: center; }
+      .build-row .ctrl { grid-column: 4; grid-row: 1; }
       .list-header { display: none; }
       .lib-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 3px; }
       .lib-row .meta-line { grid-column: 1; display: flex; gap: 14px; }
@@ -163,8 +163,9 @@
 <div class="wrap">
 
   <div id="page-nav">
-    <a href="setlist.html">← セトリ検索</a>
-    <a href="songs.html">→ 楽曲データ</a>
+    <a href="setlist.html">セトリ検索</a>
+    <a href="analysis.html">集計・分析</a>
+    <a href="songs.html">楽曲データ</a>
   </div>
   <h1>笹川真生 セトリ作成</h1>
 
@@ -172,18 +173,19 @@
     <h2>セットリストを作る</h2>
     <div class="info-grid">
       <div><label for="f-date">日付</label><input type="date" id="f-date"></div>
-      <div><label for="f-limit">持ち時間（分）</label><input type="number" id="f-limit" min="0" step="1" inputmode="numeric" placeholder="例: 30"></div>
-      <div><label for="f-venue">会場</label><input type="text" id="f-venue" placeholder="例: 心斎橋CONPASS"></div>
-      <div><label for="f-event">公演名</label><input type="text" id="f-event" placeholder="例: MINAMI WHEEL 2026"></div>
-      <div class="full"><label for="f-memo">メモ</label><input type="text" id="f-memo" placeholder="例: MC多めにしたい／ラストは不細工"></div>
+      <div><label for="f-limit">持ち時間（分）</label><input type="number" id="f-limit" min="0" step="1" inputmode="numeric" value="30"></div>
+      <div><label for="f-venue">会場</label><input type="text" id="f-venue" placeholder="日産スタジアム"></div>
+      <div><label for="f-event">公演名</label><input type="text" id="f-event"></div>
+      <div class="full"><label for="f-memo">メモ</label><input type="text" id="f-memo"></div>
     </div>
 
     <div id="summary"></div>
     <ol id="build-list"></ol>
-    <div id="empty-msg">下の楽曲リストから「追加」を押すと、ここに入ります。</div>
+    <div id="empty-msg">下の楽曲リストから「追加」を押すと、ここに入ります。左の ≡ をドラッグすると並べ替えできます。</div>
 
     <div class="actions">
-      <button class="btn primary" id="btn-copy" type="button">テキストをコピー</button>
+      <button class="btn primary" id="btn-copy" type="button">テキストにしてコピー</button>
+      <button class="btn" id="btn-mc" type="button">＋ MCを追加</button>
       <button class="btn" id="btn-clear" type="button">曲をすべて外す</button>
       <span id="copy-msg"></span>
     </div>
@@ -197,7 +199,6 @@
       <span>曲名</span>
       <span class="h-num">時間</span>
       <span class="h-num">BPM</span>
-      <span>STEM</span>
       <span></span>
     </div>
     <ul id="lib-list"></ul>
@@ -222,10 +223,11 @@
     }));
     const allSongs = Array.from(plays.keys());
 
-    let picked = [];   // 作成中のセトリ（曲名の配列）
+    // 作成中のセトリ。曲は { type: "song", name }、MCは { type: "mc", sec }
+    let picked = [];
+    const DEFAULT_MC_SEC = 120;
 
     function getMeta(song) { return Object.assign({}, EMPTY_META, songMeta[song]); }
-    function isHttpUrl(s) { return /^https?:\/\/\S+$/i.test(s); }
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     }
@@ -235,9 +237,20 @@
       const m = /^(\d+):([0-5]?\d)$/.exec(String(str).trim());
       return m ? Number(m[1]) * 60 + Number(m[2]) : null;
     }
+    // MCの入力: "1:30" または分の数字 ("2", "1.5")
+    function parseDuration(str) {
+      const t = String(str).trim().replace("：", ":");
+      const sec = parseLength(t);
+      if (sec !== null) return sec;
+      if (/^\d+(\.\d+)?$/.test(t)) return Math.round(parseFloat(t) * 60);
+      return null;
+    }
     function fmt(sec) {
       const s = Math.abs(Math.round(sec));
       return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+    function secOf(item) {
+      return item.type === "mc" ? item.sec : parseLength(getMeta(item.name).length);
     }
 
     // 楽曲データページと同じ並び（リリース日の新しい順 → アルバム内は曲順 → 未入力は演奏回数順）
@@ -279,51 +292,65 @@
         const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
         if (!data) return;
         Object.keys(fields).forEach(k => { if (typeof data[k] === "string") fields[k].value = data[k]; });
-        if (Array.isArray(data.picked)) picked = data.picked.filter(s => plays.has(s));
+        if (Array.isArray(data.picked)) {
+          picked = data.picked
+            .map(x => typeof x === "string" ? { type: "song", name: x } : x)
+            .filter(x => x && (x.type === "mc" ? x.sec >= 0 : plays.has(x.name)));
+        }
       } catch (e) {}
     }
 
     // ---------- 作成ゾーン ----------
+    const buildList = $("build-list");
+
     function renderBuild() {
-      const list = $("build-list");
-      list.innerHTML = "";
+      buildList.innerHTML = "";
       $("empty-msg").style.display = picked.length ? "none" : "block";
 
-      picked.forEach((song, i) => {
-        const m = getMeta(song);
+      let songNo = 0;
+      picked.forEach((item, i) => {
         const li = document.createElement("li");
-        li.className = "build-row";
-        li.draggable = true;
         li.dataset.i = i;
-        const stem = isHttpUrl(m.stem)
-          ? `<a class="stem-link" href="${escapeHtml(m.stem)}" target="_blank" rel="noopener noreferrer">STEM</a>` : "";
-        const sec = parseLength(m.length);
-        li.innerHTML = `
-          <span class="no" title="ドラッグで並べ替え">${i + 1}</span>
-          <span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}</span>
-          <span class="meta-line">
-            <span class="num${sec === null ? " is-empty" : ""}">${sec === null ? "—" : fmt(sec)}</span>
-            <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
-            <span class="stem">${stem}</span>
-          </span>
-          <span class="ctrl">
-            <button class="btn small" type="button" data-act="up" ${i === 0 ? "disabled" : ""} aria-label="上へ">▲</button>
-            <button class="btn small" type="button" data-act="down" ${i === picked.length - 1 ? "disabled" : ""} aria-label="下へ">▼</button>
-            <button class="btn small" type="button" data-act="del" aria-label="外す">✕</button>
-          </span>`;
-        list.appendChild(li);
+        if (item.type === "mc") {
+          li.className = "build-row mc";
+          li.innerHTML = `
+            <span class="grip" title="ドラッグで並べ替え">≡</span>
+            <span class="no"></span>
+            <span class="nm">MC</span>
+            <span class="meta-line">
+              <input type="text" class="mc-len" value="${fmt(item.sec)}" inputmode="text" aria-label="MCの長さ（分:秒）">
+              <span class="num is-empty"></span>
+            </span>
+            <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
+        } else {
+          const m = getMeta(item.name);
+          const sec = parseLength(m.length);
+          songNo++;
+          li.className = "build-row";
+          li.innerHTML = `
+            <span class="grip" title="ドラッグで並べ替え">≡</span>
+            <span class="no">${songNo}</span>
+            <span class="nm" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+            <span class="meta-line">
+              <span class="num${sec === null ? " is-empty" : ""}">${sec === null ? "—" : fmt(sec)}</span>
+              <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
+            </span>
+            <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
+        }
+        buildList.appendChild(li);
       });
       renderSummary();
     }
 
     function renderSummary() {
-      let total = 0, unknown = 0;
-      picked.forEach(s => {
-        const sec = parseLength(getMeta(s).length);
+      let total = 0, unknown = 0, songs = 0, mcs = 0;
+      picked.forEach(it => {
+        if (it.type === "mc") mcs++; else songs++;
+        const sec = secOf(it);
         if (sec === null) unknown++; else total += sec;
       });
       const limitMin = parseFloat(fields.limit.value);
-      let html = `<span>${picked.length} 曲</span><span>合計 <span class="total">${fmt(total)}</span></span>`;
+      let html = `<span>${songs} 曲${mcs ? ` ＋ MC ${mcs}` : ""}</span><span>合計 <span class="total">${fmt(total)}</span></span>`;
       if (limitMin > 0) {
         const diff = limitMin * 60 - total;
         html += diff >= 0
@@ -335,54 +362,72 @@
       $("summary").innerHTML = html;
     }
 
-    function move(from, to) {
-      if (to < 0 || to >= picked.length || from === to) return;
-      picked.splice(to, 0, picked.splice(from, 1)[0]);
-      save(); renderBuild();
-    }
-
-    const buildList = $("build-list");
     buildList.addEventListener("click", e => {
       const btn = e.target.closest("button[data-act]");
       if (!btn) return;
-      const i = Number(btn.closest(".build-row").dataset.i);
-      if (btn.dataset.act === "up") move(i, i - 1);
-      if (btn.dataset.act === "down") move(i, i + 1);
-      if (btn.dataset.act === "del") { picked.splice(i, 1); save(); renderAll(); }
+      picked.splice(Number(btn.closest(".build-row").dataset.i), 1);
+      save(); renderAll();
     });
 
-    // ドラッグで並べ替え（PC）
-    let dragFrom = null;
-    buildList.addEventListener("dragstart", e => {
-      const row = e.target.closest(".build-row");
-      if (!row) return;
-      dragFrom = Number(row.dataset.i);
+    // MCの長さ編集
+    buildList.addEventListener("input", e => {
+      if (!e.target.classList.contains("mc-len")) return;
+      const sec = parseDuration(e.target.value);
+      if (sec === null) return;
+      picked[Number(e.target.closest(".build-row").dataset.i)].sec = sec;
+      save(); renderSummary();
+    });
+    buildList.addEventListener("focusout", e => {
+      if (!e.target.classList.contains("mc-len")) return;
+      const item = picked[Number(e.target.closest(".build-row").dataset.i)];
+      e.target.value = fmt(item.sec);
+    });
+
+    // ドラッグ＆ドロップで並べ替え（マウス・タッチ両対応）
+    let drag = null;
+    buildList.addEventListener("pointerdown", e => {
+      const grip = e.target.closest(".grip");
+      if (!grip) return;
+      e.preventDefault();
+      const row = grip.closest(".build-row");
+      drag = { row, pointerId: e.pointerId };
       row.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", String(dragFrom));
+      grip.setPointerCapture(e.pointerId);
     });
-    buildList.addEventListener("dragover", e => {
-      const row = e.target.closest(".build-row");
-      if (!row || dragFrom === null) return;
-      e.preventDefault();
-      buildList.querySelectorAll(".drag-over").forEach(el => el.classList.remove("drag-over"));
-      row.classList.add("drag-over");
+    buildList.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const rows = Array.from(buildList.children).filter(r => r !== drag.row);
+      const before = rows.find(r => {
+        const rect = r.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
+      });
+      if (before) {
+        if (drag.row.nextElementSibling !== before) buildList.insertBefore(drag.row, before);
+      } else if (buildList.lastElementChild !== drag.row) {
+        buildList.appendChild(drag.row);
+      }
     });
-    buildList.addEventListener("drop", e => {
-      const row = e.target.closest(".build-row");
-      if (!row || dragFrom === null) return;
-      e.preventDefault();
-      move(dragFrom, Number(row.dataset.i));
-      dragFrom = null;
-    });
-    buildList.addEventListener("dragend", () => {
-      dragFrom = null;
-      buildList.querySelectorAll(".dragging, .drag-over").forEach(el => el.classList.remove("dragging", "drag-over"));
+    function endDrag() {
+      if (!drag) return;
+      const order = Array.from(buildList.children).map(r => Number(r.dataset.i));
+      drag = null;
+      picked = order.map(i => picked[i]);
+      save(); renderBuild();
+    }
+    buildList.addEventListener("pointerup", endDrag);
+    buildList.addEventListener("pointercancel", endDrag);
+
+    $("btn-mc").addEventListener("click", () => {
+      picked.push({ type: "mc", sec: DEFAULT_MC_SEC });
+      save(); renderBuild();
+      const inputs = buildList.querySelectorAll(".mc-len");
+      const last = inputs[inputs.length - 1];
+      if (last) { last.focus(); last.select(); }
     });
 
     $("btn-clear").addEventListener("click", () => {
       if (!picked.length) return;
-      if (!confirm("作成中の曲をすべて外しますか？")) return;
+      if (!confirm("作成中の曲・MCをすべて外しますか？")) return;
       picked = []; save(); renderAll();
     });
 
@@ -394,15 +439,18 @@
       const lim = parseFloat(fields.limit.value);
       if (lim > 0) lines.push(`持ち時間 ${lim}分`);
       if (lines.length) lines.push("");
-      picked.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
-      let total = 0;
-      picked.forEach(s => { const sec = parseLength(getMeta(s).length); if (sec !== null) total += sec; });
+      let n = 0, total = 0;
+      picked.forEach(it => {
+        if (it.type === "mc") lines.push(`MC（${fmt(it.sec)}）`);
+        else lines.push(`${++n}. ${it.name}`);
+        const sec = secOf(it);
+        if (sec !== null) total += sec;
+      });
       lines.push("", `合計 ${fmt(total)}`);
       if (fields.memo.value.trim()) lines.push("", fields.memo.value.trim());
-      const text = lines.join("\n");
       const msg = $("copy-msg");
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(lines.join("\n"));
         msg.textContent = "コピーしました";
       } catch (e) {
         msg.textContent = "コピーできませんでした";
@@ -422,9 +470,7 @@
       ul.innerHTML = "";
       items.forEach(song => {
         const m = getMeta(song);
-        const added = picked.includes(song);
-        const stem = isHttpUrl(m.stem)
-          ? `<a class="stem-link" href="${escapeHtml(m.stem)}" target="_blank" rel="noopener noreferrer">STEM</a>` : "";
+        const added = picked.some(x => x.type === "song" && x.name === song);
         const li = document.createElement("li");
         li.className = "lib-row";
         li.innerHTML = `
@@ -432,7 +478,6 @@
           <span class="meta-line">
             <span class="num${m.length ? "" : " is-empty"}">${m.length ? escapeHtml(m.length) : "—"}</span>
             <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
-            <span class="${stem ? "" : "is-empty"}">${stem || "—"}</span>
           </span>
           <span class="add-cell"><button class="btn small" type="button" data-song="${escapeHtml(song)}" ${added ? "disabled" : ""}>${added ? "追加済" : "追加"}</button></span>`;
         ul.appendChild(li);
@@ -442,7 +487,7 @@
     $("lib-list").addEventListener("click", e => {
       const btn = e.target.closest("button[data-song]");
       if (!btn || btn.disabled) return;
-      picked.push(btn.dataset.song);
+      picked.push({ type: "song", name: btn.dataset.song });
       save(); renderAll();
     });
     $("search-box").addEventListener("input", renderLib);
