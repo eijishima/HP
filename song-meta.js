@@ -2,6 +2,21 @@
 // キーは曲名、値は { bpm, length: "m:ss", release: "YYYY-MM-DD", album, track: アルバム内の曲順, stem: STEMのURL }
 // 空の項目は "" にしておく。リリース日の新しい順、同じアルバムは曲順で並ぶ。
 const songMeta = {
+  "きっと、こういうときに死ぬものよ": { bpm: "", length: "3:47", release: "", album: "", track: "", stem: "" },
+  "滞る夜": { bpm: "", length: "3:33", release: "", album: "", track: "", stem: "" },
+  "ボトルネック": { bpm: "", length: "2:53", release: "", album: "", track: "", stem: "" },
+  "オーバーナイトバス": { bpm: "", length: "3:46", release: "", album: "", track: "", stem: "" },
+  "What's your poison?": { bpm: "", length: "3:17", release: "", album: "", track: "", stem: "" },
+  "swim": { bpm: "", length: "3:21", release: "", album: "", track: "", stem: "" },
+  "屋上階": { bpm: "", length: "3:06", release: "", album: "", track: "", stem: "" },
+  "Badclub": { bpm: "", length: "3:24", release: "", album: "", track: "", stem: "" },
+  "nile perch": { bpm: "", length: "3:15", release: "", album: "", track: "", stem: "" },
+  "楽園": { bpm: "", length: "3:34", release: "", album: "", track: "", stem: "" },
+  "エイプリル": { bpm: "", length: "4:38", release: "", album: "", track: "", stem: "" },
+  "ふさわしくない": { bpm: "", length: "2:48", release: "", album: "", track: "", stem: "" },
+  "ゆめみる": { bpm: "", length: "1:45", release: "", album: "", track: "", stem: "" },
+  "産声": { bpm: "", length: "3:26", release: "", album: "", track: "", stem: "" },
+  "Maison": { bpm: "", length: "2:26", release: "", album: "", track: "", stem: "" },
   "ねぇママ": { bpm: "", length: "4:39", release: "2019-05-15", album: "あたらしいからだ", track: "", stem: "" },
   "悪魔": { bpm: "", length: "3:31", release: "2020-05-29", album: "悪魔", track: "", stem: "" },
   "官能と飽食": { bpm: "", length: "3:16", release: "2019-06-14", album: "あたらしいからだ", track: "", stem: "" },
