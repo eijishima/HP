@@ -170,6 +170,13 @@
       color: #444;
     }
 
+    .alt-line {
+      margin-top: 2px;
+      padding-left: calc(1.7em + 6px);
+      font-size: 11px;
+      color: #b26a00;
+    }
+
     .is-empty { color: #ccc !important; }
 
     .stem-link {
@@ -238,7 +245,7 @@
   <script src="setlist-data.js"></script>
   <script src="song-meta.js"></script>
   <script>
-    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "" };
+    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "", alt: [] };
 
     const searchBox = document.getElementById("search-box");
     const hint = document.getElementById("hint");
@@ -268,13 +275,20 @@
       return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     }
 
-    // リリース日の新しい順 → 同じアルバムは曲順どおりにまとめる。未入力の曲は最後。
+    // リリース日の新しい順 → 同じアルバムは曲順どおりにまとめる。
+    // 楽曲提供曲は提供先ごとにまとめて、その後ろ。未入力の曲は最後。
     function orderSongs(songs) {
       const groups = new Map();
+      const provided = new Map();
       const unset = [];
 
       songs.forEach(song => {
         const m = getMeta(song);
+        if (m.provided) {
+          if (!provided.has(m.provided)) provided.set(m.provided, []);
+          provided.get(m.provided).push(song);
+          return;
+        }
         if (!m.release && !m.album) { unset.push(song); return; }
         const key = m.album ? "a:" + m.album : "s:" + song;
         if (!groups.has(key)) groups.set(key, { key, release: "", album: m.album, songs: [] });
@@ -293,8 +307,14 @@
         g.songs.forEach((song, i) => out.push({ song, groupStart: i === 0 && out.length > 0 }));
       });
 
+      Array.from(provided.keys()).sort((a, b) => a.localeCompare(b, "ja")).forEach(artist => {
+        const list = provided.get(artist);
+        list.sort((a, b) => getMeta(b).release.localeCompare(getMeta(a).release) || a.localeCompare(b, "ja"));
+        list.forEach((song, i) => out.push({ song, header: i === 0 ? "楽曲提供曲｜" + artist : "" }));
+      });
+
       unset.sort((a, b) => plays.get(b) - plays.get(a) || a.localeCompare(b, "ja"));
-      unset.forEach((song, i) => out.push({ song, unsetStart: i === 0 }));
+      unset.forEach((song, i) => out.push({ song, header: i === 0 ? "リリース日・アルバム未入力" : "" }));
       return out;
     }
 
@@ -315,10 +335,10 @@
         const song = item.song;
         const m = getMeta(song);
 
-        if (item.unsetStart) {
+        if (item.header) {
           const header = document.createElement("li");
           header.className = "section-header";
-          header.textContent = "リリース日・アルバム未入力";
+          header.textContent = item.header;
           songList.appendChild(header);
         }
 
@@ -327,6 +347,9 @@
 
         const stemHtml = isHttpUrl(m.stem)
           ? `<a class="stem-link" href="${escapeHtml(m.stem)}" target="_blank" rel="noopener noreferrer">STEM</a>`
+          : "";
+        const altHtml = m.alt.length
+          ? `<div class="alt-line">${m.alt.map(a => `ライブver. ${escapeHtml(a.label)}　${escapeHtml(a.length)}${a.bpm ? `　BPM ${escapeHtml(a.bpm)}` : ""}`).join(" ／ ")}</div>`
           : "";
         const trackText = m.track !== "" ? String(m.track).padStart(2, "0") : "";
 
@@ -341,6 +364,7 @@
               ${cell("c-stem", "", stemHtml)}
             </div>
           </div>
+          ${altHtml}
         `;
 
         songList.appendChild(li);

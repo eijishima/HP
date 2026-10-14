@@ -110,6 +110,11 @@
     .grip { cursor: grab; touch-action: none; color: #999; text-align: center; font-size: 16px; line-height: 1; padding: 6px 0; }
     .build-row.dragging .grip { cursor: grabbing; }
     .build-row .no { text-align: right; color: #aaa; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .nmwrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .nmwrap .nm { flex: 0 1 auto; }
+    .ver { font-family: inherit; font-size: 12px; padding: 2px 4px; border: 1px solid #b26a00; border-radius: 6px; color: #b26a00; background: #fff; max-width: 190px; }
+    .alt-badge { font-size: 10.5px; color: #b26a00; border: 1px solid #b26a00; border-radius: 999px; padding: 0 6px; margin-left: 6px; white-space: nowrap; }
+    .section-header { margin: 22px 0 4px; padding-bottom: 4px; border-bottom: 2px solid #111; font-size: 13px; font-weight: bold; }
     .build-row .nm { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .build-row.mc .nm { color: #b26a00; font-weight: bold; }
     .build-row .num { font-size: 12.5px; color: #444; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
@@ -223,7 +228,7 @@
   <script src="song-meta.js"></script>
   <script>
     const STORAGE_KEY = "setlist-maker-draft-v1";
-    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "" };
+    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "", alt: [] };
 
     const $ = id => document.getElementById(id);
     const fields = { date: $("f-date"), limit: $("f-limit"), venue: $("f-venue"), event: $("f-event"), memo: $("f-memo") };
@@ -262,34 +267,63 @@
       const s = Math.abs(Math.round(sec));
       return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
     }
+    // 曲の「いま選んでいるバージョン」の長さ・BPM・名前（ver=0 が通常、1以降がライブアレンジ）
+    function effective(item) {
+      const m = getMeta(item.name);
+      const alt = item.ver > 0 ? m.alt[item.ver - 1] : null;
+      return {
+        length: alt && alt.length ? alt.length : m.length,
+        bpm: alt && alt.bpm ? alt.bpm : m.bpm,
+        label: alt ? alt.label : "",
+      };
+    }
     function secOf(item) {
-      return item.type === "mc" ? item.sec : parseLength(getMeta(item.name).length);
+      return item.type === "mc" ? item.sec : parseLength(effective(item).length);
     }
 
-    // 楽曲データページと同じ並び（リリース日の新しい順 → アルバム内は曲順 → 未入力は演奏回数順）
+    // リリース日の新しい順 → 同じアルバムは曲順どおりにまとめる。
+    // 楽曲提供曲は提供先ごとにまとめて、その後ろ。未入力の曲は最後。
     function orderSongs(songs) {
       const groups = new Map();
+      const provided = new Map();
       const unset = [];
+
       songs.forEach(song => {
         const m = getMeta(song);
+        if (m.provided) {
+          if (!provided.has(m.provided)) provided.set(m.provided, []);
+          provided.get(m.provided).push(song);
+          return;
+        }
         if (!m.release && !m.album) { unset.push(song); return; }
         const key = m.album ? "a:" + m.album : "s:" + song;
-        if (!groups.has(key)) groups.set(key, { release: "", album: m.album, songs: [] });
+        if (!groups.has(key)) groups.set(key, { key, release: "", album: m.album, songs: [] });
         const g = groups.get(key);
         if (m.release > g.release) g.release = m.release;
         g.songs.push(song);
       });
+
       const trackOf = s => Number(getMeta(s).track) || Infinity;
+      const sortedGroups = Array.from(groups.values()).sort((a, b) =>
+        b.release.localeCompare(a.release) || a.album.localeCompare(b.album, "ja"));
+
       const out = [];
-      Array.from(groups.values())
-        .sort((a, b) => b.release.localeCompare(a.release) || a.album.localeCompare(b.album, "ja"))
-        .forEach(g => {
-          g.songs.sort((a, b) => trackOf(a) - trackOf(b) || a.localeCompare(b, "ja"));
-          out.push(...g.songs);
-        });
+      sortedGroups.forEach(g => {
+        g.songs.sort((a, b) => trackOf(a) - trackOf(b) || a.localeCompare(b, "ja"));
+        g.songs.forEach((song, i) => out.push({ song, groupStart: i === 0 && out.length > 0 }));
+      });
+
+      Array.from(provided.keys()).sort((a, b) => a.localeCompare(b, "ja")).forEach(artist => {
+        const list = provided.get(artist);
+        list.sort((a, b) => getMeta(b).release.localeCompare(getMeta(a).release) || a.localeCompare(b, "ja"));
+        list.forEach((song, i) => out.push({ song, header: i === 0 ? "楽曲提供曲｜" + artist : "" }));
+      });
+
       unset.sort((a, b) => plays.get(b) - plays.get(a) || a.localeCompare(b, "ja"));
-      return out.concat(unset);
+      unset.forEach((song, i) => out.push({ song, header: i === 0 ? "リリース日・アルバム未入力" : "" }));
+      return out;
     }
+
     const ordered = orderSongs(allSongs);
 
     // ---------- 入力内容は保存しない（再読み込み・ページ移動でリセット） ----------
@@ -332,16 +366,23 @@
             <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
         } else {
           const m = getMeta(item.name);
-          const sec = parseLength(m.length);
+          const eff = effective(item);
+          const sec = parseLength(eff.length);
+          const verSelect = m.alt.length
+            ? `<select class="ver" aria-label="バージョン">` +
+              [{ label: "通常", length: m.length }].concat(m.alt).map((v, k) =>
+                `<option value="${k}"${k === item.ver ? " selected" : ""}>${escapeHtml(v.label)}${v.length ? " " + escapeHtml(v.length) : ""}</option>`).join("") +
+              `</select>`
+            : "";
           songNo++;
           li.className = "build-row";
           li.innerHTML = `
             <span class="grip" title="ドラッグで並べ替え">≡</span>
             <span class="no">${songNo}</span>
-            <span class="nm" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+            <span class="nmwrap"><span class="nm" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>${verSelect}</span>
             <span class="meta-line">
               <span class="num${sec === null ? " is-empty" : ""}">${sec === null ? "—" : fmt(sec)}</span>
-              <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
+              <span class="num${eff.bpm === "" ? " is-empty" : ""}">${eff.bpm === "" ? "—" : escapeHtml(eff.bpm)}</span>
             </span>
             <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
         }
@@ -375,6 +416,13 @@
       if (!btn) return;
       picked.splice(Number(btn.closest(".build-row").dataset.i), 1);
       save(); renderAll();
+    });
+
+    // ライブアレンジの切り替え
+    buildList.addEventListener("change", e => {
+      if (!e.target.classList.contains("ver")) return;
+      picked[Number(e.target.closest(".build-row").dataset.i)].ver = Number(e.target.value);
+      renderBuild();
     });
 
     // MCの長さ編集
@@ -450,7 +498,10 @@
       let n = 0, total = 0;
       picked.forEach(it => {
         if (it.type === "mc") lines.push(`MC（${fmt(it.sec)}）`);
-        else lines.push(`${++n}. ${it.name}`);
+        else {
+          const lab = effective(it).label;
+          lines.push(`${++n}. ${it.name}${lab ? `（${lab}）` : ""}`);
+        }
         const sec = secOf(it);
         if (sec !== null) total += sec;
       });
@@ -471,18 +522,31 @@
     // ---------- 楽曲リスト ----------
     function renderLib() {
       const q = $("search-box").value.trim().toLowerCase();
-      const items = ordered.filter(s => q === "" || s.toLowerCase().includes(q));
-      $("hint").textContent = `${items.length} 曲を表示中（全 ${allSongs.length} 曲）`;
-
+      let section = "", shown = "", count = 0;
       const ul = $("lib-list");
       ul.innerHTML = "";
-      items.forEach(song => {
+
+      ordered.forEach(item => {
+        if (item.header) section = item.header;
+        const song = item.song;
+        if (q !== "" && !song.toLowerCase().includes(q)) return;
+        count++;
+
+        if (section && section !== shown) {
+          const h = document.createElement("li");
+          h.className = "section-header";
+          h.textContent = section;
+          ul.appendChild(h);
+          shown = section;
+        }
+
         const m = getMeta(song);
         const added = picked.some(x => x.type === "song" && x.name === song);
+        const badge = m.alt.length ? `<span class="alt-badge">ライブver.あり</span>` : "";
         const li = document.createElement("li");
         li.className = "lib-row";
         li.innerHTML = `
-          <span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}</span>
+          <span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}${badge}</span>
           <span class="meta-line">
             <span class="num${m.length ? "" : " is-empty"}">${m.length ? escapeHtml(m.length) : "—"}</span>
             <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
@@ -490,12 +554,13 @@
           <span class="add-cell"><button class="btn small" type="button" data-song="${escapeHtml(song)}" ${added ? "disabled" : ""}>${added ? "追加済" : "追加"}</button></span>`;
         ul.appendChild(li);
       });
+      $("hint").textContent = `${count} 曲を表示中（全 ${allSongs.length} 曲）`;
     }
 
     $("lib-list").addEventListener("click", e => {
       const btn = e.target.closest("button[data-song]");
       if (!btn || btn.disabled) return;
-      picked.push({ type: "song", name: btn.dataset.song });
+      picked.push({ type: "song", name: btn.dataset.song, ver: 0 });
       save(); renderAll();
     });
     $("search-box").addEventListener("input", renderLib);
