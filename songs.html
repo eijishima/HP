@@ -170,13 +170,6 @@
       color: #444;
     }
 
-    .alt-line {
-      margin-top: 2px;
-      padding-left: calc(1.7em + 6px);
-      font-size: 11px;
-      color: #b26a00;
-    }
-
     .is-empty { color: #ccc !important; }
 
     .stem-link {
@@ -348,9 +341,6 @@
         const stemHtml = isHttpUrl(m.stem)
           ? `<a class="stem-link" href="${escapeHtml(m.stem)}" target="_blank" rel="noopener noreferrer">STEM</a>`
           : "";
-        const altHtml = m.alt.length
-          ? `<div class="alt-line">${m.alt.map(a => `ライブver. ${escapeHtml(a.label)}　${escapeHtml(a.length)}${a.bpm ? `　BPM ${escapeHtml(a.bpm)}` : ""}`).join(" ／ ")}</div>`
-          : "";
         const trackText = m.track !== "" ? String(m.track).padStart(2, "0") : "";
 
         li.innerHTML = `
@@ -364,7 +354,6 @@
               ${cell("c-stem", "", stemHtml)}
             </div>
           </div>
-          ${altHtml}
         `;
 
         songList.appendChild(li);

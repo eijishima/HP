@@ -114,6 +114,8 @@
     .nmwrap .nm { flex: 0 1 auto; }
     .ver { font-family: inherit; font-size: 12px; padding: 2px 4px; border: 1px solid #b26a00; border-radius: 6px; color: #b26a00; background: #fff; max-width: 190px; }
     .alt-badge { font-size: 10.5px; color: #b26a00; border: 1px solid #b26a00; border-radius: 999px; padding: 0 6px; margin-left: 6px; white-space: nowrap; }
+    .namecell { min-width: 0; }
+    .alt-note { display: block; font-size: 11px; color: #b26a00; margin-top: 2px; }
     .section-header { margin: 22px 0 4px; padding-bottom: 4px; border-bottom: 2px solid #111; font-size: 13px; font-weight: bold; }
     .build-row .nm { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .build-row.mc .nm { color: #b26a00; font-weight: bold; }
@@ -543,10 +545,13 @@
         const m = getMeta(song);
         const added = picked.some(x => x.type === "song" && x.name === song);
         const badge = m.alt.length ? `<span class="alt-badge">ライブver.あり</span>` : "";
+        const altNote = m.alt.length
+          ? `<span class="alt-note">ライブアレンジ：${m.alt.map(a => `${escapeHtml(a.label)} ${escapeHtml(a.length)}${a.bpm ? ` / BPM ${escapeHtml(a.bpm)}` : ""}`).join("、")}</span>`
+          : "";
         const li = document.createElement("li");
         li.className = "lib-row";
         li.innerHTML = `
-          <span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}${badge}</span>
+          <span class="namecell"><span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}${badge}</span>${altNote}</span>
           <span class="meta-line">
             <span class="num${m.length ? "" : " is-empty"}">${m.length ? escapeHtml(m.length) : "—"}</span>
             <span class="num${m.bpm === "" ? " is-empty" : ""}">${m.bpm === "" ? "—" : escapeHtml(m.bpm)}</span>
