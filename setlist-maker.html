@@ -194,7 +194,7 @@
     <div class="info-grid">
       <div><label for="f-date">日付</label><input type="date" id="f-date"></div>
       <div><label for="f-limit">持ち時間（分）</label><input type="number" id="f-limit" min="0" step="1" inputmode="numeric" value="30"></div>
-      <div><label for="f-venue">会場</label><input type="text" id="f-venue" placeholder="日産スタジアム"></div>
+      <div><label for="f-venue">会場</label><input type="text" id="f-venue" placeholder=""></div>
       <div><label for="f-event">公演名</label><input type="text" id="f-event"></div>
       <div class="full"><label for="f-memo">メモ</label><input type="text" id="f-memo"></div>
     </div>
@@ -233,6 +233,14 @@
     const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "", alt: [] };
 
     const $ = id => document.getElementById(id);
+
+    // 会場欄の例はゲームの舞台からランダムに表示（ユーモア用）
+    const VENUE_EXAMPLES = [
+      "メメントス", "ルブラン", "栄光高校", "ハナダシティ", "シロガネ山",
+      "狭間の地", "ライラの街", "ツーソン", "ムーンサイド",
+      "マサラタウン", "タマムシシティ", "ポケモンタワー", "ふたごじま", "チャンピオンロード",
+    ];
+    $("f-venue").placeholder = VENUE_EXAMPLES[Math.floor(Math.random() * VENUE_EXAMPLES.length)];
     const fields = { date: $("f-date"), limit: $("f-limit"), venue: $("f-venue"), event: $("f-event"), memo: $("f-memo") };
 
     // 今までやった全曲と演奏回数
@@ -309,11 +317,16 @@
       const sortedGroups = Array.from(groups.values()).sort((a, b) =>
         b.release.localeCompare(a.release) || a.album.localeCompare(b.album, "ja"));
 
+      // アルバムごとに見出しを付ける。アルバム未設定の曲は1つにまとめてアルバムの後ろへ。
       const out = [];
+      const albumless = [];
       sortedGroups.forEach(g => {
+        if (!g.album) { albumless.push(...g.songs); return; }
         g.songs.sort((a, b) => trackOf(a) - trackOf(b) || a.localeCompare(b, "ja"));
-        g.songs.forEach((song, i) => out.push({ song, groupStart: i === 0 && out.length > 0 }));
+        g.songs.forEach((song, i) => out.push({ song, header: i === 0 ? g.album + (g.release ? "　" + g.release.replace(/-/g, ".") : "") : "" }));
       });
+      albumless.sort((a, b) => getMeta(b).release.localeCompare(getMeta(a).release) || a.localeCompare(b, "ja"));
+      albumless.forEach((song, i) => out.push({ song, header: i === 0 ? "アルバム未設定" : "" }));
 
       Array.from(provided.keys()).sort((a, b) => a.localeCompare(b, "ja")).forEach(artist => {
         const list = provided.get(artist);
