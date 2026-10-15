@@ -4,6 +4,15 @@
 //   alt: [{ label: "ライブアレンジ名", length: "m:ss", bpm: 省略可 }]（ライブ用アレンジ。セトリ作成ページで切り替えられる） }
 // 空の項目は "" にしておく。リリース日の新しい順、同じアルバムは曲順で並ぶ。
 const songMeta = {
+  "ランデヴー": { bpm: "", length: "", release: "2019-09-18", album: "あたらしいからだ", track: "", stem: "" },
+  "エンカウント": { bpm: "", length: "3:35", release: "2021-12-21", album: "エンカウント", track: "", stem: "", provided: "鷲尾伶菜" },
+  "Darling": { bpm: "", length: "3:21", release: "2019-02-15", album: "Darling", track: "", stem: "" },
+  "わすれる": { bpm: "", length: "3:51", release: "2018-06-06", album: "Graduation", track: 17, stem: "" },
+  "口約束で殺して。": { bpm: "", length: "4:15", release: "2018-06-06", album: "Graduation", track: 14, stem: "" },
+  "for lust": { bpm: "", length: "2:45", release: "2018-06-06", album: "Graduation", track: 11, stem: "" },
+  "フロイデ": { bpm: "", length: "3:18", release: "2018-06-06", album: "Graduation", track: 7, stem: "" },
+  "sasayaku": { bpm: "", length: "3:41", release: "2018-06-06", album: "Graduation", track: 6, stem: "" },
+  "はきだす": { bpm: "", length: "2:44", release: "2018-06-06", album: "Graduation", track: 5, stem: "" },
   "きみになっていく": { bpm: 145, length: "3:19", release: "2026-04-29", album: "CULTURE DRUG ORCHESTRA", track: 4, stem: "https://drive.google.com/drive/folders/12LLgOLC3CapQyHlli9lC3qjLme7oStC-?usp=sharing", alt: [{label: "BPM155ver.", length: "3:10", bpm: 155}] },
   "懐古主義わたし": { bpm: 175, length: "3:53", release: "2026-04-29", album: "CULTURE DRUG ORCHESTRA", track: 3, stem: "https://drive.google.com/drive/folders/1kqXyigWqK1e96JMjj9Aw9mE6M-_D6ugJ?usp=sharing" },
   "ちゅるちゅる": { bpm: 160, length: "3:31", release: "2026-04-29", album: "CULTURE DRUG ORCHESTRA", track: 8, stem: "https://drive.google.com/drive/folders/1osNELeja0F6VcVOYLYrjzXsDjmzv5_jo?usp=sharing", alt: [{label: "間奏・アウトロ追加ver.", length: "3:52"}] },
