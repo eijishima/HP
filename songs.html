@@ -78,7 +78,7 @@
     }
 
     #song-table {
-      --cols: minmax(0, 1.25fr) 52px 52px 92px minmax(0, 1fr) 54px;
+      --cols: minmax(0, 1fr) 52px 52px 92px 54px;
       max-width: 900px;
       margin-top: 12px;
     }
@@ -229,7 +229,6 @@
       <span class="h-num">BPM</span>
       <span class="h-num">時間</span>
       <span>リリース日</span>
-      <span>アルバム名</span>
       <span>STEM</span>
     </div>
     <ul id="song-list"></ul>
@@ -294,11 +293,16 @@
       const sortedGroups = Array.from(groups.values()).sort((a, b) =>
         b.release.localeCompare(a.release) || a.album.localeCompare(b.album, "ja"));
 
+      // アルバムごとに見出しを付ける。アルバム未設定の曲は1つにまとめてアルバムの後ろへ。
       const out = [];
+      const albumless = [];
       sortedGroups.forEach(g => {
+        if (!g.album) { albumless.push(...g.songs); return; }
         g.songs.sort((a, b) => trackOf(a) - trackOf(b) || a.localeCompare(b, "ja"));
-        g.songs.forEach((song, i) => out.push({ song, groupStart: i === 0 && out.length > 0 }));
+        g.songs.forEach((song, i) => out.push({ song, header: i === 0 ? g.album + (g.release ? "　" + g.release.replace(/-/g, ".") : "") : "" }));
       });
+      albumless.sort((a, b) => getMeta(b).release.localeCompare(getMeta(a).release) || a.localeCompare(b, "ja"));
+      albumless.forEach((song, i) => out.push({ song, header: i === 0 ? "アルバム未設定" : "" }));
 
       Array.from(provided.keys()).sort((a, b) => a.localeCompare(b, "ja")).forEach(artist => {
         const list = provided.get(artist);
@@ -317,22 +321,27 @@
 
     function render() {
       const q = searchBox.value.trim().toLowerCase();
-      const ordered = orderSongs(allSongs).filter(item => q === "" || item.song.toLowerCase().includes(q));
+      const all = orderSongs(allSongs);
+      const ordered = all.filter(item => q === "" || item.song.toLowerCase().includes(q));
 
       const filled = allSongs.filter(s => hasAnyMeta(getMeta(s))).length;
       hint.textContent = `${ordered.length} 曲を表示中（全 ${allSongs.length} 曲 / 入力済み ${filled} 曲）`;
 
       songList.innerHTML = "";
 
-      ordered.forEach(item => {
+      let section = "", shown = "";
+      all.forEach(item => {
         const song = item.song;
         const m = getMeta(song);
 
-        if (item.header) {
+        if (item.header) section = item.header;
+        if (q !== "" && !song.toLowerCase().includes(q)) return;
+        if (section && section !== shown) {
           const header = document.createElement("li");
           header.className = "section-header";
-          header.textContent = item.header;
+          header.textContent = section;
           songList.appendChild(header);
+          shown = section;
         }
 
         const li = document.createElement("li");
@@ -350,7 +359,6 @@
               ${cell("c-bpm", "BPM", m.bpm !== "" ? escapeHtml(m.bpm) : "")}
               ${cell("c-len", "時間", escapeHtml(m.length))}
               ${cell("c-rel", "リリース", escapeHtml(m.release))}
-              ${cell("c-album", "アルバム", escapeHtml(m.album))}
               ${cell("c-stem", "", stemHtml)}
             </div>
           </div>
