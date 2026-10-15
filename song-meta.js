@@ -4,6 +4,7 @@
 //   alt: [{ label: "ライブアレンジ名", length: "m:ss", bpm: 省略可 }]（ライブ用アレンジ。セトリ作成ページで切り替えられる） }
 // 空の項目は "" にしておく。リリース日の新しい順、同じアルバムは曲順で並ぶ。
 const songMeta = {
+  "百年": { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "理芽" },
   "ランデヴー": { bpm: "", length: "", release: "2019-09-18", album: "あたらしいからだ", track: "", stem: "" },
   "エンカウント": { bpm: "", length: "3:35", release: "2021-12-21", album: "エンカウント", track: "", stem: "", provided: "鷲尾伶菜" },
   "Darling": { bpm: "", length: "3:21", release: "2019-02-15", album: "Darling", track: "", stem: "" },
