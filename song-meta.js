@@ -86,7 +86,7 @@ const songMeta = {
   "Badclub": { bpm: "", length: "3:24", release: "2019-02-16", album: "we are friends", track: 2, stem: "" },
   "nile perch": { bpm: "", length: "3:15", release: "2019-02-16", album: "we are friends", track: 8, stem: "" },
   "ゆめみる": { bpm: "", length: "1:45", release: "2018-10-24", album: "生きてる方がかわいいよ", track: 1, stem: "" },
-  "わたしのほねのうみ": { bpm: "", length: "", release: "2019-06-14", album: "", track: "", stem: "" },
+  "わたしのほねのうみ": { bpm: "", length: "", release: "2019-06-14", album: "官能と飽食/わたしのほねのうみ", track: "", stem: "" },
   "フロム天国": { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "理芽" },
   "十九月": { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "理芽" },
   "楽園": { bpm: "", length: "3:34", release: "2019-02-16", album: "we are friends", track: 10, stem: "" },
