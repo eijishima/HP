@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recording</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -10,7 +11,6 @@
   #works-area {
     position: relative;
     width: 100%;
-    height: 150vh;
     overflow: visible;
     margin-top: 200px;
   }
@@ -19,15 +19,29 @@
     position: absolute;
     width: 150px;
     height: 150px;
+    cursor: pointer;
   }
 
-  .jacket-wrapper img {
+  .jacket-wrapper img,
+  .jacket-blank {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
-    cursor: pointer;
     transition: transform 0.25s, z-index 0.2s;
+  }
+
+  /* 画像が取れなかったとき */
+  .jacket-blank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ddd;
+    color: #555;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
+    box-sizing: border-box;
   }
 
   .jacket-wrapper:hover img {
@@ -53,6 +67,7 @@
     transition: opacity 0.3s ease;
     padding: 5px;
     border-radius: 8px;
+    box-sizing: border-box;
   }
 
   .jacket-wrapper:hover .overlay {
@@ -63,6 +78,111 @@
     margin: 2px 0;
     font-size: 12px; /* 小さめに */
     line-height: 1.2;
+  }
+
+  /* ---- 詳細表示 ---- */
+  #detail {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    visibility: hidden;
+  }
+  #detail.open {
+    visibility: visible;
+  }
+  #detail-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  #detail.open #detail-backdrop {
+    opacity: 1;
+  }
+  #detail-jacket {
+    position: fixed;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transform-origin: center center;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #detail-text {
+    position: fixed;
+    max-width: 380px;
+    color: #000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #detail.shown #detail-text {
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+  #detail-text .d-artist {
+    margin: 0 0 4px;
+    font-size: 14px;
+  }
+  #detail-text .d-title {
+    margin: 0 0 16px;
+    font-size: 22px;
+    line-height: 1.3;
+  }
+  #detail-text .d-desc {
+    margin: 0 0 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+  #detail-text .d-links a {
+    display: block;
+    width: fit-content;
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: #000;
+    text-decoration: none;
+    border-bottom: 1px solid #000;
+  }
+  #detail-close {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: none;
+    font-size: 32px;
+    line-height: 44px;
+    color: #000;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #detail.shown #detail-close {
+    opacity: 1;
+  }
+  body.detail-open {
+    overflow: hidden;
+  }
+
+  /* スマホ */
+  @media (max-width: 600px) {
+    #works-area {
+      margin-top: 160px;
+    }
+    .jacket-wrapper {
+      width: 110px;
+      height: 110px;
+    }
+    #detail-text {
+      max-width: none;
+    }
+    #detail-close {
+      top: 12px;
+      right: 12px;
+    }
   }
 </style>
 
@@ -90,71 +210,255 @@
   <div id="works-area"></div>
   <!-- ▲ここに散乱ジャケットを表示 ▲ -->
 
+  <!-- ジャケットをクリックしたときの詳細 -->
+  <div id="detail" aria-hidden="true">
+    <div id="detail-backdrop"></div>
+    <img id="detail-jacket" alt="">
+    <div id="detail-text">
+      <p class="d-artist"></p>
+      <p class="d-title"></p>
+      <p class="d-desc"></p>
+      <div class="d-links"></div>
+    </div>
+    <button id="detail-close" type="button" aria-label="閉じる">×</button>
+  </div>
+
   <script>
+  // 1作品1行。spotify にリンクを入れるとジャケット画像を自動で取得します。
+  // apple: Apple Music のリンク / link: もう1つのリンク（アーティストのHPなど） / desc: 説明文
+  // jacket: Spotify にない作品だけ、images/rec/ に置いた画像のファイル名を書く
   const jackets = [
-    { src: "jacket1.png", artist: "笹川真生", title: "サニーサイドへようこそ", link: "https://www.maosasagawa.jp/products/ssgw000-0003" },
-    { src: "jacket2.png", artist: "chilldspot", title: "echowaves", link: "https://chilldspot.jp/discography/detail/6048/" },
-    { src: "jacket3.png", artist: "chilldspot", title: "僕たちは息をして", link: "https://chilldspot.jp/discography/detail/6070/" },
-    { src: "jacket4.png", artist: "chilldspot", title: "chilldspot 4th one man live tour crowdsurf in Zepp Shinjuku(TOKYO)", link: "https://chilldspot.jp/discography/detail/6043/" },
-    { src: "jacket5.png", artist: "chilldspot", title: "chilldspot 3rd one man live tour 模様 in Zepp DiverCity", link: "https://chilldspot.jp/discography/detail/6044/" },
-    { src: "jacket6.png", artist: "chilldspot", title: "handmade", link: "https://chilldspot.jp/discography/detail/6039/" },
-    { src: "jacket7.png", artist: "理芽", title: "狂えない", link: "https://kamitsubaki.jp/discography/rim/1779/" },
-    { src: "jacket8.png", artist: "うたたねくらげ", title: "from: Livings", link: "https://utatanekurage.bandcamp.com/album/from-livings" },
-    { src: "jacket9.png", artist: "MOMOKA YOKOYAMA", title: "崩壊", link: "https://www.youtube.com/watch?v=7GUSjpo13K4" },
-    { src: "jacket10.png", artist: "MOMOKA YOKOYAMA", title: "Lost heart", link: "https://www.youtube.com/watch?v=0TIriWKhEKc" },
-    { src: "jacket11.png", artist: "Landdo", title: "ULTRAPANIC", link: "https://ultrapanic.com/" },
-    { src: "jacket12.png", artist: "Loulalee", title: "WORLD CATCHBALL CLASSIC", link: "https://big-up.style/1VE6R85iYm" },
-    { src: "jacket13.png", artist: "私立恵比寿中学", title: "私立恵比寿中学", link: "https://www.sonymusic.co.jp/Music/Info/ebichu/Anytimeebichuto/disco/" },
-    { src: "jacket14.png", artist: "碧海祐人", title: "Opal", link: "https://www.youtube.com/watch?v=CE2-vKE0OJs" },
-    { src: "jacket15.png", artist: "samayuzame", title: "theMOON'22〈ef〉", link: "https://www.youtube.com/watch?v=lnhIOOq4IBI" },
-    { src: "jacket16.png", artist: "airattic", title: "Exhale", link: "https://linkco.re/Qnsu17n2" },
-    { src: "jacket17.png", artist: "chilldspot", title: "dance now!", link: "https://chilldspot.jp/discography/detail/7003/" },
-    { src: "jacket18.png", artist: "chilldspot", title: "ladyy", link: "https://chilldspot.lnk.to/ladyy" },
-    { src: "jacket19.png", artist: "chilldspot", title: "ドラマ", link: "https://chilldspot.jp/discography/detail/7646/" },
+    { artist: "笹川真生", title: "サニーサイドへようこそ", spotify: "https://open.spotify.com/track/2zqGqlViqSv9X6czIzsFIq", apple: "", link: "https://www.maosasagawa.jp/products/ssgw000-0003", desc: "" },
+    { artist: "chilldspot", title: "echowaves", spotify: "https://open.spotify.com/album/0dCFip1NALRq4el9rljtH1", apple: "https://music.apple.com/jp/album/1767579629", link: "https://chilldspot.jp/discography/detail/6048/", desc: "" },
+    { artist: "chilldspot", title: "僕たちは息をして", spotify: "https://open.spotify.com/album/7JTjkmIsemLcSkOCSnupCi", apple: "https://music.apple.com/jp/album/1763753585", link: "https://chilldspot.jp/discography/detail/6070/", desc: "" },
+    { artist: "chilldspot", title: "chilldspot 4th one man live tour crowdsurf in Zepp Shinjuku(TOKYO)", spotify: "https://open.spotify.com/album/3BuplmeN5p8e2BvANhc2lH", apple: "https://music.apple.com/jp/album/1797719072", link: "https://chilldspot.jp/discography/detail/6043/", desc: "" },
+    { artist: "chilldspot", title: "chilldspot 3rd one man live tour 模様 in Zepp DiverCity", spotify: "https://open.spotify.com/album/57Y8iIT5yAMRs28fWU398x", apple: "https://music.apple.com/jp/album/1742935901", link: "https://chilldspot.jp/discography/detail/6044/", desc: "" },
+    { artist: "chilldspot", title: "handmade", spotify: "https://open.spotify.com/album/04lBkRbV1tnWD42ZV0ZBTi", apple: "https://music.apple.com/jp/album/1837626375", link: "https://chilldspot.jp/discography/detail/6039/", desc: "" },
+    { artist: "理芽", title: "狂えない", spotify: "https://open.spotify.com/track/57yGXFP1eubu5Qv9vVYZEh", apple: "https://music.apple.com/jp/album/1661498190", link: "https://kamitsubaki.jp/discography/rim/1779/", desc: "" },
+    { artist: "うたたねくらげ", title: "from: Livings", spotify: "", apple: "https://music.apple.com/jp/album/1807017188", link: "https://utatanekurage.bandcamp.com/album/from-livings", desc: "", jacket: "jacket8.png" },
+    { artist: "MOMOKA YOKOYAMA", title: "崩壊", spotify: "https://open.spotify.com/track/06PDNsyzwL2XNm2CEeLStC", apple: "https://music.apple.com/jp/album/1665539920", link: "https://www.youtube.com/watch?v=7GUSjpo13K4", desc: "" },
+    { artist: "MOMOKA YOKOYAMA", title: "Lost heart", spotify: "https://open.spotify.com/track/6mJqDWzjRl0gsGjRg26dCt", apple: "", link: "https://www.youtube.com/watch?v=0TIriWKhEKc", desc: "" },
+    { artist: "Lanndo", title: "ULTRAPANIC", spotify: "https://open.spotify.com/album/6AZiQVTRwnR9UQmUfmMIJz", apple: "", link: "https://ultrapanic.com/", desc: "" },
+    { artist: "Loulalee", title: "WORLD CATCHBALL CLASSIC", spotify: "https://open.spotify.com/album/5cNjQswZINd7qKSE3VNIkX", apple: "https://music.apple.com/jp/album/1733436519", link: "https://big-up.style/1VE6R85iYm", desc: "" },
+    { artist: "私立恵比寿中学", title: "私立恵比寿中学", spotify: "https://open.spotify.com/album/3GJeWKR31ThIB3yz9gc4KM", apple: "https://music.apple.com/jp/album/1611721873", link: "https://www.sonymusic.co.jp/Music/Info/ebichu/Anytimeebichuto/disco/", desc: "" },
+    { artist: "碧海祐人", title: "Opal", spotify: "", apple: "https://music.apple.com/jp/album/1715796121", link: "https://www.youtube.com/watch?v=CE2-vKE0OJs", desc: "", jacket: "jacket14.png" },
+    { artist: "samayuzame", title: "theMOON'22〈ef〉", spotify: "https://open.spotify.com/album/7bMW9Mavi9VumhsUTwCFL7", apple: "", link: "https://www.youtube.com/watch?v=lnhIOOq4IBI", desc: "" },
+    { artist: "airattic", title: "Exhale", spotify: "https://open.spotify.com/album/4EaasFgaaIcK2hag7ro5W3", apple: "https://music.apple.com/jp/album/1875813482", link: "https://linkco.re/Qnsu17n2", desc: "" },
+    { artist: "chilldspot", title: "dance now!", spotify: "https://open.spotify.com/album/5IhY3SG2frx80zKcCPuY8o", apple: "https://music.apple.com/jp/album/1883009682", link: "https://chilldspot.jp/discography/detail/7003/", desc: "" },
+    { artist: "chilldspot", title: "ladyy", spotify: "https://open.spotify.com/album/0j4aINbLc1sL3NjOUa1aTY", apple: "https://music.apple.com/jp/album/6772872537", link: "https://chilldspot.lnk.to/ladyy", desc: "" },
+    { artist: "chilldspot", title: "ドラマ", spotify: "https://open.spotify.com/album/7lbMhdqelA0vkNGbUWffcJ", apple: "https://music.apple.com/jp/album/6781170633", link: "https://chilldspot.jp/discography/detail/7646/", desc: "" },
 
-
-
-    
     // 他も同様に追加
   ];
 
+  // ---- ジャケット画像の取得（Spotify の oEmbed から。取得結果はブラウザに保存して次回以降は再取得しない） ----
+  const CACHE_KEY = "rec-jacket-cache-v1";
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch (e) { cache = {}; }
+
+  function saveCache() {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { /* 保存できなくても表示はできる */ }
+  }
+
+  // 300px 版のジャケット URL を 640px 版に差し替える
+  function largeImage(url) {
+    const m = url.match(/\/image\/(ab67616d)00001e02([0-9a-f]+)$/);
+    return m ? `https://i.scdn.co/image/${m[1]}0000b273${m[2]}` : url;
+  }
+
+  async function jacketUrl(j) {
+    if (j.spotify) {
+      const key = j.spotify.split("?")[0];
+      if (cache[key]) return cache[key];
+      try {
+        const res = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(key));
+        const data = await res.json();
+        if (data.thumbnail_url) {
+          cache[key] = largeImage(data.thumbnail_url);
+          saveCache();
+          return cache[key];
+        }
+      } catch (e) { /* 取れなければ下の jacket を使う */ }
+    }
+    return j.jacket ? "images/rec/" + j.jacket : "";
+  }
+
+  function linkName(url) {
+    if (/youtube\.com|youtu\.be/.test(url)) return "YouTube";
+    if (/bandcamp\.com/.test(url)) return "Bandcamp";
+    return "Website";
+  }
+
+  // ---- 散らばった配置（近すぎる位置はできるだけ避ける） ----
   const area = document.getElementById("works-area");
-  const areaWidth = window.innerWidth;
-  const areaHeight = window.innerHeight * 1.5;
+  const narrow = window.innerWidth <= 600;
+  const size = narrow ? 110 : 150;
+  const areaWidth = area.clientWidth;
+  // ジャケットの数に応じて高さを確保（足りないと重なりやすくなる）
+  const areaHeight = Math.max(window.innerHeight * 1.5, jackets.length * size * size * 2.2 / areaWidth);
+  area.style.height = `${areaHeight}px`;
+  const minDist = size * 0.8;
+  const placed = [];
+
+  function pickPosition() {
+    let best = null;
+    for (let i = 0; i < 60; i++) {
+      const x = Math.random() * (areaWidth - size);
+      const y = Math.random() * (areaHeight - size);
+      const d = placed.reduce((m, p) => Math.min(m, Math.hypot(p.x - x, p.y - y)), Infinity);
+      if (d >= minDist) return { x, y };
+      if (!best || d > best.d) best = { x, y, d };
+    }
+    return best;
+  }
 
   jackets.forEach(j => {
     const wrapper = document.createElement("div");
     wrapper.className = "jacket-wrapper";
 
-    const link = document.createElement("a");
-    link.href = j.link;
-    link.target = "_blank"; // 新しいタブで開く
-
-    const img = document.createElement("img");
-    img.src = "images/rec/" + j.src;
+    const blank = document.createElement("div");
+    blank.className = "jacket-blank";
+    blank.textContent = j.title;
+    wrapper.appendChild(blank);
 
     const overlay = document.createElement("div");
     overlay.className = "overlay";
-    overlay.innerHTML = `<p>${j.artist}</p><p>${j.title}</p>`;
+    const pa = document.createElement("p");
+    pa.textContent = j.artist;
+    const pt = document.createElement("p");
+    pt.textContent = j.title;
+    overlay.append(pa, pt);
+    wrapper.appendChild(overlay);
 
-    link.appendChild(img);
-    link.appendChild(overlay);
-    wrapper.appendChild(link);
-
-    const x = Math.random() * (areaWidth - 150);
-    const y = Math.random() * (areaHeight - 150);
+    const pos = pickPosition();
+    placed.push(pos);
     const rot = (Math.random() * 80) - 40;
     const scale = 0.9 + Math.random() * 0.2;
+    wrapper.dataset.rot = rot;
+    wrapper.dataset.scale = scale;
 
-    wrapper.style.left = `${x}px`;
-    wrapper.style.top = `${y}px`;
+    wrapper.style.left = `${pos.x}px`;
+    wrapper.style.top = `${pos.y}px`;
     wrapper.style.transform = `rotate(${rot}deg) scale(${scale})`;
     wrapper.style.zIndex = Math.floor(Math.random() * 30);
 
+    wrapper.addEventListener("click", () => openDetail(j, wrapper));
     area.appendChild(wrapper);
+
+    jacketUrl(j).then(src => {
+      if (!src) return;
+      const img = document.createElement("img");
+      img.alt = `${j.artist} - ${j.title}`;
+      img.onload = () => blank.replaceWith(img);
+      img.src = src;
+      wrapper.dataset.src = src;
+    });
+  });
+
+  // ---- 詳細表示 ----
+  const detail = document.getElementById("detail");
+  const dJacket = document.getElementById("detail-jacket");
+  const dText = document.getElementById("detail-text");
+  const dClose = document.getElementById("detail-close");
+  let current = null;
+
+  // 手前に出たときのジャケットと文章の位置
+  function layout() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    if (vw <= 600) {
+      const s = Math.min(vw * 0.7, vh * 0.45);
+      const top = 64;
+      return { s, x: (vw - s) / 2, y: top, text: { left: 24, top: top + s + 24, right: 24, bottom: 24 } };
+    }
+    const s = Math.min(vw * 0.36, vh * 0.7, 420);
+    const gap = 40;
+    const textW = Math.min(380, vw / 2 - gap - 32);
+    const totalW = s + gap + textW;
+    const x = (vw - totalW) / 2;
+    const y = (vh - s) / 2;
+    return { s, x, y, text: { left: x + s + gap, top: y, width: textW } };
+  }
+
+  // 元の位置（散らばったジャケットの位置・角度）を、手前の位置からの変形で表す
+  function fromTransform(wrapper, L) {
+    const r = wrapper.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const s0 = size * parseFloat(wrapper.dataset.scale);
+    const dx = cx - (L.x + L.s / 2), dy = cy - (L.y + L.s / 2);
+    return `translate(${dx}px, ${dy}px) rotate(${wrapper.dataset.rot}deg) scale(${s0 / L.s})`;
+  }
+
+  function openDetail(j, wrapper) {
+    if (current) return;
+    current = wrapper;
+    const L = layout();
+
+    dJacket.src = wrapper.dataset.src || "";
+    dJacket.style.visibility = wrapper.dataset.src ? "visible" : "hidden";
+    Object.assign(dJacket.style, { left: `${L.x}px`, top: `${L.y}px`, width: `${L.s}px`, height: `${L.s}px` });
+    dJacket.style.transition = "none";
+    dJacket.style.transform = fromTransform(wrapper, L);
+
+    dText.querySelector(".d-artist").textContent = j.artist;
+    dText.querySelector(".d-title").textContent = j.title;
+    const desc = dText.querySelector(".d-desc");
+    desc.textContent = j.desc || "";
+    desc.style.display = j.desc ? "" : "none";
+    const links = dText.querySelector(".d-links");
+    links.textContent = "";
+    [["Spotify", j.spotify], ["Apple Music", j.apple], [j.link ? linkName(j.link) : "", j.link]].forEach(([name, url]) => {
+      if (!url) return;
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = name;
+      links.appendChild(a);
+    });
+    Object.assign(dText.style, { left: "", top: "", right: "", bottom: "", width: "", overflowY: "" });
+    for (const [k, v] of Object.entries(L.text)) dText.style[k] = `${v}px`;
+    if (L.text.bottom !== undefined) dText.style.overflowY = "auto";
+
+    wrapper.style.visibility = "hidden";
+    document.body.classList.add("detail-open");
+    detail.classList.add("open");
+    detail.setAttribute("aria-hidden", "false");
+    dJacket.getBoundingClientRect(); // 変形前の状態を確定させてからアニメーション
+    dJacket.style.transition = "";
+    dJacket.style.transform = "none";
+    detail.classList.add("shown");
+  }
+
+  function closeDetail() {
+    if (!current) return;
+    const wrapper = current;
+    const L = layout();
+    detail.classList.remove("shown");
+    dJacket.style.transform = fromTransform(wrapper, L);
+    const done = () => {
+      dJacket.removeEventListener("transitionend", done);
+      clearTimeout(timer);
+      wrapper.style.visibility = "";
+      detail.classList.remove("open");
+      detail.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("detail-open");
+      current = null;
+    };
+    const timer = setTimeout(done, 600);
+    dJacket.addEventListener("transitionend", done);
+  }
+
+  dClose.addEventListener("click", closeDetail);
+  document.getElementById("detail-backdrop").addEventListener("click", closeDetail);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+  window.addEventListener("resize", () => {
+    if (!current) return;
+    const L = layout();
+    Object.assign(dJacket.style, { left: `${L.x}px`, top: `${L.y}px`, width: `${L.s}px`, height: `${L.s}px` });
+    for (const [k, v] of Object.entries(L.text)) dText.style[k] = `${v}px`;
   });
 </script>
-  
+
   <script src="random.js"></script>
 </body>
 </html>
