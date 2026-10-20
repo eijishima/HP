@@ -394,7 +394,8 @@
     const L = layout();
 
     dJacket.src = wrapper.dataset.src || "";
-    dJacket.style.visibility = wrapper.dataset.src ? "visible" : "hidden";
+    // "visible" を直接指定すると、閉じて親を隠しても画面に残ってしまうので "" にする
+    dJacket.style.visibility = wrapper.dataset.src ? "" : "hidden";
     Object.assign(dJacket.style, { left: `${L.x}px`, top: `${L.y}px`, width: `${L.s}px`, height: `${L.s}px` });
     dJacket.style.transition = "none";
     dJacket.style.transform = fromTransform(wrapper, L);
