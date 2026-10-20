@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>嶋英治</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&family=Noto+Sans+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -87,6 +88,35 @@
       pointer-events: none;
       z-index: 999;
       transition: opacity 0.35s ease;
+    }
+
+    /* スマホ：メニューを左下に固定して大きく */
+    @media (max-width: 600px) {
+      .centered-text {
+        position: fixed;
+        left: 16px;
+        bottom: calc(28px + env(safe-area-inset-bottom));
+        margin: 0;
+        padding: 0;
+        height: auto;
+      }
+      .centered-text nav a {
+        padding-left: 0;
+        font-size: 24px;
+        line-height: 1.5;
+      }
+      .centered-text > p {
+        margin-top: 14px;
+      }
+      .centered-text > p a {
+        padding-left: 0;
+        font-size: 14px;
+      }
+      #light-switch {
+        right: 16px;
+        top: 16px;
+        width: 60px;
+      }
     }
   </style>
 </head>
