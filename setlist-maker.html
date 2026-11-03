@@ -143,6 +143,84 @@
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
     #copy-msg { font-size: 12px; color: #1a7f37; }
 
+    /* ---------- 日付（年・月・日を別々に選ぶ＋カレンダー） ---------- */
+    .date-field {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 40px;
+      padding: 0 4px 0 6px;
+      border: 1px solid #999;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .date-field select {
+      font-family: inherit;
+      font-size: 15px;
+      color: #111;
+      border: none;
+      background: transparent;
+      padding: 6px 2px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .date-field select:hover { background: #f0f0f0; }
+    .date-field .unit { font-size: 13px; color: #777; margin-right: 6px; }
+    .cal-btn {
+      display: flex;
+      margin-left: auto;
+      padding: 6px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+    }
+    .cal-btn:hover { background: #eee; }
+    #f-date {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 40px;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ---------- デフォルト曲の案内・サジェスト ---------- */
+    #defaults-note { display: none; margin: 8px 0 0; font-size: 12px; color: #777; }
+
+    #suggest { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #bbb; }
+    .suggest-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .suggest-head h3 { margin: 0; font-size: 13px; }
+    .suggest-sub { font-size: 11.5px; color: #888; margin: 0 0 6px; }
+    #suggest-list { list-style: none; margin: 0; padding: 0; }
+    .suggest-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 190px 52px 64px;
+      column-gap: 10px;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .suggest-row .nm { font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .suggest-row .when { font-size: 12px; color: #777; white-space: nowrap; }
+    .suggest-row .num { font-size: 12.5px; color: #444; text-align: right; font-variant-numeric: tabular-nums; }
+    .suggest-empty { font-size: 12.5px; color: #999; padding: 8px 0; }
+
+    /* ---------- Spotify ---------- */
+    .btn.spotify { border-color: #1a7f37; color: #1a7f37; font-weight: bold; }
+    .btn.spotify:hover:not(:disabled) { background: #e8f5ec; }
+    #spotify-msg { margin-top: 10px; font-size: 13px; line-height: 1.7; }
+    #spotify-msg:empty { display: none; }
+    #spotify-msg .ok { color: #1a7f37; font-weight: bold; }
+    #spotify-msg .err { color: #c62828; }
+    #spotify-msg .miss { color: #b26a00; font-size: 12.5px; }
+    #spotify-msg a { color: #06c; }
+
     /* ---------- 楽曲リスト ---------- */
     #lib { margin-top: 28px; }
     #search-box { width: 320px; }
@@ -167,6 +245,10 @@
       .build-row { grid-template-columns: 22px 26px minmax(0, 1fr) auto; row-gap: 4px; }
       .build-row .meta-line { grid-column: 3; display: flex; gap: 14px; align-items: center; }
       .build-row .ctrl { grid-column: 4; grid-row: 1; }
+      .suggest-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 3px; }
+      .suggest-row .when { grid-column: 1; }
+      .suggest-row .num { display: none; }
+      .suggest-row .add-cell { grid-column: 2; grid-row: 1 / span 2; }
       .list-header { display: none; }
       .lib-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 3px; }
       .lib-row .meta-line { grid-column: 1; display: flex; gap: 14px; }
@@ -192,7 +274,18 @@
   <section id="maker">
     <h2>セットリストを作る</h2>
     <div class="info-grid">
-      <div><label for="f-date">日付</label><input type="date" id="f-date"></div>
+      <div>
+        <label for="d-y">日付</label>
+        <div class="date-field" id="date-field">
+          <select id="d-y" aria-label="年"></select><span class="unit">年</span>
+          <select id="d-m" aria-label="月"></select><span class="unit">月</span>
+          <select id="d-d" aria-label="日"></select><span class="unit">日</span>
+          <button type="button" class="cal-btn" id="d-cal" aria-label="カレンダーから選ぶ" title="カレンダーから選ぶ">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>
+          <input type="date" id="f-date" tabindex="-1" aria-hidden="true">
+        </div>
+      </div>
       <div><label for="f-limit">持ち時間（分）</label><input type="number" id="f-limit" min="0" step="1" inputmode="numeric" value="30"></div>
       <div><label for="f-venue">会場</label><input type="text" id="f-venue" placeholder=""></div>
       <div><label for="f-event">公演名</label><input type="text" id="f-event"></div>
@@ -200,6 +293,7 @@
     </div>
 
     <div id="summary"></div>
+    <p id="defaults-note">直近半年でよくやっている3曲を最初から入れています（外してもOK）</p>
     <ol id="build-list"></ol>
     <div id="empty-msg">下の楽曲リストから「追加」を押すと、ここに入ります。左の ≡ をドラッグすると並べ替えできます。</div>
 
@@ -207,7 +301,18 @@
       <button class="btn primary" id="btn-copy" type="button">テキストにしてコピー</button>
       <button class="btn" id="btn-mc" type="button">＋ MCを追加</button>
       <button class="btn" id="btn-clear" type="button">曲をすべて外す</button>
+      <button class="btn spotify" id="btn-spotify" type="button">Spotifyで非公開プレイリストを作る</button>
       <span id="copy-msg"></span>
+    </div>
+    <div id="spotify-msg" aria-live="polite"></div>
+
+    <div id="suggest">
+      <div class="suggest-head">
+        <h3>最近やってない曲をサジェスト</h3>
+        <button class="btn small" id="btn-shuffle" type="button">別の3曲</button>
+      </div>
+      <p class="suggest-sub">半年以上やっていない曲からランダムに3曲</p>
+      <ul id="suggest-list"></ul>
     </div>
   </section>
 
@@ -230,7 +335,7 @@
   <script src="song-meta.js"></script>
   <script>
     const STORAGE_KEY = "setlist-maker-draft-v1";
-    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "", alt: [] };
+    const EMPTY_META = { bpm: "", length: "", release: "", album: "", track: "", stem: "", provided: "", spotify: "", alt: [] };
 
     const $ = id => document.getElementById(id);
 
@@ -251,8 +356,32 @@
     }));
     const allSongs = Array.from(plays.keys());
 
+    // ---------- 直近の演奏状況（デフォルト3曲・サジェスト用） ----------
+    const RECENT_MONTHS = 6;
+    const pad2 = n => String(n).padStart(2, "0");
+    const isoLocal = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const TODAY = new Date();
+    const RECENT_CUTOFF = (() => { const d = new Date(TODAY); d.setMonth(d.getMonth() - RECENT_MONTHS); return isoLocal(d); })();
+
+    const lastPlayed = new Map();   // 曲 → 最後にやった日
+    const recentPlays = new Map();  // 曲 → 直近半年の演奏回数
+    performances.forEach(perf => perf.setlist.forEach(raw => {
+      const song = normalize(raw);
+      if (!lastPlayed.has(song) || perf.date > lastPlayed.get(song)) lastPlayed.set(song, perf.date);
+      if (perf.date >= RECENT_CUTOFF) recentPlays.set(song, (recentPlays.get(song) || 0) + 1);
+    }));
+
+    // 直近半年で演奏回数の多い上位3曲（同数なら最近やった方を優先）
+    function defaultTop3() {
+      return Array.from(recentPlays.entries())
+        .sort((a, b) => b[1] - a[1] || lastPlayed.get(b[0]).localeCompare(lastPlayed.get(a[0])) || a[0].localeCompare(b[0], "ja"))
+        .slice(0, 3)
+        .map(([name]) => ({ type: "song", name, ver: 0 }));
+    }
+
     // 作成中のセトリ。曲は { type: "song", name }、MCは { type: "mc", sec }
-    let picked = [];
+    let picked = defaultTop3();
+    const defaultKey = JSON.stringify(picked);
     const DEFAULT_MC_SEC = 120;
 
     function getMeta(song) { return Object.assign({}, EMPTY_META, songMeta[song]); }
@@ -345,14 +474,16 @@
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}   // 旧バージョンの下書きを消す
     function save() {}
 
+    let skipUnloadWarning = false;   // Spotifyログインで一時的に離れるときは警告しない
     function isDirty() {
-      return picked.length > 0 ||
-        fields.date.value !== "" || fields.venue.value.trim() !== "" ||
+      return JSON.stringify(picked) !== defaultKey ||
+        fields.date.value !== "" || $("d-y").value || $("d-m").value || $("d-d").value ||
+        fields.venue.value.trim() !== "" ||
         fields.event.value.trim() !== "" || fields.memo.value.trim() !== "" ||
         fields.limit.value !== fields.limit.defaultValue;
     }
     window.addEventListener("beforeunload", e => {
-      if (!isDirty()) return;
+      if (skipUnloadWarning || !isDirty()) return;
       e.preventDefault();
       e.returnValue = "";   // ブラウザ標準の「変更が失われます」警告を出す
     });
@@ -363,6 +494,7 @@
     function renderBuild() {
       buildList.innerHTML = "";
       $("empty-msg").style.display = picked.length ? "none" : "block";
+      $("defaults-note").style.display = picked.length && JSON.stringify(picked) === defaultKey ? "block" : "none";
 
       let songNo = 0;
       picked.forEach((item, i) => {
@@ -583,8 +715,314 @@
     });
     $("search-box").addEventListener("input", renderLib);
 
-    function renderAll() { renderBuild(); renderLib(); }
+    // ---------- 日付（年・月・日を別々に選ぶ。右のカレンダーからも選べる） ----------
+    const dY = $("d-y"), dM = $("d-m"), dD = $("d-d"), dPicker = $("f-date");
+    const YEAR_FROM = 2018, YEAR_TO = TODAY.getFullYear() + 2;
+
+    function optionsHtml(label, values, cur) {
+      return `<option value="">${label}</option>` +
+        values.map(v => `<option value="${v}"${String(v) === String(cur) ? " selected" : ""}>${v}</option>`).join("");
+    }
+    function buildYears(selected) {
+      const ys = new Set();
+      for (let y = YEAR_TO; y >= YEAR_FROM; y--) ys.add(y);
+      if (selected) ys.add(Number(selected));
+      dY.innerHTML = optionsHtml("--", Array.from(ys).sort((a, b) => b - a), selected || "");
+    }
+    function rebuildDays() {
+      const m = Number(dM.value), y = Number(dY.value) || 2024;
+      const n = m ? new Date(y, m, 0).getDate() : 31;
+      const cur = Number(dD.value);
+      dD.innerHTML = optionsHtml("--", Array.from({ length: n }, (_, i) => i + 1), cur ? Math.min(cur, n) : "");
+    }
+    function syncDate() {
+      dPicker.value = dY.value && dM.value && dD.value ? `${dY.value}-${pad2(dM.value)}-${pad2(dD.value)}` : "";
+      dPicker.dispatchEvent(new Event("input"));
+    }
+    function setDateValue(iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+      buildYears(m ? Number(m[1]) : "");
+      dM.innerHTML = optionsHtml("--", Array.from({ length: 12 }, (_, i) => i + 1), m ? Number(m[2]) : "");
+      dD.innerHTML = optionsHtml("--", [], "");
+      if (m) { dM.value = String(Number(m[2])); rebuildDays(); dD.value = String(Number(m[3])); }
+      else rebuildDays();
+      syncDate();
+    }
+    dY.addEventListener("change", () => { rebuildDays(); syncDate(); });
+    dM.addEventListener("change", () => { rebuildDays(); syncDate(); });
+    dD.addEventListener("change", syncDate);
+    dPicker.addEventListener("change", () => setDateValue(dPicker.value));
+    $("d-cal").addEventListener("click", () => {
+      try { dPicker.showPicker(); } catch (e) { dPicker.focus(); dPicker.click(); }
+    });
+    // 選択欄にフォーカスがあるときはマウスホイールでも変えられる
+    [dY, dM, dD].forEach(sel => sel.addEventListener("wheel", e => {
+      if (document.activeElement !== sel) return;
+      e.preventDefault();
+      const i = Math.min(Math.max(sel.selectedIndex + (e.deltaY > 0 ? 1 : -1), 0), sel.options.length - 1);
+      if (i !== sel.selectedIndex) { sel.selectedIndex = i; sel.dispatchEvent(new Event("change")); }
+    }, { passive: false }));
+    setDateValue("");
+
+    // ---------- 最近やってない曲のサジェスト ----------
+    let suggestions = [];
+
+    function agoText(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      let months = (TODAY.getFullYear() - y) * 12 + (TODAY.getMonth() + 1 - m) - (TODAY.getDate() < d ? 1 : 0);
+      months = Math.max(months, 0);
+      if (months < 12) return `${months}ヶ月前`;
+      const yr = Math.floor(months / 12), rest = months % 12;
+      return `${yr}年${rest ? rest + "ヶ月" : ""}前`;
+    }
+
+    function shuffleSuggest() {
+      const pool = allSongs.filter(s => lastPlayed.get(s) < RECENT_CUTOFF && !picked.some(x => x.type === "song" && x.name === s));
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      suggestions = pool.slice(0, 3);
+      renderSuggest();
+    }
+
+    function renderSuggest() {
+      const ul = $("suggest-list");
+      ul.innerHTML = "";
+      if (!suggestions.length) {
+        ul.innerHTML = `<li class="suggest-empty">サジェストできる曲がありません</li>`;
+        return;
+      }
+      suggestions.forEach(song => {
+        const m = getMeta(song);
+        const added = picked.some(x => x.type === "song" && x.name === song);
+        const li = document.createElement("li");
+        li.className = "suggest-row";
+        li.innerHTML = `
+          <span class="nm" title="${escapeHtml(song)}">${escapeHtml(song)}</span>
+          <span class="when">最後にやった日 ${lastPlayed.get(song)}（${agoText(lastPlayed.get(song))}）</span>
+          <span class="num${m.length ? "" : " is-empty"}">${m.length ? escapeHtml(m.length) : "—"}</span>
+          <span class="add-cell"><button class="btn small" type="button" data-song="${escapeHtml(song)}" ${added ? "disabled" : ""}>${added ? "追加済" : "追加"}</button></span>`;
+        ul.appendChild(li);
+      });
+    }
+
+    $("suggest-list").addEventListener("click", e => {
+      const btn = e.target.closest("button[data-song]");
+      if (!btn || btn.disabled) return;
+      picked.push({ type: "song", name: btn.dataset.song, ver: 0 });
+      save(); renderAll();
+    });
+    $("btn-shuffle").addEventListener("click", shuffleSuggest);
+
+    function renderAll() { renderBuild(); renderLib(); renderSuggest(); }
     renderAll();
+    shuffleSuggest();
+
+    // ---------- Spotify（非公開プレイリスト作成） ----------
+    // Spotify for Developers で作ったアプリの Client ID（公開されても問題ない識別子）
+    const SPOTIFY_CLIENT_ID = "";
+    const SPOTIFY_SCOPES = "playlist-modify-private user-read-private";
+    const SPOTIFY_MARKET = "JP";
+    const SS = { pkce: "spotify-pkce", token: "spotify-token", draft: "spotify-draft" };
+
+    const spotifyRedirectUri = () => location.origin + location.pathname;
+    const spotifyMsg = html => { $("spotify-msg").innerHTML = html; };
+    const errHtml = text => `<span class="err">${escapeHtml(text)}</span>`;
+
+    function b64url(bytes) {
+      return btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+    function randomString(n) {
+      const a = new Uint8Array(n);
+      crypto.getRandomValues(a);
+      return b64url(a);
+    }
+    async function pkceChallenge(verifier) {
+      return b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
+    }
+
+    function readToken() {
+      try {
+        const t = JSON.parse(sessionStorage.getItem(SS.token));
+        return t && t.exp > Date.now() ? t.access : null;
+      } catch (e) { return null; }
+    }
+
+    // ログイン画面に移動する間も作成中の内容が消えないよう、いったん退避して戻ってきたら復元する
+    function saveDraft() {
+      try {
+        sessionStorage.setItem(SS.draft, JSON.stringify({
+          picked,
+          fields: { date: fields.date.value, limit: fields.limit.value, venue: fields.venue.value, event: fields.event.value, memo: fields.memo.value },
+        }));
+      } catch (e) {}
+    }
+    function restoreDraft() {
+      try {
+        const d = JSON.parse(sessionStorage.getItem(SS.draft));
+        sessionStorage.removeItem(SS.draft);
+        if (!d) return;
+        picked = d.picked || [];
+        fields.limit.value = d.fields.limit;
+        fields.venue.value = d.fields.venue;
+        fields.event.value = d.fields.event;
+        fields.memo.value = d.fields.memo;
+        setDateValue(d.fields.date);
+      } catch (e) {}
+    }
+
+    async function buildAuthUrl() {
+      const verifier = randomString(64);
+      const state = randomString(16);
+      sessionStorage.setItem(SS.pkce, JSON.stringify({ verifier, state }));
+      return "https://accounts.spotify.com/authorize?" + new URLSearchParams({
+        response_type: "code",
+        client_id: SPOTIFY_CLIENT_ID,
+        scope: SPOTIFY_SCOPES,
+        redirect_uri: spotifyRedirectUri(),
+        state,
+        code_challenge_method: "S256",
+        code_challenge: await pkceChallenge(verifier),
+      });
+    }
+
+    async function startSpotifyLogin() {
+      spotifyMsg("Spotifyのログイン画面に移動します…");
+      saveDraft();
+      const url = await buildAuthUrl();
+      skipUnloadWarning = true;
+      location.assign(url);
+    }
+
+    async function spotifyApi(path, options = {}, retry = 0) {
+      const token = readToken();
+      if (!token) throw Object.assign(new Error("login"), { status: 401 });
+      const res = await fetch("https://api.spotify.com/v1" + path, {
+        ...options,
+        headers: { Authorization: "Bearer " + token, ...(options.body ? { "Content-Type": "application/json" } : {}) },
+      });
+      if (res.status === 429 && retry < 2) {
+        const wait = (Number(res.headers.get("Retry-After")) || 2) * 1000;
+        await new Promise(r => setTimeout(r, Math.min(wait, 10000)));
+        return spotifyApi(path, options, retry + 1);
+      }
+      if (!res.ok) throw Object.assign(new Error("HTTP " + res.status), { status: res.status });
+      return res.status === 204 ? null : res.json();
+    }
+
+    const nameKey = str => String(str).normalize("NFKC").toLowerCase().replace(/[\s・'’"“”!?！？。、,.\-~～〜]/g, "");
+
+    // 曲名からSpotifyのトラックを探す。見つからなければ null
+    async function findTrack(song) {
+      const m = getMeta(song);
+      if (m.spotify) return "spotify:track:" + String(m.spotify).replace(/^spotify:track:/, "");
+
+      const artist = m.provided || "笹川真生";
+      const artistWords = ["笹川真生", "sasagawa", artist.toLowerCase()];
+      const key = nameKey(song);
+      const queries = [`track:"${song}" artist:"${artist}"`, `${song} ${artist}`];
+
+      for (const q of queries) {
+        const data = await spotifyApi("/search?" + new URLSearchParams({ q, type: "track", market: SPOTIFY_MARKET, limit: "10" }));
+        const items = ((data && data.tracks && data.tracks.items) || []).filter(t =>
+          t.artists.some(a => artistWords.some(w => a.name.toLowerCase().includes(w))));
+        const hit = items.find(t => nameKey(t.name) === key) || items.find(t => nameKey(t.name).includes(key));
+        if (hit) return hit.uri || "spotify:track:" + hit.id;
+      }
+      return null;
+    }
+
+    async function createSpotifyPlaylist() {
+      const songs = picked.filter(p => p.type === "song");
+      if (!songs.length) { spotifyMsg(errHtml("曲が入っていません。")); return; }
+      if (!SPOTIFY_CLIENT_ID) { spotifyMsg(errHtml("Spotify連携の設定（Client ID）がまだ入っていません。")); return; }
+      if (!readToken()) { await startSpotifyLogin(); return; }
+
+      const btn = $("btn-spotify");
+      btn.disabled = true;
+      try {
+        const uris = [], missing = [];
+        for (let i = 0; i < songs.length; i++) {
+          spotifyMsg(`曲を探しています… ${i + 1}/${songs.length}　${escapeHtml(songs[i].name)}`);
+          const uri = await findTrack(songs[i].name);
+          if (uri) uris.push(uri); else missing.push(songs[i].name);
+        }
+        if (!uris.length) { spotifyMsg(errHtml("Spotifyで見つかる曲がありませんでした。")); return; }
+
+        spotifyMsg("プレイリストを作っています…");
+        const headParts = [fields.date.value.replace(/-/g, "."), fields.event.value.trim() || fields.venue.value.trim()].filter(Boolean);
+        const playlist = await spotifyApi("/me/playlists", {
+          method: "POST",
+          body: JSON.stringify({
+            name: headParts.length ? headParts.join(" ") : "笹川真生 セトリ",
+            description: "セトリ作成ページから作成",
+            public: false,
+          }),
+        });
+        for (let i = 0; i < uris.length; i += 100) {
+          await spotifyApi(`/playlists/${playlist.id}/items`, { method: "POST", body: JSON.stringify({ uris: uris.slice(i, i + 100) }) });
+        }
+
+        const link = playlist.external_urls && playlist.external_urls.spotify;
+        let html = `<span class="ok">非公開プレイリストを作りました（${uris.length}曲）</span>` +
+          (link ? ` <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Spotifyで開く</a>` : "");
+        if (missing.length) html += `<br><span class="miss">Spotifyで見つからなかった曲（入っていません）：${missing.map(escapeHtml).join("、")}</span>`;
+        spotifyMsg(html);
+      } catch (e) {
+        if (e.status === 401) {
+          try { sessionStorage.removeItem(SS.token); } catch (x) {}
+          spotifyMsg(errHtml("ログインが切れました。もう一度ボタンを押してください。"));
+        } else if (e.status === 403) {
+          spotifyMsg(errHtml("Spotifyに拒否されました。このアカウントがアプリの許可ユーザーに入っていない可能性があります。"));
+        } else {
+          spotifyMsg(errHtml("プレイリストを作れませんでした（" + (e.message || "エラー") + "）。"));
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Spotifyのログイン画面から戻ってきたときの処理
+    async function handleSpotifyReturn() {
+      const q = new URLSearchParams(location.search);
+      if (!q.has("code") && !q.has("error")) return;
+      history.replaceState(null, "", location.pathname);
+
+      let saved = null;
+      try { saved = JSON.parse(sessionStorage.getItem(SS.pkce)); } catch (e) {}
+      sessionStorage.removeItem(SS.pkce);
+      restoreDraft();
+      renderAll();
+
+      if (q.has("error")) { spotifyMsg(errHtml("Spotifyのログインがキャンセルされました。")); return; }
+      if (!saved || saved.state !== q.get("state")) { spotifyMsg(errHtml("ログインの確認に失敗しました。もう一度お試しください。")); return; }
+
+      spotifyMsg("Spotifyにログインしています…");
+      try {
+        const res = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            code: q.get("code"),
+            redirect_uri: spotifyRedirectUri(),
+            client_id: SPOTIFY_CLIENT_ID,
+            code_verifier: saved.verifier,
+          }),
+        });
+        if (!res.ok) throw new Error("token " + res.status);
+        const t = await res.json();
+        sessionStorage.setItem(SS.token, JSON.stringify({ access: t.access_token, exp: Date.now() + (t.expires_in - 60) * 1000 }));
+      } catch (e) {
+        spotifyMsg(errHtml("Spotifyにログインできませんでした。"));
+        return;
+      }
+      await createSpotifyPlaylist();
+    }
+
+    $("btn-spotify").addEventListener("click", createSpotifyPlaylist);
+    handleSpotifyReturn();
   </script>
 
 </body>

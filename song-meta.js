@@ -1,6 +1,7 @@
 // 楽曲データ。Claudeに伝えた内容をここに反映していく。
 // キーは曲名、値は { bpm, length: "m:ss", release: "YYYY-MM-DD", album, track: アルバム内の曲順, stem: STEMのURL,
 //   provided: 楽曲提供先のアーティスト名（楽曲提供曲だけ）,
+//   spotify: SpotifyのトラックID（任意。セトリ作成のプレイリスト作成で自動検索がうまく当たらない曲だけ指定）,
 //   alt: [{ label: "ライブアレンジ名", length: "m:ss", bpm: 省略可 }]（ライブ用アレンジ。セトリ作成ページで切り替えられる） }
 // 空の項目は "" にしておく。リリース日の新しい順、同じアルバムは曲順で並ぶ。
 const songMeta = {
