@@ -122,6 +122,12 @@
     .build-row.mc .nm { color: #b26a00; font-weight: bold; }
     .build-row .num { font-size: 12.5px; color: #444; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
     .build-row .is-empty { color: #ccc; }
+    /* 一度もやったことのない新曲（曲名・長さ・BPMをその場で入力） */
+    .build-row input { -webkit-user-select: text; user-select: text; }   /* Safariで行内の入力欄が編集できなくなるのを防ぐ */
+    .new-badge { flex: 0 0 auto; font-size: 10.5px; color: #06c; border: 1px solid #06c; border-radius: 999px; padding: 0 6px; white-space: nowrap; }
+    .nmwrap .new-name { flex: 1 1 auto; min-width: 0; width: 100%; font-size: 14px !important; padding: 3px 6px !important; }
+    .new-len { width: 62px; font-size: 13px !important; padding: 3px 5px !important; text-align: right; font-variant-numeric: tabular-nums; }
+    .new-bpm { width: 44px; font-size: 13px !important; padding: 3px 4px !important; text-align: right; font-variant-numeric: tabular-nums; }
     .mc-len { width: 62px; font-size: 13px !important; padding: 3px 5px !important; text-align: right; font-variant-numeric: tabular-nums; }
 
     .btn {
@@ -316,6 +322,7 @@
     <div class="actions">
       <button class="btn primary" id="btn-copy" type="button">共有用テキストを作成</button>
       <button class="btn" id="btn-mc" type="button">＋ MCを追加</button>
+      <button class="btn" id="btn-new" type="button">＋ 新曲を追加</button>
       <button class="btn" id="btn-clear" type="button">曲をすべて外す</button>
       <span id="copy-msg"></span>
     </div>
@@ -435,6 +442,10 @@
     }
     // 曲の「いま選んでいるバージョン」の長さ・BPM・名前（ver=0 が通常、1以降がライブアレンジ）
     function effective(item) {
+      if (item.isNew) {
+        const sec = parseDuration(item.length);
+        return { length: sec === null ? "" : fmt(sec), bpm: String(item.bpm || "").trim(), label: "" };
+      }
       const m = getMeta(item.name);
       const alt = item.ver > 0 ? m.alt[item.ver - 1] : null;
       return {
@@ -537,6 +548,18 @@
               <span class="num is-empty"></span>
             </span>
             <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
+        } else if (item.isNew) {
+          songNo++;
+          li.className = "build-row new";
+          li.innerHTML = `
+            <span class="grip" title="ドラッグで並べ替え">≡</span>
+            <span class="no">${songNo}</span>
+            <span class="nmwrap"><input type="text" class="new-name" value="${escapeHtml(item.name)}" placeholder="新曲の曲名" aria-label="新曲の曲名"><span class="new-badge">新曲</span></span>
+            <span class="meta-line">
+              <input type="text" class="new-len" value="${escapeHtml(item.length)}" placeholder="m:ss" inputmode="text" aria-label="新曲の長さ（分:秒）">
+              <input type="text" class="new-bpm" value="${escapeHtml(item.bpm)}" placeholder="BPM" inputmode="decimal" aria-label="新曲のBPM">
+            </span>
+            <span class="ctrl"><button class="btn small" type="button" data-act="del" aria-label="外す">✕</button></span>`;
         } else {
           const m = getMeta(item.name);
           const eff = effective(item);
@@ -598,6 +621,38 @@
       renderBuild();
     });
 
+    // 新曲の曲名・長さ・BPM編集
+    const itemOf = el => picked[Number(el.closest(".build-row").dataset.i)];
+    buildList.addEventListener("input", e => {
+      const t = e.target;
+      if (t.classList.contains("new-name")) itemOf(t).name = t.value;
+      else if (t.classList.contains("new-len")) { itemOf(t).length = t.value; renderSummary(); }
+      else if (t.classList.contains("new-bpm")) itemOf(t).bpm = t.value;
+      else return;
+      save();
+    });
+    buildList.addEventListener("focusout", e => {
+      if (!e.target.classList.contains("new-len")) return;
+      const sec = parseDuration(e.target.value);
+      if (sec !== null) { e.target.value = fmt(sec); itemOf(e.target).length = e.target.value; }
+    });
+    // 曲名が既にある曲と同じなら、通常の曲として入れ直す（長さ・BPMが自動で入り、重複もしない）
+    buildList.addEventListener("change", e => {
+      if (!e.target.classList.contains("new-name")) return;
+      const item = itemOf(e.target);
+      const typed = normalize(item.name.trim()).toLowerCase();
+      const match = typed && allSongs.find(s => s.toLowerCase() === typed);
+      if (!match) return;
+      if (picked.some(x => x !== item && x.type === "song" && x.name === match)) {
+        flashCopyMsg(`「${match}」はすでにセトリに入っています`);
+        return;
+      }
+      Object.keys(item).forEach(k => delete item[k]);
+      Object.assign(item, { type: "song", name: match, ver: 0 });
+      flashCopyMsg(`「${match}」は演奏済みの曲なので、通常の曲として入れました`);
+      save(); renderAll();
+    });
+
     // MCの長さ編集
     buildList.addEventListener("input", e => {
       if (!e.target.classList.contains("mc-len")) return;
@@ -654,6 +709,14 @@
       if (last) { last.focus(); last.select(); }
     });
 
+    $("btn-new").addEventListener("click", () => {
+      picked.push({ type: "song", isNew: true, name: "", ver: 0, length: "", bpm: "" });
+      save(); renderBuild();
+      const inputs = buildList.querySelectorAll(".new-name");
+      const last = inputs[inputs.length - 1];
+      if (last) last.focus();
+    });
+
     $("btn-clear").addEventListener("click", () => {
       if (!picked.length) return;
       if (!confirm("作成中の曲・MCをすべて外しますか？")) return;
@@ -674,7 +737,8 @@
         if (it.type === "mc") lines.push(`MC（${fmt(it.sec)}）`);
         else {
           const lab = effective(it).label;
-          lines.push(`${++n}. ${it.name}${lab ? `（${lab}）` : ""}`);
+          const title = it.isNew ? `${it.name.trim()}（新曲）` : `${it.name}${lab ? `（${lab}）` : ""}`;
+          lines.push(`${++n}. ${title}`);
         }
         const sec = secOf(it);
         if (sec !== null) total += sec;
@@ -1018,7 +1082,7 @@
 
     // 「共有用テキストを作成」：プレイリスト作成 → リンク入りテキストを作ってコピー
     async function shareFlow() {
-      const songs = picked.filter(p => p.type === "song");
+      const songs = picked.filter(p => p.type === "song" && p.name.trim());
       if (!songs.length) { flashCopyMsg("曲が入っていません"); return; }
 
       const btn = $("btn-copy");
