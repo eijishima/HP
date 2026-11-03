@@ -74,7 +74,7 @@ const songMeta = {
   "ボトルネック": { bpm: "", length: "2:53", release: "2018-10-24", album: "生きてる方がかわいいよ", track: 4, stem: "" },
   "滞る夜": { bpm: "", length: "3:33", release: "2019-02-16", album: "we are friends", track: 1, stem: "" },
   "屋上階": { bpm: "", length: "3:06", release: "2019-02-16", album: "we are friends", track: 6, stem: "" },
-  "オーバーナイトバス": { bpm: "", length: "3:46", release: "2019-02-16", album: "we are friends", track: 5, stem: "" },
+  "オーバーナイトバス": { bpm: 129, length: "3:46", release: "2019-02-16", album: "we are friends", track: 5, stem: "" },
   "きっと、こういうときに死ぬものよ": { bpm: "", length: "3:47", release: "2019-02-16", album: "we are friends", track: 3, stem: "" },
   "ふさわしくない": { bpm: "", length: "2:48", release: "2018-10-24", album: "生きてる方がかわいいよ", track: 7, stem: "" },
   "エイプリル": { bpm: "", length: "4:38", release: "2020-05-01", album: "エイプリル", track: "", stem: "" },
