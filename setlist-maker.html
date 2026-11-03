@@ -78,6 +78,7 @@
     }
     .info-grid label { display: block; font-size: 11px; color: #777; margin-bottom: 3px; }
     .info-grid input { width: 100%; }
+    .info-grid > div { min-width: 0; }
     .info-grid .full { grid-column: 1 / -1; }
 
     #summary {
@@ -148,25 +149,29 @@
       position: relative;
       display: flex;
       align-items: center;
-      gap: 2px;
+      min-width: 0;
       height: 40px;
-      padding: 0 4px 0 6px;
+      padding: 0 2px 0 4px;
       border: 1px solid #999;
       border-radius: 6px;
       background: #fff;
     }
     .date-field select {
+      flex: 0 1 auto;
+      min-width: 0;
       font-family: inherit;
       font-size: 15px;
       color: #111;
       border: none;
-      background: transparent;
-      padding: 6px 2px;
       border-radius: 4px;
+      padding: 6px 14px 6px 4px;
       cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23777' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 3px center;
     }
-    .date-field select:hover { background: #f0f0f0; }
-    .date-field .unit { font-size: 13px; color: #777; margin-right: 6px; }
+    .date-field select:hover { background-color: #f0f0f0; }
+    .date-field .unit { flex: 0 0 auto; font-size: 12.5px; color: #777; margin-right: 3px; }
     .cal-btn {
       display: flex;
       margin-left: auto;
@@ -191,16 +196,14 @@
     }
 
     /* ---------- デフォルト曲の案内・サジェスト ---------- */
-    #defaults-note { display: none; margin: 8px 0 0; font-size: 12px; color: #777; }
 
     #suggest { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #bbb; }
     .suggest-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-    .suggest-head h3 { margin: 0; font-size: 13px; }
-    .suggest-sub { font-size: 11.5px; color: #888; margin: 0 0 6px; }
+    .suggest-head h3 { margin: 0; font-size: 17px; }
     #suggest-list { list-style: none; margin: 0; padding: 0; }
     .suggest-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 190px 52px 64px;
+      grid-template-columns: minmax(0, 1fr) 240px 52px 64px;
       column-gap: 10px;
       align-items: center;
       padding: 7px 0;
@@ -212,8 +215,21 @@
     .suggest-empty { font-size: 12.5px; color: #999; padding: 8px 0; }
 
     /* ---------- Spotify ---------- */
-    .btn.spotify { border-color: #1a7f37; color: #1a7f37; font-weight: bold; }
-    .btn.spotify:hover:not(:disabled) { background: #e8f5ec; }
+    #share-out { display: none; margin-top: 12px; }
+    #share-text {
+      display: block;
+      width: 100%;
+      height: 210px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.6;
+      border: 1px solid #999;
+      border-radius: 6px;
+      background: #fff;
+      color: #111;
+      resize: vertical;
+    }
     #spotify-msg { margin-top: 10px; font-size: 13px; line-height: 1.7; }
     #spotify-msg:empty { display: none; }
     #spotify-msg .ok { color: #1a7f37; font-weight: bold; }
@@ -243,10 +259,11 @@
     @media (max-width: 639px) {
       .info-grid { grid-template-columns: 1fr; }
       .build-row { grid-template-columns: 22px 26px minmax(0, 1fr) auto; row-gap: 4px; }
+      .nmwrap { flex-wrap: wrap; row-gap: 4px; }
       .build-row .meta-line { grid-column: 3; display: flex; gap: 14px; align-items: center; }
       .build-row .ctrl { grid-column: 4; grid-row: 1; }
       .suggest-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 3px; }
-      .suggest-row .when { grid-column: 1; }
+      .suggest-row .when { grid-column: 1; white-space: normal; min-width: 0; }
       .suggest-row .num { display: none; }
       .suggest-row .add-cell { grid-column: 2; grid-row: 1 / span 2; }
       .list-header { display: none; }
@@ -293,25 +310,26 @@
     </div>
 
     <div id="summary"></div>
-    <p id="defaults-note">直近半年でよくやっている3曲を最初から入れています（外してもOK）</p>
     <ol id="build-list"></ol>
     <div id="empty-msg">下の楽曲リストから「追加」を押すと、ここに入ります。左の ≡ をドラッグすると並べ替えできます。</div>
 
     <div class="actions">
-      <button class="btn primary" id="btn-copy" type="button">テキストにしてコピー</button>
+      <button class="btn primary" id="btn-copy" type="button">共有用テキストを作成</button>
       <button class="btn" id="btn-mc" type="button">＋ MCを追加</button>
       <button class="btn" id="btn-clear" type="button">曲をすべて外す</button>
-      <button class="btn spotify" id="btn-spotify" type="button">Spotifyで非公開プレイリストを作る</button>
       <span id="copy-msg"></span>
     </div>
     <div id="spotify-msg" aria-live="polite"></div>
+    <div id="share-out">
+      <textarea id="share-text" readonly aria-label="共有用テキスト"></textarea>
+      <div class="actions"><button class="btn" id="btn-recopy" type="button">もう一度コピー</button></div>
+    </div>
 
     <div id="suggest">
       <div class="suggest-head">
-        <h3>最近やってない曲をサジェスト</h3>
+        <h3>最近やってなくない？</h3>
         <button class="btn small" id="btn-shuffle" type="button">別の3曲</button>
       </div>
-      <p class="suggest-sub">半年以上やっていない曲からランダムに3曲</p>
       <ul id="suggest-list"></ul>
     </div>
   </section>
@@ -346,6 +364,15 @@
       "マサラタウン", "タマムシシティ", "ポケモンタワー", "ふたごじま", "チャンピオンロード",
     ];
     $("f-venue").placeholder = VENUE_EXAMPLES[Math.floor(Math.random() * VENUE_EXAMPLES.length)];
+
+    // 公演名の例もゲームネタでランダムに表示
+    const EVENT_EXAMPLES = [
+      "予告状ワンマン〜盗むのは心です〜", "ポケモンリーグ予選", "四天王への挑戦状", "レベル99のワンマン",
+      "ラストダンジョン前の宿屋", "セーブポイントから生中継", "ボス部屋手前ライブ", "ふっかつのじゅもん配布会",
+      "初見プレイ歓迎ナイト", "ハイスコア更新ライブ", "タイトル画面からお届けします", "たたかう・まほう・どうぐ・ライブ",
+      "狭間の地 巡礼ツアー", "おおきなこえでさけぶ夜",
+    ];
+    $("f-event").placeholder = EVENT_EXAMPLES[Math.floor(Math.random() * EVENT_EXAMPLES.length)];
     const fields = { date: $("f-date"), limit: $("f-limit"), venue: $("f-venue"), event: $("f-event"), memo: $("f-memo") };
 
     // 今までやった全曲と演奏回数
@@ -494,7 +521,6 @@
     function renderBuild() {
       buildList.innerHTML = "";
       $("empty-msg").style.display = picked.length ? "none" : "block";
-      $("defaults-note").style.display = picked.length && JSON.stringify(picked) === defaultKey ? "block" : "none";
 
       let songNo = 0;
       picked.forEach((item, i) => {
@@ -634,7 +660,8 @@
       picked = []; save(); renderAll();
     });
 
-    $("btn-copy").addEventListener("click", async () => {
+    // 共有用テキスト（プレイリストのリンクがあれば合計の下に入れる）
+    function buildShareText(playlistUrl) {
       const lines = [];
       const head = [fields.date.value.replace(/-/g, "."), fields.event.value.trim()].filter(Boolean).join(" / ");
       if (head) lines.push(head);
@@ -653,16 +680,33 @@
         if (sec !== null) total += sec;
       });
       lines.push("", `合計 ${fmt(total)}`);
+      if (playlistUrl) lines.push("", `Spotifyプレイリスト：${playlistUrl}`);
       if (fields.memo.value.trim()) lines.push("", fields.memo.value.trim());
-      const msg = $("copy-msg");
+      return lines.join("\n");
+    }
+
+    let copyTimer = null;
+    function flashCopyMsg(text) {
+      $("copy-msg").textContent = text;
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => { $("copy-msg").textContent = ""; }, 4000);
+    }
+    async function copyShareText() {
+      const text = $("share-text").value;
       try {
-        await navigator.clipboard.writeText(lines.join("\n"));
-        msg.textContent = "コピーしました";
+        await navigator.clipboard.writeText(text);
+        flashCopyMsg("コピーしました");
+        return true;
       } catch (e) {
-        msg.textContent = "コピーできませんでした";
+        const ta = $("share-text");
+        ta.focus(); ta.select();
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (x) {}
+        flashCopyMsg(ok ? "コピーしました" : "自動でコピーできませんでした。下の「もう一度コピー」を押してください");
+        return ok;
       }
-      setTimeout(() => { msg.textContent = ""; }, 2500);
-    });
+    }
+    $("btn-recopy").addEventListener("click", copyShareText);
 
     Object.values(fields).forEach(el => el.addEventListener("input", () => { save(); renderSummary(); }));
 
@@ -933,51 +977,74 @@
       return null;
     }
 
-    async function createSpotifyPlaylist() {
+    function spotifyErrorHtml(e) {
+      if (e.status === 401) {
+        try { sessionStorage.removeItem(SS.token); } catch (x) {}
+        return errHtml("Spotifyのログインが切れました。もう一度「共有用テキストを作成」を押してください。");
+      }
+      if (e.status === 403) return errHtml("Spotifyに拒否されました。このアカウントがアプリの許可ユーザーに入っていない可能性があります。");
+      return errHtml("プレイリストを作れませんでした（" + (e.message || "エラー") + "）。");
+    }
+
+    // プレイリスト名は日付（例 20261103）。日付が未入力なら今日の日付。
+    function playlistName() {
+      const d = fields.date.value || isoLocal(TODAY);
+      return d.replace(/-/g, "");
+    }
+
+    // 非公開プレイリストを作って { link, count, missing } を返す
+    async function createSpotifyPlaylist(songs) {
+      const uris = [], missing = [];
+      for (let i = 0; i < songs.length; i++) {
+        spotifyMsg(`プレイリスト用に曲を探しています… ${i + 1}/${songs.length}　${escapeHtml(songs[i].name)}`);
+        const uri = await findTrack(songs[i].name);
+        if (uri) uris.push(uri); else missing.push(songs[i].name);
+      }
+      if (!uris.length) throw Object.assign(new Error("Spotifyで見つかる曲がありませんでした"), { status: 0 });
+
+      spotifyMsg("プレイリストを作っています…");
+      const playlist = await spotifyApi("/me/playlists", {
+        method: "POST",
+        body: JSON.stringify({ name: playlistName(), description: "セトリ作成ページから作成", public: false }),
+      });
+      for (let i = 0; i < uris.length; i += 100) {
+        await spotifyApi(`/playlists/${playlist.id}/items`, { method: "POST", body: JSON.stringify({ uris: uris.slice(i, i + 100) }) });
+      }
+      return { link: (playlist.external_urls && playlist.external_urls.spotify) || "", count: uris.length, missing };
+    }
+
+    // 同じ内容で続けて押したときにプレイリストが増えないよう、直前の結果を覚えておく
+    let lastShare = null;
+
+    // 「共有用テキストを作成」：プレイリスト作成 → リンク入りテキストを作ってコピー
+    async function shareFlow() {
       const songs = picked.filter(p => p.type === "song");
-      if (!songs.length) { spotifyMsg(errHtml("曲が入っていません。")); return; }
-      if (!SPOTIFY_CLIENT_ID) { spotifyMsg(errHtml("Spotify連携の設定（Client ID）がまだ入っていません。")); return; }
-      if (!readToken()) { await startSpotifyLogin(); return; }
+      if (!songs.length) { flashCopyMsg("曲が入っていません"); return; }
 
-      const btn = $("btn-spotify");
+      const btn = $("btn-copy");
       btn.disabled = true;
+      let link = "";
       try {
-        const uris = [], missing = [];
-        for (let i = 0; i < songs.length; i++) {
-          spotifyMsg(`曲を探しています… ${i + 1}/${songs.length}　${escapeHtml(songs[i].name)}`);
-          const uri = await findTrack(songs[i].name);
-          if (uri) uris.push(uri); else missing.push(songs[i].name);
+        const key = playlistName() + "|" + songs.map(s => s.name).join("/");
+        if (lastShare && lastShare.key === key) {
+          link = lastShare.link;
+        } else if (SPOTIFY_CLIENT_ID) {
+          if (!readToken()) { await startSpotifyLogin(); return; }   // ログイン後に自動で続きから再開する
+          try {
+            const r = await createSpotifyPlaylist(songs);
+            link = r.link;
+            lastShare = { key, link };
+            let html = `<span class="ok">非公開プレイリスト「${escapeHtml(playlistName())}」を作りました（${r.count}曲）</span>` +
+              (link ? ` <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Spotifyで開く</a>` : "");
+            if (r.missing.length) html += `<br><span class="miss">Spotifyで見つからなかった曲（プレイリストには入っていません）：${r.missing.map(escapeHtml).join("、")}</span>`;
+            spotifyMsg(html);
+          } catch (e) {
+            spotifyMsg(spotifyErrorHtml(e) + `<br><span class="miss">プレイリストなしの共有用テキストを作成しました。</span>`);
+          }
         }
-        if (!uris.length) { spotifyMsg(errHtml("Spotifyで見つかる曲がありませんでした。")); return; }
-
-        spotifyMsg("プレイリストを作っています…");
-        const headParts = [fields.date.value.replace(/-/g, "."), fields.event.value.trim() || fields.venue.value.trim()].filter(Boolean);
-        const playlist = await spotifyApi("/me/playlists", {
-          method: "POST",
-          body: JSON.stringify({
-            name: headParts.length ? headParts.join(" ") : "笹川真生 セトリ",
-            description: "セトリ作成ページから作成",
-            public: false,
-          }),
-        });
-        for (let i = 0; i < uris.length; i += 100) {
-          await spotifyApi(`/playlists/${playlist.id}/items`, { method: "POST", body: JSON.stringify({ uris: uris.slice(i, i + 100) }) });
-        }
-
-        const link = playlist.external_urls && playlist.external_urls.spotify;
-        let html = `<span class="ok">非公開プレイリストを作りました（${uris.length}曲）</span>` +
-          (link ? ` <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Spotifyで開く</a>` : "");
-        if (missing.length) html += `<br><span class="miss">Spotifyで見つからなかった曲（入っていません）：${missing.map(escapeHtml).join("、")}</span>`;
-        spotifyMsg(html);
-      } catch (e) {
-        if (e.status === 401) {
-          try { sessionStorage.removeItem(SS.token); } catch (x) {}
-          spotifyMsg(errHtml("ログインが切れました。もう一度ボタンを押してください。"));
-        } else if (e.status === 403) {
-          spotifyMsg(errHtml("Spotifyに拒否されました。このアカウントがアプリの許可ユーザーに入っていない可能性があります。"));
-        } else {
-          spotifyMsg(errHtml("プレイリストを作れませんでした（" + (e.message || "エラー") + "）。"));
-        }
+        $("share-text").value = buildShareText(link);
+        $("share-out").style.display = "block";
+        await copyShareText();
       } finally {
         btn.disabled = false;
       }
@@ -1018,10 +1085,10 @@
         spotifyMsg(errHtml("Spotifyにログインできませんでした。"));
         return;
       }
-      await createSpotifyPlaylist();
+      await shareFlow();
     }
 
-    $("btn-spotify").addEventListener("click", createSpotifyPlaylist);
+    $("btn-copy").addEventListener("click", shareFlow);
     handleSpotifyReturn();
   </script>
 
