@@ -2,7 +2,7 @@
 // video: YouTube等のURL。分かったら書き足してください（null のままなら「映像未リンク」と表示されます）
 // setlist.html と analysis.html の両方から読み込まれる共通データ
 const performances = [
-  { date: "2026-11-03", event: "ボロフェスタ2026 〜25th anniversary〜", venue: "京都KBSホール", video: null,
+  { date: "2026-11-03", event: "ボロフェスタ2026 〜25th anniversary〜", venue: "京都KBSホール", video: "https://youtu.be/z7AmDk5YdrA",
     setlist: ["ですから、灼けました","HAMETSUのねがい","きみになっていく","オーバーナイトバス","水泳教室","懐古主義わたし","脳ない"] },
   { date: "2026-10-31", event: "NIGHT HIKE 2026 in 幕張", venue: "幕張メッセ", video: "https://youtu.be/rOfj-U1dezs",
     setlist: ["ですから、灼けました","HAMETSUのねがい","きみになっていく","水泳教室","ちゅるちゅる","懐古主義わたし","脳ない"] },
